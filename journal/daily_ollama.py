@@ -74,7 +74,7 @@ def append_journal_entry(summary: str, trade_count: int):
 
     entries.append({
         "date": datetime.now(timezone.utc).date().isoformat(),
-        "source": "ollama",
+        "source": "ollama-daily",
         "trade_count": trade_count,
         "summary": summary,
     })

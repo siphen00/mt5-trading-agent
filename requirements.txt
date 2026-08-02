@@ -5,5 +5,5 @@ numpy
 requests
 python-dotenv
 
-# Journal (weekly_claude.py — runs in GitHub Actions or locally)
-anthropic
+# Journal scripts (daily_ollama.py, weekly_review.py) only need requests —
+# both run entirely against your local Ollama instance, no paid API.

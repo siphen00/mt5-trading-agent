@@ -64,7 +64,7 @@
   .j-head{display:flex; justify-content:space-between; margin-bottom:6px;}
   .j-date{font-family:var(--mono); font-size:11px; color:var(--text3);}
   .j-source{font-family:var(--mono); font-size:10px; padding:2px 8px; border-radius:4px;}
-  .j-source.ollama{background:rgba(255,255,255,0.06); color:var(--text2);} .j-source.claude{background:var(--green-dim); color:var(--green);}
+  .j-source.ollama-daily{background:rgba(255,255,255,0.06); color:var(--text2);} .j-source.ollama-weekly{background:var(--green-dim); color:var(--green);}
   .j-body{font-size:13px; color:var(--text2); line-height:1.6;}
   .footer-note{text-align:center; font-family:var(--mono); font-size:10px; color:var(--text3); margin-top:20px; letter-spacing:0.5px;}
   .empty{color:var(--text3); font-size:12px; font-family:var(--mono); padding:20px 0; text-align:center;}
@@ -284,9 +284,10 @@ function renderTrades(trades){
 }
 
 function renderJournal(entries){
+  const labels = { 'ollama-daily': 'DAILY · OLLAMA', 'ollama-weekly': 'WEEKLY · OLLAMA' };
   const rows = entries.slice(-10).reverse().map(e => `
     <div class="j-entry">
-      <div class="j-head"><span class="j-date">${e.date} · ${e.trade_count ?? 0} trades</span><span class="j-source ${e.source}">${e.source.toUpperCase()}</span></div>
+      <div class="j-head"><span class="j-date">${e.date} · ${e.trade_count ?? 0} trades</span><span class="j-source ${e.source}">${labels[e.source] || e.source.toUpperCase()}</span></div>
       <div class="j-body">${e.summary}</div>
     </div>`).join('');
   document.getElementById('journalEntries').innerHTML = rows || '<div class="empty">No journal entries yet</div>';

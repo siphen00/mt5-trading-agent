@@ -1,4 +1,4 @@
-name: Weekly deep-dive review (Claude)
+name: Weekly deep-dive review (Ollama)
 
 on:
   schedule:
@@ -14,18 +14,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Ollama
+        run: curl -fsSL https://ollama.com/install.sh | sh
+
+      - name: Start Ollama and pull model
+        run: |
+          ollama serve &
+          sleep 5
+          ollama pull qwen2.5:1.5b
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install anthropic
+        run: pip install requests
 
       - name: Run weekly review
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python journal/weekly_claude.py
+        run: python journal/weekly_review.py
 
       - name: Commit review
         run: |
