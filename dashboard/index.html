@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>APEX — BTC Trading Terminal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#080B10; --glass:rgba(20,27,38,0.55); --glass-border:rgba(255,255,255,0.07); --glass-hi:rgba(255,255,255,0.03);
+    --green:#00E5A0; --green-dim:rgba(0,229,160,0.12);
+    --red:#FF4D6A; --red-dim:rgba(255,77,106,0.12);
+    --amber:#FFB627; --amber-dim:rgba(255,182,39,0.12);
+    --text:#E9EDF4; --text2:#8A93A6; --text3:#4E5768;
+    --mono:'IBM Plex Mono',monospace; --sans:'Inter',sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:radial-gradient(ellipse 80% 50% at 20% -10%, rgba(0,229,160,0.06), transparent),
+      radial-gradient(ellipse 80% 50% at 80% 110%, rgba(255,77,106,0.05), transparent), var(--bg);
+    color:var(--text); font-family:var(--sans); padding:20px; min-height:100vh;
+  }
+  .wrap{max-width:1400px; margin:0 auto;}
+  .ticker{background:var(--glass); border:1px solid var(--glass-border); border-radius:8px; backdrop-filter:blur(20px);
+    padding:9px 18px; margin-bottom:16px; overflow:hidden; white-space:nowrap; font-family:var(--mono); font-size:12px; color:var(--text2);}
+  .ticker span{margin-right:36px;} .ticker b{color:var(--text); font-weight:500;}
+  .up{color:var(--green);} .down{color:var(--red);}
+  .header{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;}
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand-mark{width:30px; height:30px; border-radius:7px; background:linear-gradient(135deg,var(--green),#00A876); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-weight:600; font-size:13px; color:#04140E;}
+  .brand-name{font-family:var(--mono); font-size:15px; font-weight:600; letter-spacing:0.5px;}
+  .brand-sub{font-size:11px; color:var(--text3); letter-spacing:1px; text-transform:uppercase;}
+  .controls{display:flex; align-items:center; gap:12px;}
+  .mode-pill{font-family:var(--mono); font-size:11px; padding:6px 12px; border-radius:20px; cursor:pointer;
+    background:var(--amber-dim); color:var(--amber); border:1px solid rgba(255,182,39,0.3); letter-spacing:0.5px;}
+  .power-btn{display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12px;
+    background:var(--green-dim); color:var(--green); border:1px solid rgba(0,229,160,0.35);
+    padding:9px 16px; border-radius:8px; cursor:pointer; letter-spacing:0.5px; font-weight:500;}
+  .power-btn .dot{width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green);}
+  .power-btn.off{background:var(--red-dim); color:var(--red); border-color:rgba(255,77,106,0.35);}
+  .power-btn.off .dot{background:var(--red); box-shadow:0 0 8px var(--red);}
+  .settings-btn{background:transparent; border:1px solid var(--glass-border); color:var(--text3); border-radius:8px; padding:9px 12px; cursor:pointer; font-family:var(--mono); font-size:11px;}
+  .stats{display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:16px;}
+  .card{background:var(--glass); border:1px solid var(--glass-border); border-radius:12px; backdrop-filter:blur(20px); padding:16px 18px;}
+  .stat-label{font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;}
+  .stat-val{font-family:var(--mono); font-size:22px; font-weight:600;}
+  .stat-sub{font-family:var(--mono); font-size:11px; color:var(--text2); margin-top:4px;}
+  .main{display:grid; grid-template-columns:2fr 1fr; gap:16px; margin-bottom:16px;}
+  .panel{background:var(--glass); border:1px solid var(--glass-border); border-radius:12px; backdrop-filter:blur(20px); padding:18px 20px;}
+  .panel-title{font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:14px; display:flex; justify-content:space-between;}
+  .panel-title b{color:var(--text2); font-weight:500;}
+  canvas{width:100%; height:220px; display:block;}
+  .strategy-row{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--glass-hi); font-family:var(--mono); font-size:12px;}
+  .strategy-row:last-child{border-bottom:none;}
+  .badge{padding:3px 9px; border-radius:5px; font-size:10px; font-weight:600; letter-spacing:0.5px;}
+  .badge.buy{background:var(--green-dim); color:var(--green);} .badge.sell{background:var(--red-dim); color:var(--red);} .badge.wait{background:var(--amber-dim); color:var(--amber);}
+  table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12px;}
+  th{text-align:left; color:var(--text3); font-weight:500; font-size:10px; text-transform:uppercase; letter-spacing:0.6px; padding:0 12px 10px; border-bottom:1px solid var(--glass-border);}
+  td{padding:11px 12px; border-bottom:1px solid var(--glass-hi); color:var(--text2);}
+  td.win{color:var(--green);} td.loss{color:var(--red);}
+  .tf-tag{background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; font-size:10px; color:var(--text2);}
+  .journal{margin-top:16px;}
+  .j-entry{padding:14px 0; border-bottom:1px solid var(--glass-hi);} .j-entry:last-child{border-bottom:none;}
+  .j-head{display:flex; justify-content:space-between; margin-bottom:6px;}
+  .j-date{font-family:var(--mono); font-size:11px; color:var(--text3);}
+  .j-source{font-family:var(--mono); font-size:10px; padding:2px 8px; border-radius:4px;}
+  .j-source.ollama{background:rgba(255,255,255,0.06); color:var(--text2);} .j-source.claude{background:var(--green-dim); color:var(--green);}
+  .j-body{font-size:13px; color:var(--text2); line-height:1.6;}
+  .footer-note{text-align:center; font-family:var(--mono); font-size:10px; color:var(--text3); margin-top:20px; letter-spacing:0.5px;}
+  .empty{color:var(--text3); font-size:12px; font-family:var(--mono); padding:20px 0; text-align:center;}
+  dialog{background:#0D121A; color:var(--text); border:1px solid var(--glass-border); border-radius:12px; padding:20px; width:360px; font-family:var(--sans);}
+  dialog input{width:100%; margin:10px 0; padding:9px; background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:6px; color:var(--text); font-family:var(--mono); font-size:12px;}
+  dialog button{margin-top:8px; padding:8px 14px; border-radius:6px; border:1px solid var(--glass-border); background:var(--green-dim); color:var(--green); cursor:pointer; font-family:var(--mono); font-size:12px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="ticker" id="ticker">Loading…</div>
+  <div class="header">
+    <div class="brand">
+      <div class="brand-mark">A</div>
+      <div><div class="brand-name">APEX TERMINAL</div><div class="brand-sub" id="symbolLabel">BTC/USD · Scalp Engine</div></div>
+    </div>
+    <div class="controls">
+      <div class="mode-pill" id="modePill">DEMO MODE</div>
+      <button class="power-btn" id="powerBtn"><span class="dot"></span>LOADING</button>
+      <button class="settings-btn" id="settingsBtn">Set repo / token</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="card"><div class="stat-label">Equity</div><div class="stat-val" id="equityVal">—</div><div class="stat-sub" id="equitySub"></div></div>
+    <div class="card"><div class="stat-label">Today P&L</div><div class="stat-val" id="todayPnl">—</div><div class="stat-sub" id="todayCount"></div></div>
+    <div class="card"><div class="stat-label">Win rate</div><div class="stat-val" id="winRate">—</div><div class="stat-sub" id="winCount"></div></div>
+    <div class="card"><div class="stat-label">Open positions</div><div class="stat-val" id="openPositions">—</div><div class="stat-sub">5m + 15m scalper</div></div>
+    <div class="card"><div class="stat-label">Max drawdown</div><div class="stat-val" id="maxDD">—</div><div class="stat-sub">since start</div></div>
+  </div>
+
+  <div class="main">
+    <div class="panel">
+      <div class="panel-title">Equity curve <b>full history</b></div>
+      <canvas id="chart"></canvas>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Strategy state <b id="stateUpdated">live</b></div>
+      <div id="strategyRows"><div class="empty">Waiting for connector data…</div></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-title">Trade blotter <b>most recent</b></div>
+    <table>
+      <thead><tr><th>Time</th><th>TF</th><th>Side</th><th>Entry</th><th>Exit</th><th>Lots</th><th>P&L</th><th>Signal</th></tr></thead>
+      <tbody id="tradeRows"><tr><td colspan="8" class="empty">No trades yet</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Diagnostic journal</div>
+    <div class="journal" id="journalEntries"><div class="empty">No journal entries yet</div></div>
+  </div>
+
+  <div class="footer-note" id="footerNote">CONFIGURE REPO TO CONNECT LIVE DATA</div>
+</div>
+
+<dialog id="settingsDialog">
+  <div style="font-family:var(--mono); font-size:13px; margin-bottom:6px;">Connect to your repo</div>
+  <div style="font-size:12px; color:var(--text2); margin-bottom:10px;">Owner/repo are public info (used to read data). The token is only needed to use the power toggle — it's stored in your browser only, never sent anywhere but GitHub's API.</div>
+  <input id="ownerInput" placeholder="github username, e.g. siphen00">
+  <input id="repoInput" placeholder="repo name, e.g. mt5-trading-agent">
+  <input id="tokenInput" type="password" placeholder="fine-grained PAT (optional, for power toggle)">
+  <button id="saveSettings">Save</button>
+</dialog>
+
+<script>
+const LS = {
+  owner: localStorage.getItem('apex_owner') || '',
+  repo: localStorage.getItem('apex_repo') || '',
+  token: localStorage.getItem('apex_token') || '',
+};
+
+const dialog = document.getElementById('settingsDialog');
+document.getElementById('settingsBtn').onclick = () => {
+  document.getElementById('ownerInput').value = LS.owner;
+  document.getElementById('repoInput').value = LS.repo;
+  document.getElementById('tokenInput').value = LS.token;
+  dialog.showModal();
+};
+document.getElementById('saveSettings').onclick = () => {
+  LS.owner = document.getElementById('ownerInput').value.trim();
+  LS.repo = document.getElementById('repoInput').value.trim();
+  LS.token = document.getElementById('tokenInput').value.trim();
+  localStorage.setItem('apex_owner', LS.owner);
+  localStorage.setItem('apex_repo', LS.repo);
+  localStorage.setItem('apex_token', LS.token);
+  dialog.close();
+  loadAll();
+};
+
+function rawUrl(path){
+  return `https://raw.githubusercontent.com/${LS.owner}/${LS.repo}/main/${path}?t=${Date.now()}`;
+}
+
+async function fetchJson(path, fallback){
+  if(!LS.owner || !LS.repo) return fallback;
+  try{
+    const res = await fetch(rawUrl(path));
+    if(!res.ok) return fallback;
+    return await res.json();
+  }catch(e){ return fallback; }
+}
+
+function fmtMoney(n){ return (n<0?'-':'') + '$' + Math.abs(n).toLocaleString(undefined,{maximumFractionDigits:2}); }
+function fmtPct(n){ return (n>=0?'+':'') + n.toFixed(2) + '%'; }
+
+let equityHistory = [];
+
+function drawChart(){
+  const c = document.getElementById('chart'), ctx = c.getContext('2d');
+  const w = c.clientWidth, h = 220;
+  c.width = w; c.height = h;
+  ctx.clearRect(0,0,w,h);
+  if(equityHistory.length < 2){
+    ctx.fillStyle = '#4E5768'; ctx.font = '12px IBM Plex Mono';
+    ctx.fillText('Not enough equity history yet', 12, h/2);
+    return;
+  }
+  const vals = equityHistory.map(e => e.equity);
+  const min = Math.min(...vals), max = Math.max(...vals) || min + 1;
+  const grad = ctx.createLinearGradient(0,0,0,h);
+  const rising = vals[vals.length-1] >= vals[0];
+  grad.addColorStop(0, rising ? 'rgba(0,229,160,0.18)' : 'rgba(255,77,106,0.18)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.beginPath();
+  vals.forEach((v,i) => {
+    const x = (i/(vals.length-1))*w;
+    const y = h - ((v-min)/(max-min||1))*h*0.85 - h*0.05;
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle = rising ? '#00E5A0' : '#FF4D6A'; ctx.lineWidth = 1.8; ctx.stroke();
+  ctx.lineTo(w,h); ctx.lineTo(0,h); ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+}
+
+function renderStats(trades, equity){
+  equityHistory = equity;
+  const currentEquity = equity.length ? equity[equity.length-1].equity : null;
+  const startEquity = equity.length ? equity[0].equity : null;
+
+  document.getElementById('equityVal').textContent = currentEquity!=null ? fmtMoney(currentEquity) : '—';
+  if(currentEquity!=null && startEquity){
+    const pct = ((currentEquity-startEquity)/startEquity)*100;
+    const sub = document.getElementById('equitySub');
+    sub.textContent = fmtPct(pct) + ' since start';
+    sub.className = 'stat-sub ' + (pct>=0?'up':'down');
+  }
+
+  const today = new Date().toISOString().slice(0,10);
+  const todayTrades = trades.filter(t => t.time && t.time.slice(0,10)===today);
+  const todayPnl = todayTrades.reduce((s,t)=>s+(t.pnl||0),0);
+  document.getElementById('todayPnl').textContent = fmtMoney(todayPnl);
+  document.getElementById('todayPnl').className = 'stat-val ' + (todayPnl>=0?'up':'down');
+  document.getElementById('todayCount').textContent = todayTrades.length + ' trades';
+
+  const closed = trades.filter(t => t.status === 'closed' && typeof t.pnl === 'number');
+  const wins = closed.filter(t => t.pnl > 0).length;
+  document.getElementById('winRate').textContent = closed.length ? ((wins/closed.length)*100).toFixed(1)+'%' : '—';
+  document.getElementById('winCount').textContent = closed.length ? `${wins}W / ${closed.length-wins}L` : 'no closed trades yet';
+
+  const open = trades.filter(t => t.status === 'open').length;
+  document.getElementById('openPositions').textContent = open;
+
+  let peak = -Infinity, maxDD = 0;
+  equity.forEach(e => { peak = Math.max(peak, e.equity); maxDD = Math.min(maxDD, ((e.equity-peak)/peak)*100 || 0); });
+  document.getElementById('maxDD').textContent = equity.length ? maxDD.toFixed(1)+'%' : '—';
+  document.getElementById('maxDD').className = 'stat-val ' + (maxDD<0?'down':'');
+
+  drawChart();
+}
+
+function renderTicker(strategyState, equity){
+  const currentEquity = equity.length ? equity[equity.length-1].equity : null;
+  const tf5 = strategyState.M5 || {}, tf15 = strategyState.M15 || {};
+  const items = [
+    ['Equity', currentEquity!=null ? fmtMoney(currentEquity) : '—', ''],
+    ['5m signal', (tf5.direction||'none').toUpperCase(), tf5.direction==='long'?'up':tf5.direction==='short'?'down':''],
+    ['15m signal', (tf15.direction||'none').toUpperCase(), tf15.direction==='long'?'up':tf15.direction==='short'?'down':''],
+    ['Last sync', strategyState.updated_at ? new Date(strategyState.updated_at).toLocaleTimeString() : '—', ''],
+  ];
+  document.getElementById('ticker').innerHTML = items.map(i => `<span><b>${i[0]}</b> <span class="${i[2]}">${i[1]}</span></span>`).join('');
+}
+
+function renderStrategyRows(state){
+  const rows = [];
+  for(const tf of ['M5','M15']){
+    const s = state[tf];
+    if(!s) continue;
+    const badgeClass = s.direction==='long' ? 'buy' : s.direction==='short' ? 'sell' : 'wait';
+    rows.push(`<div class="strategy-row"><span>${tf} vote (${s.reason||'no confluence'})</span><span class="badge ${badgeClass}">${(s.direction||'none').toUpperCase()}</span></div>`);
+    if(s.votes){
+      for(const [k,v] of Object.entries(s.votes)){
+        const bc = v==='long'?'buy':v==='short'?'sell':'wait';
+        rows.push(`<div class="strategy-row"><span>${tf} · ${k}</span><span class="badge ${bc}">${(v||'none').toUpperCase()}</span></div>`);
+      }
+    }
+  }
+  document.getElementById('strategyRows').innerHTML = rows.join('') || '<div class="empty">Waiting for connector data…</div>';
+  document.getElementById('stateUpdated').textContent = state.updated_at ? new Date(state.updated_at).toLocaleTimeString() : 'live';
+}
+
+function renderTrades(trades){
+  const rows = trades.slice(-15).reverse().map(t => `
+    <tr>
+      <td>${t.time ? new Date(t.time).toLocaleString() : '—'}</td>
+      <td><span class="tf-tag">${t.timeframe||'—'}</span></td>
+      <td>${t.direction||'—'}</td>
+      <td>${t.entry!=null ? t.entry.toLocaleString() : '—'}</td>
+      <td>${t.exit!=null ? t.exit.toLocaleString() : '—'}</td>
+      <td>${t.lots ?? '—'}</td>
+      <td class="${(t.pnl||0)>0?'win':(t.pnl||0)<0?'loss':''}">${t.pnl!=null ? fmtMoney(t.pnl) : (t.status==='open'?'open':'—')}</td>
+      <td>${t.reason||'—'}</td>
+    </tr>`).join('');
+  document.getElementById('tradeRows').innerHTML = rows || '<tr><td colspan="8" class="empty">No trades yet</td></tr>';
+}
+
+function renderJournal(entries){
+  const rows = entries.slice(-10).reverse().map(e => `
+    <div class="j-entry">
+      <div class="j-head"><span class="j-date">${e.date} · ${e.trade_count ?? 0} trades</span><span class="j-source ${e.source}">${e.source.toUpperCase()}</span></div>
+      <div class="j-body">${e.summary}</div>
+    </div>`).join('');
+  document.getElementById('journalEntries').innerHTML = rows || '<div class="empty">No journal entries yet</div>';
+}
+
+async function refreshStatusDisplay(){
+  const status = await fetchJson('control/status.json', {power:'off', mode:'demo'});
+  const btn = document.getElementById('powerBtn');
+  const isOn = status.power === 'on';
+  btn.className = 'power-btn' + (isOn ? '' : ' off');
+  btn.innerHTML = `<span class="dot"></span>AGENT ${isOn ? 'LIVE' : 'OFF'}`;
+  document.getElementById('modePill').textContent = (status.mode || 'demo').toUpperCase() + ' MODE';
+  return status;
+}
+
+async function togglePower(){
+  if(!LS.token){ alert('Add a GitHub token in "Set repo / token" to control the agent — read-only view works without one.'); return; }
+  const current = await refreshStatusDisplay();
+  const newPower = current.power === 'on' ? 'off' : 'on';
+
+  // Get current file SHA (required by GitHub Contents API for updates)
+  const getRes = await fetch(`https://api.github.com/repos/${LS.owner}/${LS.repo}/contents/control/status.json`,
+    { headers: { Authorization: `token ${LS.token}` } });
+  const getData = await getRes.json();
+
+  const newContent = JSON.stringify({
+    power: newPower, mode: current.mode || 'demo',
+    updated_at: new Date().toISOString(), updated_by: 'dashboard'
+  }, null, 2);
+
+  const putRes = await fetch(`https://api.github.com/repos/${LS.owner}/${LS.repo}/contents/control/status.json`, {
+    method: 'PUT',
+    headers: { Authorization: `token ${LS.token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: `Dashboard: power ${newPower}`,
+      content: btoa(newContent),
+      sha: getData.sha,
+    }),
+  });
+
+  if(putRes.ok){ setTimeout(refreshStatusDisplay, 1500); }
+  else{ alert('Could not update status — check your token has Contents: read/write on this repo.'); }
+}
+document.getElementById('powerBtn').onclick = togglePower;
+document.getElementById('modePill').onclick = () => alert('Switch demo/live from the settings — kept as a deliberate manual step, not a casual toggle.');
+
+async function loadAll(){
+  document.getElementById('symbolLabel').textContent = LS.repo ? `BTC/USD · ${LS.repo}` : 'BTC/USD · Scalp Engine';
+  document.getElementById('footerNote').textContent = LS.owner && LS.repo
+    ? `SOURCE: ${LS.owner}/${LS.repo} · REFRESHED ${new Date().toLocaleTimeString()}`
+    : 'CONFIGURE REPO TO CONNECT LIVE DATA';
+
+  const [trades, equity, journal, strategyState] = await Promise.all([
+    fetchJson('data/trades.json', []),
+    fetchJson('data/equity.json', []),
+    fetchJson('data/journal.json', []),
+    fetchJson('data/strategy_state.json', {}),
+  ]);
+
+  renderStats(trades, equity);
+  renderTicker(strategyState, equity);
+  renderStrategyRows(strategyState);
+  renderTrades(trades);
+  renderJournal(journal);
+  await refreshStatusDisplay();
+}
+
+window.addEventListener('resize', drawChart);
+loadAll();
+setInterval(loadAll, 30000); // refresh every 30s
+</script>
+</body>
+</html>

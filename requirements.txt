@@ -1,0 +1,9 @@
+# Connector (Windows machine, where MT5 terminal runs)
+MetaTrader5
+pandas
+numpy
+requests
+python-dotenv
+
+# Journal (weekly_claude.py — runs in GitHub Actions or locally)
+anthropic

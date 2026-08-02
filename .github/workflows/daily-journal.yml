@@ -1,0 +1,43 @@
+name: Daily journal (Ollama)
+
+on:
+  schedule:
+    - cron: "0 0 * * *"   # 00:00 UTC daily
+  workflow_dispatch: {}     # lets you trigger manually from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  journal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ollama
+        run: curl -fsSL https://ollama.com/install.sh | sh
+
+      - name: Start Ollama and pull model
+        run: |
+          ollama serve &
+          sleep 5
+          ollama pull qwen2.5:1.5b
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run daily journal
+        run: python journal/daily_ollama.py
+
+      - name: Commit journal update
+        run: |
+          git config user.name "apex-terminal-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/journal.json
+          git diff --cached --quiet || git commit -m "Daily journal $(date -u +%Y-%m-%d)"
+          git push
