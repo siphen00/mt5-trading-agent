@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "date": "2026-08-03",
+    "source": "ollama-daily",
+    "trade_count": 0,
+    "summary": "No trades today \u2014 either the agent was powered off or no signals met the 2-of-3 vote threshold."
+  }
+]
