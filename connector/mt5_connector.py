@@ -108,21 +108,36 @@ def calc_position_size(equity: float, entry: float, stop: float) -> float:
 def place_trade(symbol: str, direction: str, timeframe: str, signal_meta: dict) -> dict | None:
     """Places a market order with SL/TP and returns a trade record dict, or None on failure."""
     tick = mt5.symbol_info_tick(symbol)
+    info = mt5.symbol_info(symbol)
     equity = mt5.account_info().equity
 
+    # Broker's minimum distance (in points) between the entry price and SL/TP —
+    # this is exactly what "Invalid stops" (10016) means when violated.
+    min_stop_distance = max(info.trade_stops_level, info.trade_freeze_level, 1) * info.point
+
     atr_estimate = signal_meta.get("atr", equity * 0.002)  # fallback if not present
+    stop_distance = max(atr_estimate * 1.5, min_stop_distance * 1.5)  # safety margin above minimum
+    target_distance = max(atr_estimate * 2.5, min_stop_distance * 2.5)
+
     if direction == "long":
         entry = tick.ask
-        stop = entry - atr_estimate * 1.5
-        target = entry + atr_estimate * 2.5
+        stop = entry - stop_distance
+        target = entry + target_distance
         order_type = mt5.ORDER_TYPE_BUY
     else:
         entry = tick.bid
-        stop = entry + atr_estimate * 1.5
-        target = entry - atr_estimate * 2.5
+        stop = entry + stop_distance
+        target = entry - target_distance
         order_type = mt5.ORDER_TYPE_SELL
 
+    # Round everything to the symbol's actual tick size — brokers reject prices
+    # that don't align to their digits/point, which was the other half of 10016.
+    entry = round(entry, info.digits)
+    stop = round(stop, info.digits)
+    target = round(target, info.digits)
+
     lots = calc_position_size(equity, entry, stop)
+    lots = max(info.volume_min, round(lots / info.volume_step) * info.volume_step)
 
     request = {
         "action": mt5.TRADE_ACTION_DEAL,
@@ -142,6 +157,9 @@ def place_trade(symbol: str, direction: str, timeframe: str, signal_meta: dict) 
     result = mt5.order_send(request)
     if result.retcode != mt5.TRADE_RETCODE_DONE:
         print(f"[connector] order_send failed: {result.retcode} {result.comment}")
+        print(f"[connector]   request was: entry={entry} sl={stop} tp={target} lots={lots} "
+              f"min_stop_distance={min_stop_distance} digits={info.digits} "
+              f"stops_level={info.trade_stops_level} volume_min={info.volume_min} volume_step={info.volume_step}")
         return None
 
     return {
