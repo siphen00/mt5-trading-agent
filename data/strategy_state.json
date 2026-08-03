@@ -1,11 +1,11 @@
 {
   "M5": {
-    "direction": "short",
+    "direction": "none",
     "votes": {
-      "ema": "short",
+      "ema": "none",
       "smc": "none"
     },
-    "reason": "EMA short",
+    "reason": "no confluence",
     "atr_ok": false
   },
   "M15": {
@@ -17,5 +17,5 @@
     "reason": "no confluence",
     "atr_ok": false
   },
-  "updated_at": "2026-08-03T20:16:26.374016+00:00"
+  "updated_at": "2026-08-03T20:16:45.761491+00:00"
 }
