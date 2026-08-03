@@ -6,16 +6,16 @@
       "smc": "none"
     },
     "reason": "no confluence",
-    "atr_ok": true
+    "atr_ok": false
   },
   "M15": {
-    "direction": "none",
+    "direction": "short",
     "votes": {
       "ema": "none",
-      "smc": "none"
+      "smc": "short"
     },
-    "reason": "no confluence",
-    "atr_ok": true
+    "reason": "SMC short (none/ob_bearish_retest)",
+    "atr_ok": false
   },
-  "updated_at": "2026-08-03T12:19:58.474367+00:00"
+  "updated_at": "2026-08-03T19:41:45.436452+00:00"
 }
