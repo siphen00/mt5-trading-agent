@@ -292,7 +292,8 @@ def run_cycle():
          *[f"data/candles_{tf}.json" for tf in config.TIMEFRAMES]],
         f"Trade sync {datetime.now(timezone.utc).isoformat()}",
     )
-    summary = " | ".join(f"{tf}: {s['direction']} ({s['reason']})" for tf, s in state_snapshot.items())
+    summary = " | ".join(f"{tf}: {state_snapshot[tf]['direction']} ({state_snapshot[tf]['reason']})"
+                          for tf in config.TIMEFRAMES if tf in state_snapshot)
     sync_status = "synced" if pushed else "SYNC FAILED — see git_sync errors above"
     print(f"[connector] {datetime.now(timezone.utc).strftime('%H:%M:%S')} — {summary} — {sync_status}")
 
