@@ -115,7 +115,11 @@ def place_trade(symbol: str, direction: str, timeframe: str, signal_meta: dict) 
     # this is exactly what "Invalid stops" (10016) means when violated.
     min_stop_distance = max(info.trade_stops_level, info.trade_freeze_level, 1) * info.point
 
-    atr_estimate = signal_meta.get("atr", equity * 0.002)  # fallback if not present
+    # signal_meta is shaped {"reason":..., "votes":..., "meta": {...}} by every
+    # caller — the real ATR value (when available) lives in meta["atr"], not
+    # at the top level. Previously this looked in the wrong place and silently
+    # fell back to a tiny equity-based guess every single time.
+    atr_estimate = (signal_meta.get("meta") or {}).get("atr") or (equity * 0.002)
     stop_distance = max(atr_estimate * 1.5, min_stop_distance * 1.5)  # safety margin above minimum
     target_distance = max(atr_estimate * 2.5, min_stop_distance * 2.5)
 

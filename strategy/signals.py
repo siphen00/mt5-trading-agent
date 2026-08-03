@@ -182,6 +182,8 @@ def build_signal(df: pd.DataFrame, fast: int = 9, slow: int = 21) -> Signal:
     """
     ema_dir, ema_meta = ema_cross_signal(df, fast, slow)
     smc_dir, smc_meta = smc_signal(df)
+    current_atr = atr(df, 14).iloc[-1]
+    current_atr = float(current_atr) if pd.notna(current_atr) else None
 
     votes = {"ema": ema_dir, "smc": smc_dir}
     long_votes = sum(1 for v in votes.values() if v == "long")
@@ -202,5 +204,5 @@ def build_signal(df: pd.DataFrame, fast: int = 9, slow: int = 21) -> Signal:
         votes=votes,
         vote_count=max(long_votes, short_votes),
         reason=reason,
-        meta={**ema_meta, **smc_meta, "atr_ok": atr_filter_ok(df)},
+        meta={**ema_meta, **smc_meta, "atr_ok": atr_filter_ok(df), "atr": current_atr},
     )
