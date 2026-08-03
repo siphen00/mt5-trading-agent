@@ -72,6 +72,21 @@ def read_status() -> dict:
 
 def get_candles(symbol: str, timeframe_str: str, count: int = 200) -> pd.DataFrame:
     tf = TIMEFRAME_MAP[timeframe_str]
+
+    info = mt5.symbol_info(symbol)
+    if info is None:
+        raise RuntimeError(
+            f"Symbol '{symbol}' not found on this broker. Check the exact name in "
+            f"MT5's Market Watch (right-click -> Symbols, search 'BTC') and update "
+            f"SYMBOL in connector/config.py — brokers often use suffixes like "
+            f"'BTCUSDm' or 'BTCUSD.m' rather than plain 'BTCUSD'."
+        )
+    if not info.visible:
+        # Symbol exists but isn't active in Market Watch yet — copy_rates_from_pos
+        # can silently fail until it's explicitly selected.
+        if not mt5.symbol_select(symbol, True):
+            raise RuntimeError(f"Could not add '{symbol}' to Market Watch: {mt5.last_error()}")
+
     rates = mt5.copy_rates_from_pos(symbol, tf, 0, count)
     if rates is None or len(rates) == 0:
         raise RuntimeError(f"No candle data returned for {symbol} {timeframe_str}: {mt5.last_error()}")
