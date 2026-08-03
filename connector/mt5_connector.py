@@ -196,6 +196,28 @@ def write_strategy_state(state: dict):
         json.dump(state, f, indent=2)
 
 
+def write_candle_snapshot(timeframe: str, df: pd.DataFrame, keep: int = 150):
+    """
+    Exports recent OHLC candles so the dashboard can render an execution chart
+    (your actual bot's candles, with trade markers), separate from the
+    TradingView widget which shows a public market feed instead of your
+    broker's private quotes.
+    """
+    recent = df.tail(keep)
+    candles = [
+        {
+            "time": int(row["time"]),  # MT5 gives unix seconds already
+            "open": float(row["open"]),
+            "high": float(row["high"]),
+            "low": float(row["low"]),
+            "close": float(row["close"]),
+        }
+        for _, row in recent.iterrows()
+    ]
+    with open(f"{config.REPO_PATH}/data/candles_{timeframe}.json", "w") as f:
+        json.dump(candles, f)
+
+
 def run_cycle():
     status = read_status()
     if status.get("power") != "on":
@@ -206,6 +228,7 @@ def run_cycle():
 
     for tf in config.TIMEFRAMES:
         df = get_candles(config.SYMBOL, tf)
+        write_candle_snapshot(tf, df)
         atr_ok = atr_filter_ok(df, config.ATR_MIN_MULTIPLIER)
         signal = build_signal(df, config.EMA_FAST, config.EMA_SLOW)
 
@@ -242,7 +265,8 @@ def run_cycle():
     write_strategy_state(state_snapshot)
     update_equity_snapshot()
     commit_and_push(
-        ["data/trades.json", "data/equity.json", "data/raw_trade_log.jsonl", "data/strategy_state.json"],
+        ["data/trades.json", "data/equity.json", "data/raw_trade_log.jsonl", "data/strategy_state.json",
+         *[f"data/candles_{tf}.json" for tf in config.TIMEFRAMES]],
         f"Trade sync {datetime.now(timezone.utc).isoformat()}",
     )
 

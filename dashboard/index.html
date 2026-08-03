@@ -96,6 +96,22 @@
     <div class="card"><div class="stat-label">Max drawdown</div><div class="stat-val" id="maxDD">—</div><div class="stat-sub">since start</div></div>
   </div>
 
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-title">Live market <b>BTC/USDT · Binance feed via TradingView</b></div>
+    <div id="tv_chart" style="height:360px;"></div>
+  </div>
+
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-title">
+      <span>Execution chart <b>your bot's actual candles + trade markers</b></span>
+      <span>
+        <button class="settings-btn" id="execTf5" style="margin-right:6px;">5m</button>
+        <button class="settings-btn" id="execTf15">15m</button>
+      </span>
+    </div>
+    <div id="exec_chart" style="height:360px;"></div>
+  </div>
+
   <div class="main">
     <div class="panel">
       <div class="panel-title">Equity curve <b>full history</b></div>
@@ -132,6 +148,26 @@
   <button id="saveSettings">Save</button>
 </dialog>
 
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<script src="https://s3.tradingview.com/tv.js"></script>
+<script>
+new TradingView.widget({
+  autosize: true,
+  symbol: "BINANCE:BTCUSDT",
+  interval: "5",
+  timezone: "Etc/UTC",
+  theme: "dark",
+  style: "1",
+  locale: "en",
+  toolbar_bg: "#0D121A",
+  enable_publishing: false,
+  hide_top_toolbar: false,
+  save_image: false,
+  backgroundColor: "rgba(13,18,26,1)",
+  gridColor: "rgba(255,255,255,0.06)",
+  container_id: "tv_chart",
+});
+</script>
 <script>
 const LS = {
   owner: localStorage.getItem('apex_owner') || '',
@@ -155,6 +191,7 @@ document.getElementById('saveSettings').onclick = () => {
   localStorage.setItem('apex_token', LS.token);
   dialog.close();
   loadAll();
+  loadExecChart();
 };
 
 function rawUrl(path){
@@ -174,6 +211,66 @@ function fmtMoney(n){ return (n<0?'-':'') + '$' + Math.abs(n).toLocaleString(und
 function fmtPct(n){ return (n>=0?'+':'') + n.toFixed(2) + '%'; }
 
 let equityHistory = [];
+
+// --- Execution chart: your bot's actual candles + trade entry/exit markers ---
+let execTimeframe = 'M5';
+let execChart = null, execSeries = null;
+
+function initExecChart(){
+  const el = document.getElementById('exec_chart');
+  execChart = LightweightCharts.createChart(el, {
+    layout: { background: { color: 'transparent' }, textColor: '#8A93A6', fontFamily: 'IBM Plex Mono, monospace' },
+    grid: { vertLines: { color: 'rgba(255,255,255,0.04)' }, horzLines: { color: 'rgba(255,255,255,0.04)' } },
+    timeScale: { timeVisible: true, secondsVisible: false, borderColor: 'rgba(255,255,255,0.07)' },
+    rightPriceScale: { borderColor: 'rgba(255,255,255,0.07)' },
+    width: el.clientWidth, height: 360,
+  });
+  execSeries = execChart.addCandlestickSeries({
+    upColor: '#00E5A0', downColor: '#FF4D6A',
+    borderUpColor: '#00E5A0', borderDownColor: '#FF4D6A',
+    wickUpColor: '#00E5A0', wickDownColor: '#FF4D6A',
+  });
+  new ResizeObserver(entries => {
+    for (const entry of entries) execChart.applyOptions({ width: entry.contentRect.width });
+  }).observe(el);
+}
+
+async function loadExecChart(){
+  const candles = await fetchJson(`data/candles_${execTimeframe}.json`, []);
+  const trades = await fetchJson('data/trades.json', []);
+  if(!execSeries || !candles.length) return;
+
+  execSeries.setData(candles.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })));
+
+  const relevant = trades.filter(t => t.timeframe === execTimeframe);
+  const markers = [];
+  relevant.forEach(t => {
+    if(t.time){
+      markers.push({
+        time: Math.floor(new Date(t.time).getTime() / 1000),
+        position: t.direction === 'long' ? 'belowBar' : 'aboveBar',
+        color: t.direction === 'long' ? '#00E5A0' : '#FF4D6A',
+        shape: t.direction === 'long' ? 'arrowUp' : 'arrowDown',
+        text: `${t.direction === 'long' ? 'BUY' : 'SELL'} ${t.lots ?? ''}`,
+      });
+    }
+    if(t.exit_time){
+      markers.push({
+        time: Math.floor(new Date(t.exit_time).getTime() / 1000),
+        position: 'inBar',
+        color: (t.pnl || 0) >= 0 ? '#00E5A0' : '#FF4D6A',
+        shape: 'circle',
+        text: `EXIT ${t.pnl != null ? (t.pnl>=0?'+':'') + t.pnl.toFixed(2) : ''}`,
+      });
+    }
+  });
+  markers.sort((a,b) => a.time - b.time);
+  execSeries.setMarkers(markers);
+}
+
+document.getElementById('execTf5').onclick = () => { execTimeframe = 'M5'; loadExecChart(); };
+document.getElementById('execTf15').onclick = () => { execTimeframe = 'M15'; loadExecChart(); };
+
 
 function drawChart(){
   const c = document.getElementById('chart'), ctx = c.getContext('2d');
@@ -374,8 +471,11 @@ async function loadAll(){
 }
 
 window.addEventListener('resize', drawChart);
+initExecChart();
 loadAll();
+loadExecChart();
 setInterval(loadAll, 30000); // refresh every 30s
+setInterval(loadExecChart, 30000);
 </script>
 </body>
 </html>

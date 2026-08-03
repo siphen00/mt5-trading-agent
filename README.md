@@ -70,6 +70,25 @@ Once Pages is live (Settings → Pages shows the URL), open it and click
   on/off toggle to work from the dashboard. Stored in your browser's
   localStorage only, never committed or sent anywhere but GitHub's API.
 
+## Live charts
+
+The dashboard now has two chart panels:
+- **Live market** — a free TradingView widget showing real-time BTC/USDT
+  from Binance's public feed. This is *general market context*, not your
+  broker's exact quotes — TradingView's free widget can't access private
+  broker feeds like Exness's.
+- **Execution chart** — your bot's own M5/M15 candles (exported by the
+  connector every cycle to `data/candles_M5.json` / `data/candles_M15.json`),
+  with entry/exit markers plotted exactly where trades fired. Toggle between
+  5m and 15m with the buttons in the panel header.
+
+**Known gap:** the connector currently only records trades as `status: "open"`
+— there's no position-close monitor yet, so `exit`, `exit_time`, and `pnl`
+never get filled in. That means win rate, closed-trade P&L, and the
+execution chart's exit markers won't show real numbers until that's built.
+Worth doing next — happy to add a loop that polls open MT5 positions and
+updates the trade record when one closes.
+
 ## Demo → live checklist
 
 Don't flip `mode` to `live` on a whim. Before doing it, you want at minimum:
