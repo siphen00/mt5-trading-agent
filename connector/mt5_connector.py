@@ -221,6 +221,7 @@ def write_candle_snapshot(timeframe: str, df: pd.DataFrame, keep: int = 150):
 def run_cycle():
     status = read_status()
     if status.get("power") != "on":
+        print(f"[connector] {datetime.now(timezone.utc).strftime('%H:%M:%S')} — power is OFF, idling")
         return  # agent is paused from the dashboard — do nothing
 
     open_positions = mt5.positions_get(symbol=config.SYMBOL) or []
@@ -264,11 +265,14 @@ def run_cycle():
 
     write_strategy_state(state_snapshot)
     update_equity_snapshot()
-    commit_and_push(
+    pushed = commit_and_push(
         ["data/trades.json", "data/equity.json", "data/raw_trade_log.jsonl", "data/strategy_state.json",
          *[f"data/candles_{tf}.json" for tf in config.TIMEFRAMES]],
         f"Trade sync {datetime.now(timezone.utc).isoformat()}",
     )
+    summary = " | ".join(f"{tf}: {s['direction']} ({s['reason']})" for tf, s in state_snapshot.items())
+    sync_status = "synced" if pushed else "SYNC FAILED — see git_sync errors above"
+    print(f"[connector] {datetime.now(timezone.utc).strftime('%H:%M:%S')} — {summary} — {sync_status}")
 
 
 def main():
