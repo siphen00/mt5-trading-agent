@@ -171,7 +171,7 @@ def atr_filter_ok(df: pd.DataFrame, min_multiplier: float = 1.0, period: int = 2
     average = a.rolling(period).mean().iloc[-1]
     if pd.isna(current) or pd.isna(average):
         return True  # not enough data yet, don't block
-    return current >= average * min_multiplier
+    return bool(current >= average * min_multiplier)
 
 
 def build_signal(df: pd.DataFrame, fast: int = 9, slow: int = 21) -> Signal:
