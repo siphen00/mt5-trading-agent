@@ -305,13 +305,25 @@ async function refreshStatusDisplay(){
 
 async function togglePower(){
   if(!LS.token){ alert('Add a GitHub token in "Set repo / token" to control the agent — read-only view works without one.'); return; }
-  const current = await refreshStatusDisplay();
-  const newPower = current.power === 'on' ? 'off' : 'on';
 
-  // Get current file SHA (required by GitHub Contents API for updates)
+  // Read the CURRENT committed state straight from the GitHub API — NOT the
+  // raw.githubusercontent.com CDN, which can lag behind your last commit by
+  // up to a minute and would otherwise make every click see stale data.
   const getRes = await fetch(`https://api.github.com/repos/${LS.owner}/${LS.repo}/contents/control/status.json`,
     { headers: { Authorization: `token ${LS.token}` } });
+
+  if(!getRes.ok){
+    alert(`Could not read current status (HTTP ${getRes.status}) — check owner/repo/token.`);
+    return;
+  }
+
   const getData = await getRes.json();
+  let current = { power: 'off', mode: 'demo' };
+  try{
+    current = JSON.parse(atob(getData.content));
+  }catch(e){ /* fall back to defaults above */ }
+
+  const newPower = current.power === 'on' ? 'off' : 'on';
 
   const newContent = JSON.stringify({
     power: newPower, mode: current.mode || 'demo',
@@ -328,7 +340,13 @@ async function togglePower(){
     }),
   });
 
-  if(putRes.ok){ setTimeout(refreshStatusDisplay, 1500); }
+  if(putRes.ok){
+    // Update the button immediately from what we just wrote — don't wait on
+    // the cached raw file to catch up.
+    const btn = document.getElementById('powerBtn');
+    btn.className = 'power-btn' + (newPower === 'on' ? '' : ' off');
+    btn.innerHTML = `<span class="dot"></span>AGENT ${newPower === 'on' ? 'LIVE' : 'OFF'}`;
+  }
   else{ alert('Could not update status — check your token has Contents: read/write on this repo.'); }
 }
 document.getElementById('powerBtn').onclick = togglePower;
