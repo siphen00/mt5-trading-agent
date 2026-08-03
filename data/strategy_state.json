@@ -1,0 +1,21 @@
+{
+  "M5": {
+    "direction": "none",
+    "votes": {
+      "ema": "none",
+      "smc": "none"
+    },
+    "reason": "no confluence",
+    "atr_ok": true
+  },
+  "M15": {
+    "direction": "none",
+    "votes": {
+      "ema": "none",
+      "smc": "none"
+    },
+    "reason": "no confluence",
+    "atr_ok": true
+  },
+  "updated_at": "2026-08-03T12:03:51.898131+00:00"
+}
