@@ -1,21 +1,21 @@
 {
   "M5": {
-    "direction": "none",
+    "direction": "short",
     "votes": {
       "ema": "none",
-      "smc": "none"
+      "smc": "short"
     },
-    "reason": "no confluence",
+    "reason": "SMC short (bos_bearish/none)",
     "atr_ok": false
   },
   "M15": {
-    "direction": "none",
+    "direction": "short",
     "votes": {
       "ema": "none",
-      "smc": "none"
+      "smc": "short"
     },
-    "reason": "no confluence",
+    "reason": "SMC short (bos_bearish/none)",
     "atr_ok": false
   },
-  "updated_at": "2026-08-04T10:15:01.992900+00:00"
+  "updated_at": "2026-08-04T10:15:22.282218+00:00"
 }
