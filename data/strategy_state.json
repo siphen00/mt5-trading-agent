@@ -12,10 +12,11 @@
     "direction": "long",
     "votes": {
       "ema": "long",
-      "smc": "none"
+      "smc": "none",
+      "ollama": "none"
     },
     "reason": "EMA long",
     "atr_ok": true
   },
-  "updated_at": "2026-08-04T11:22:27.182539+00:00"
+  "updated_at": "2026-08-04T11:22:54.197120+00:00"
 }
