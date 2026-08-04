@@ -13,10 +13,10 @@
     "votes": {
       "ema": "long",
       "smc": "none",
-      "ollama": "none"
+      "ollama": "long"
     },
     "reason": "EMA long",
     "atr_ok": true
   },
-  "updated_at": "2026-08-04T11:23:16.424442+00:00"
+  "updated_at": "2026-08-04T11:23:39.983932+00:00"
 }

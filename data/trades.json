@@ -60,5 +60,34 @@
       "atr": 66.99071428571447
     },
     "status": "open"
+  },
+  {
+    "ticket": 3041120208,
+    "time": "2026-08-04T11:23:39.965399+00:00",
+    "symbol": "BTCUSDm",
+    "timeframe": "M15",
+    "direction": "long",
+    "entry": 63718.11,
+    "stop": 63546.17,
+    "target": 64004.68,
+    "lots": 0.01,
+    "reason": "EMA long",
+    "votes": {
+      "ema": "long",
+      "smc": "none",
+      "ollama": "long"
+    },
+    "meta": {
+      "ema_fast": 63602.3,
+      "ema_slow": 63596.17,
+      "bos": "none",
+      "order_block": "none",
+      "sweep": "sweep_high",
+      "fvg": "none",
+      "level": 63773.35,
+      "atr_ok": true,
+      "atr": 114.62857142857216
+    },
+    "status": "open"
   }
 ]
