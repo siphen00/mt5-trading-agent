@@ -1,15 +1,5 @@
 {
   "M5": {
-    "direction": "long",
-    "votes": {
-      "ema": "none",
-      "smc": "long",
-      "ollama": "none"
-    },
-    "reason": "SMC long (bos_bullish/ob_bullish_retest)",
-    "atr_ok": true
-  },
-  "M15": {
     "direction": "none",
     "votes": {
       "ema": "none",
@@ -18,5 +8,15 @@
     "reason": "no confluence",
     "atr_ok": true
   },
-  "updated_at": "2026-08-04T14:40:36.322691+00:00"
+  "M15": {
+    "direction": "short",
+    "votes": {
+      "ema": "none",
+      "smc": "short",
+      "ollama": "none"
+    },
+    "reason": "SMC short (none/ob_bearish_retest)",
+    "atr_ok": true
+  },
+  "updated_at": "2026-08-04T14:41:03.486693+00:00"
 }
