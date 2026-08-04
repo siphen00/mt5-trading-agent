@@ -89,5 +89,38 @@
       "atr": 114.62857142857216
     },
     "status": "open"
+  },
+  {
+    "ticket": 3042783174,
+    "time": "2026-08-04T15:49:25.595328+00:00",
+    "symbol": "BTCUSDm",
+    "timeframe": "M15",
+    "direction": "short",
+    "entry": 64086.57,
+    "stop": 64445.51,
+    "target": 63488.34,
+    "lots": 0.01,
+    "reason": "SMC short (none/ob_bearish_retest)",
+    "votes": {
+      "ema": "none",
+      "smc": "short",
+      "ollama": "short"
+    },
+    "meta": {
+      "ema_fast": 63975.19,
+      "ema_slow": 63868.11,
+      "bos": "none",
+      "order_block": "ob_bearish_retest",
+      "sweep": "sweep_high",
+      "fvg": "fvg_bullish",
+      "ob_low": 63739.86,
+      "ob_high": 64031.2,
+      "level": 64164.6,
+      "gap_low": 64012.93,
+      "gap_high": 64014.48,
+      "atr_ok": true,
+      "atr": 239.29285714285652
+    },
+    "status": "open"
   }
 ]
