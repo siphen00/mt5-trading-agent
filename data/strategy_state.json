@@ -1,11 +1,12 @@
 {
   "M5": {
-    "direction": "none",
+    "direction": "long",
     "votes": {
       "ema": "none",
-      "smc": "none"
+      "smc": "long",
+      "ollama": "none"
     },
-    "reason": "no confluence",
+    "reason": "SMC long (bos_bullish/ob_bullish_retest)",
     "atr_ok": true
   },
   "M15": {
@@ -17,5 +18,5 @@
     "reason": "no confluence",
     "atr_ok": true
   },
-  "updated_at": "2026-08-04T14:40:09.990979+00:00"
+  "updated_at": "2026-08-04T14:40:36.322691+00:00"
 }
