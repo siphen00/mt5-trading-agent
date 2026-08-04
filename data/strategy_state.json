@@ -9,13 +9,13 @@
     "atr_ok": false
   },
   "M15": {
-    "direction": "short",
+    "direction": "none",
     "votes": {
       "ema": "none",
-      "smc": "short"
+      "smc": "none"
     },
-    "reason": "SMC short (none/ob_bearish_retest)",
+    "reason": "no confluence",
     "atr_ok": true
   },
-  "updated_at": "2026-08-04T15:59:56.981763+00:00"
+  "updated_at": "2026-08-04T16:00:15.879144+00:00"
 }
