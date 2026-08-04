@@ -5,7 +5,7 @@
       "ema": "long",
       "smc": "long"
     },
-    "reason": "EMA long, SMC long (bos_bullish/none)",
+    "reason": "EMA long, SMC long (bos_bullish/ob_bullish_retest)",
     "atr_ok": true
   },
   "M15": {
@@ -17,5 +17,5 @@
     "reason": "no confluence",
     "atr_ok": true
   },
-  "updated_at": "2026-08-04T10:46:50.055243+00:00"
+  "updated_at": "2026-08-04T10:47:09.682762+00:00"
 }
