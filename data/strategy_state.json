@@ -6,7 +6,7 @@
       "smc": "long",
       "ollama": "none"
     },
-    "reason": "SMC long (bos_bullish/ob_bullish_retest)",
+    "reason": "SMC long (bos_bullish/none)",
     "atr_ok": true
   },
   "M15": {
@@ -18,5 +18,5 @@
     "reason": "no confluence",
     "atr_ok": true
   },
-  "updated_at": "2026-08-04T12:38:27.680815+00:00"
+  "updated_at": "2026-08-04T12:38:58.506943+00:00"
 }
