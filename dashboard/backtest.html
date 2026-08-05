@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>APEX — Backtest Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="brand">
+      <div class="brand-mark">A</div>
+      <div><div class="brand-name">APEX TERMINAL</div><div class="brand-sub">Backtest Lab</div></div>
+    </div>
+    <button class="settings-btn" id="settingsBtn">Set repo / token</button>
+  </div>
+  <div class="header-rule"></div>
+
+  <div class="nav">
+    <a href="index.html">Live dashboard</a>
+    <a href="backtest.html" class="active">Backtest lab</a>
+  </div>
+
+  <div class="panel accent-amber" style="margin-bottom:16px;">
+    <div class="panel-title">
+      <span>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3v18M4 3h13l3 5-3 5H4z"/></svg>
+        Run a backtest
+      </span>
+      <span id="dataStatus" class="stat-sub">Checking for exported data…</span>
+    </div>
+    <div class="bt-form">
+      <div class="bt-field">
+        <label>Strategy</label>
+        <select id="btStrategy"></select>
+      </div>
+      <div class="bt-field">
+        <label>Timeframe</label>
+        <select id="btTimeframe">
+          <option value="M5">5 minute</option>
+          <option value="M15">15 minute</option>
+        </select>
+      </div>
+      <div class="bt-field">
+        <label>Session filter</label>
+        <select id="btSession"></select>
+      </div>
+      <div class="bt-field">
+        <label>Ollama confirm required</label>
+        <select id="btOllama">
+          <option value="off">Off (strategy signal only)</option>
+          <option value="on" disabled>On — not available in browser backtests</option>
+        </select>
+      </div>
+    </div>
+    <button class="run-btn" id="runBtn">Run backtest</button>
+    <span class="stat-sub" id="runNote" style="margin-left:12px;"></span>
+  </div>
+
+  <div id="resultsPanel" style="display:none;">
+    <div class="bt-results">
+      <div class="card"><div class="stat-label">Net P&L</div><div class="stat-val" id="rNetPnl">—</div><div class="stat-sub" id="rNetPnlPct"></div></div>
+      <div class="card"><div class="stat-label">Win rate</div><div class="stat-val" id="rWinRate">—</div><div class="stat-sub" id="rWinCount"></div></div>
+      <div class="card"><div class="stat-label">Profit factor</div><div class="stat-val" id="rPF">—</div><div class="stat-sub">gross win ÷ gross loss</div></div>
+      <div class="card"><div class="stat-label">Max drawdown</div><div class="stat-val" id="rMaxDD">—</div><div class="stat-sub">peak to trough</div></div>
+      <div class="card"><div class="stat-label">Total trades</div><div class="stat-val" id="rTotalTrades">—</div><div class="stat-sub" id="rAvgTrade"></div></div>
+    </div>
+
+    <div class="panel accent-green" style="margin-bottom:16px;">
+      <div class="panel-title"><span>Equity curve <b>this backtest run</b></span></div>
+      <canvas id="btChart" style="height:200px;"></canvas>
+    </div>
+
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-title"><span>Trade log <b id="tradeLogCount"></b></span></div>
+      <div class="bt-trades-table">
+        <table>
+          <thead><tr><th>#</th><th>Time</th><th>Side</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Reason</th></tr></thead>
+          <tbody id="btTradeRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel accent-green">
+      <div class="panel-title"><span>Promote to demo</span></div>
+      <p class="stat-sub" style="margin-bottom:12px; line-height:1.6;">
+        Happy with these results? This sets the active strategy and session on your
+        live dashboard to exactly what you just tested — same mechanism as the
+        strategy control panel, just triggered from here. Your connector will start
+        using it on its next cycle.
+      </p>
+      <button class="push-btn" id="pushBtn">Push this strategy + session to demo →</button>
+      <span class="stat-sub" id="pushNote" style="margin-left:12px;"></span>
+    </div>
+  </div>
+
+  <div class="panel" id="emptyState">
+    <div class="empty">
+      Run a backtest above to see results here.<br><br>
+      No historical data exported yet? On the machine running your connector:<br>
+      <code style="color:var(--text2);">python -m connector.export_backtest_data</code>
+    </div>
+  </div>
+</div>
+
+<dialog id="settingsDialog">
+  <div style="font-family:var(--mono); font-size:13px; margin-bottom:6px;">Connect to your repo</div>
+  <div style="font-size:12px; color:var(--text2); margin-bottom:10px;">Same connection as the live dashboard — saved settings carry over automatically.</div>
+  <input id="ownerInput" placeholder="github username, e.g. siphen00">
+  <input id="repoInput" placeholder="repo name, e.g. mt5-trading-agent">
+  <input id="tokenInput" type="password" placeholder="fine-grained PAT (needed to push to demo)">
+  <button id="saveSettings">Save</button>
+</dialog>
+
+<script>
+const LS = {
+  owner: localStorage.getItem('apex_owner') || '',
+  repo: localStorage.getItem('apex_repo') || '',
+  token: localStorage.getItem('apex_token') || '',
+};
+
+const dialog = document.getElementById('settingsDialog');
+document.getElementById('settingsBtn').onclick = () => {
+  document.getElementById('ownerInput').value = LS.owner;
+  document.getElementById('repoInput').value = LS.repo;
+  document.getElementById('tokenInput').value = LS.token;
+  dialog.showModal();
+};
+document.getElementById('saveSettings').onclick = () => {
+  LS.owner = document.getElementById('ownerInput').value.trim();
+  LS.repo = document.getElementById('repoInput').value.trim();
+  LS.token = document.getElementById('tokenInput').value.trim();
+  localStorage.setItem('apex_owner', LS.owner);
+  localStorage.setItem('apex_repo', LS.repo);
+  localStorage.setItem('apex_token', LS.token);
+  dialog.close();
+  checkDataAvailable();
+};
+
+function rawUrl(path){ return `https://raw.githubusercontent.com/${LS.owner}/${LS.repo}/main/${path}?t=${Date.now()}`; }
+
+async function fetchJson(path, fallback){
+  if(!LS.owner || !LS.repo) return fallback;
+  if(LS.token){
+    try{
+      const res = await fetch(`https://api.github.com/repos/${LS.owner}/${LS.repo}/contents/${path}`,
+        { headers: { Authorization: `token ${LS.token}` } });
+      if(!res.ok) return fallback;
+      const data = await res.json();
+      return JSON.parse(decodeURIComponent(escape(atob(data.content))));
+    }catch(e){ return fallback; }
+  }
+  try{
+    const res = await fetch(rawUrl(path));
+    if(!res.ok) return fallback;
+    return await res.json();
+  }catch(e){ return fallback; }
+}
+
+// ============================================================
+// Strategy engine — JS reimplementation mirroring strategy/strategies.py.
+// This is a faithful port of the same logic, not a different approximation,
+// but it IS a separate codebase from the Python original — if you ever
+// change the Python strategies, this file needs the matching update or the
+// backtest will silently test something the live bot no longer runs.
+// ============================================================
+
+function ema(values, span){
+  const k = 2/(span+1);
+  const out = new Array(values.length).fill(null);
+  let prev = values[0];
+  out[0] = prev;
+  for(let i=1;i<values.length;i++){ prev = values[i]*k + prev*(1-k); out[i]=prev; }
+  return out;
+}
+function sma(values, period){
+  const out = new Array(values.length).fill(null);
+  for(let i=period-1;i<values.length;i++){
+    let s=0; for(let j=i-period+1;j<=i;j++) s+=values[j];
+    out[i]=s/period;
+  }
+  return out;
+}
+function stddev(values, period, meanArr){
+  const out = new Array(values.length).fill(null);
+  for(let i=period-1;i<values.length;i++){
+    let s=0; for(let j=i-period+1;j<=i;j++) s+=Math.pow(values[j]-meanArr[i],2);
+    out[i]=Math.sqrt(s/period);
+  }
+  return out;
+}
+function atrSeries(candles, period=14){
+  const tr = candles.map((c,i)=>{
+    if(i===0) return c.high-c.low;
+    return Math.max(c.high-c.low, Math.abs(c.high-candles[i-1].close), Math.abs(c.low-candles[i-1].close));
+  });
+  return sma(tr, period);
+}
+function rsiSeries(closes, period=14){
+  const out = new Array(closes.length).fill(null);
+  let avgGain=0, avgLoss=0;
+  for(let i=1;i<closes.length;i++){
+    const delta = closes[i]-closes[i-1];
+    const gain = Math.max(delta,0), loss = Math.max(-delta,0);
+    if(i<=period){ avgGain += gain/period; avgLoss += loss/period; if(i===period){ out[i]=100-100/(1+(avgGain/(avgLoss||1e-9))); } }
+    else{
+      avgGain = (avgGain*(period-1)+gain)/period;
+      avgLoss = (avgLoss*(period-1)+loss)/period;
+      out[i] = 100 - 100/(1+(avgGain/(avgLoss||1e-9)));
+    }
+  }
+  return out;
+}
+
+// Each strategy: given full candle array and index i (must have enough
+// history behind it), return {direction, reason, atr} or null direction 'none'.
+const STRATEGIES_JS = {
+  ema_smc: (candles, i, ctx) => {
+    const closes = candles.map(c=>c.close);
+    const fastArr = ctx.ema9 || (ctx.ema9 = ema(closes,9));
+    const slowArr = ctx.ema21 || (ctx.ema21 = ema(closes,21));
+    if(i<22) return {direction:'none', reason:'warming up'};
+    const prevDiff = fastArr[i-1]-slowArr[i-1], currDiff = fastArr[i]-slowArr[i];
+    let direction='none';
+    if(prevDiff<=0 && currDiff>0) direction='long';
+    else if(prevDiff>=0 && currDiff<0) direction='short';
+    // simplified structure confirmation: last 20-candle swing break, matching signals.py's BOS check
+    const window = candles.slice(Math.max(0,i-20), i);
+    const swingHigh = Math.max(...window.slice(0,-1).map(c=>c.high));
+    const swingLow = Math.min(...window.slice(0,-1).map(c=>c.low));
+    const close = candles[i].close;
+    const bosBull = close > swingHigh, bosBear = close < swingLow;
+    if(direction==='long' && !bosBull) direction='none';
+    if(direction==='short' && !bosBear) direction='none';
+    return {direction, reason:`EMA+BOS ${direction}`};
+  },
+  vwap_reversion: (candles, i, ctx, window=50, bandMult=2.0) => {
+    if(i<window+1) return {direction:'none', reason:'warming up'};
+    const slice = candles.slice(i-window+1, i+1);
+    const typical = slice.map(c=>(c.high+c.low+c.close)/3);
+    const vol = slice.map(c=>c.volume);
+    const volSum = vol.reduce((a,b)=>a+b,0) || 1;
+    const vwap = typical.reduce((a,t,idx)=>a+t*vol[idx],0)/volSum;
+    const dev = Math.sqrt(typical.reduce((a,t,idx)=>a+Math.pow((t-vwap),2),0)/window);
+    const upper = vwap+dev*bandMult, lower = vwap-dev*bandMult;
+    const prevLow = candles[i-1].low, prevHigh = candles[i-1].high, close = candles[i].close;
+    let direction='none';
+    if(prevLow<lower && close>lower) direction='long';
+    else if(prevHigh>upper && close<upper) direction='short';
+    return {direction, reason:`VWAP reversion ${direction}`};
+  },
+  bb_squeeze: (candles, i, ctx, period=20, stdMult=2.0, lookback=60) => {
+    if(i<period+lookback) return {direction:'none', reason:'warming up'};
+    const closes = candles.map(c=>c.close);
+    const midArr = ctx.bbMid || (ctx.bbMid = sma(closes,period));
+    const sdArr = ctx.bbStd || (ctx.bbStd = stddev(closes,period,midArr));
+    const mid = midArr[i], sd = sdArr[i];
+    if(mid==null||sd==null) return {direction:'none', reason:'warming up'};
+    const upper = mid+sd*stdMult, lower = mid-sd*stdMult;
+    const width = (upper-lower)/mid;
+    const widths = [];
+    for(let j=i-lookback+1;j<=i;j++){ if(midArr[j]!=null && sdArr[j]!=null){ const u=midArr[j]+sdArr[j]*stdMult, l=midArr[j]-sdArr[j]*stdMult; widths.push((u-l)/midArr[j]); } }
+    widths.sort((a,b)=>a-b);
+    const q20 = widths[Math.floor(widths.length*0.2)] ?? width;
+    const squeeze = width<=q20;
+    const body = Math.abs(candles[i].close-candles[i].open);
+    let avgBody=0; for(let j=i-19;j<=i;j++) avgBody += Math.abs(candles[j].close-candles[j].open); avgBody/=20;
+    const strongBody = body>avgBody*1.2;
+    let direction='none';
+    if(squeeze && strongBody){
+      if(candles[i].close>upper) direction='long';
+      else if(candles[i].close<lower) direction='short';
+    }
+    return {direction, reason:`BB squeeze breakout ${direction}`};
+  },
+  rsi_divergence: (candles, i, ctx, period=14, lookback=20) => {
+    if(i<period+lookback) return {direction:'none', reason:'warming up'};
+    const closes = candles.map(c=>c.close);
+    const rArr = ctx.rsi || (ctx.rsi = rsiSeries(closes,period));
+    const window = candles.slice(i-lookback+1, i+1);
+    const rWindow = rArr.slice(i-lookback+1, i+1);
+    let direction='none';
+    const lowsIdx = window.map((c,idx)=>[c.low,idx]).sort((a,b)=>a[0]-b[0]).slice(0,2).sort((a,b)=>a[1]-b[1]);
+    if(lowsIdx.length===2){
+      const [ , i1] = lowsIdx[0], [ , i2] = lowsIdx[1];
+      if(window[i2].low<window[i1].low && rWindow[i2]>rWindow[i1]) direction='long';
+    }
+    if(direction==='none'){
+      const highsIdx = window.map((c,idx)=>[c.high,idx]).sort((a,b)=>b[0]-a[0]).slice(0,2).sort((a,b)=>a[1]-b[1]);
+      if(highsIdx.length===2){
+        const [ , i1] = highsIdx[0], [ , i2] = highsIdx[1];
+        if(window[i2].high>window[i1].high && rWindow[i2]<rWindow[i1]) direction='short';
+      }
+    }
+    return {direction, reason:`RSI divergence ${direction}`};
+  },
+  orb_london: (candles, i, ctx) => orbSignal(candles, i, 7),
+  orb_new_york: (candles, i, ctx) => orbSignal(candles, i, 12),
+};
+
+function orbSignal(candles, i, sessionStartHour, rangeCandles=3){
+  const dt = new Date(candles[i].time*1000);
+  const today = dt.toISOString().slice(0,10);
+  const sessionStartMs = new Date(`${today}T${String(sessionStartHour).padStart(2,'0')}:00:00Z`).getTime();
+  let startIdx = -1;
+  for(let j=0;j<=i;j++){ if(candles[j].time*1000>=sessionStartMs){ startIdx=j; break; } }
+  if(startIdx===-1 || i-startIdx<rangeCandles) return {direction:'none', reason:'waiting for opening range'};
+  const rangeSlice = candles.slice(startIdx, startIdx+rangeCandles);
+  const rangeHigh = Math.max(...rangeSlice.map(c=>c.high)), rangeLow = Math.min(...rangeSlice.map(c=>c.low));
+  const close = candles[i].close;
+  // Only fire on the candle that FIRST crosses the range — matches the
+  // Python fix in strategy/strategies.py. Without this, every candle that
+  // stays beyond the range keeps re-firing the same breakout signal.
+  const prevClose = i-1>=startIdx ? candles[i-1].close : rangeSlice[rangeSlice.length-1].close;
+  let direction='none';
+  if(close>rangeHigh && prevClose<=rangeHigh) direction='long';
+  else if(close<rangeLow && prevClose>=rangeLow) direction='short';
+  return {direction, reason:`ORB breakout ${direction}`};
+}
+
+const SESSIONS_JS = {
+  '24h': {start:0, end:24}, 'asia': {start:0,end:9}, 'london': {start:7,end:16},
+  'new_york': {start:12,end:21}, 'london_ny_overlap': {start:12,end:16},
+};
+function inSession(sessionId, unixSeconds){
+  const s = SESSIONS_JS[sessionId] || SESSIONS_JS['24h'];
+  const hour = new Date(unixSeconds*1000).getUTCHours();
+  if(s.start<s.end) return hour>=s.start && hour<s.end;
+  return hour>=s.start || hour<s.end;
+}
+
+const STRATEGY_META = [
+  { id: 'ema_smc', name: 'EMA + SMC' }, { id: 'vwap_reversion', name: 'VWAP Reversion' },
+  { id: 'bb_squeeze', name: 'BB Squeeze' }, { id: 'rsi_divergence', name: 'RSI Divergence' },
+  { id: 'orb_london', name: 'ORB · London' }, { id: 'orb_new_york', name: 'ORB · New York' },
+];
+const SESSION_META = [
+  { id: '24h', name: '24/7 (no filter)' }, { id: 'asia', name: 'Asia' }, { id: 'london', name: 'London' },
+  { id: 'new_york', name: 'New York' }, { id: 'london_ny_overlap', name: 'London/NY Overlap' },
+];
+document.getElementById('btStrategy').innerHTML = STRATEGY_META.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+document.getElementById('btSession').innerHTML = SESSION_META.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+
+// ============================================================
+// Backtest runner
+// ============================================================
+let candleData = null;
+
+async function checkDataAvailable(){
+  const statusEl = document.getElementById('dataStatus');
+  const tf = document.getElementById('btTimeframe').value;
+  const data = await fetchJson(`data/backtest_${tf}.json`, null);
+  if(!data || !data.length){
+    statusEl.textContent = 'No exported data for this timeframe yet';
+    document.getElementById('runBtn').disabled = true;
+    return;
+  }
+  const first = new Date(data[0].time*1000), last = new Date(data[data.length-1].time*1000);
+  statusEl.textContent = `${data.length} candles · ${first.toLocaleDateString()} → ${last.toLocaleDateString()}`;
+  document.getElementById('runBtn').disabled = false;
+  candleData = data;
+}
+document.getElementById('btTimeframe').onchange = checkDataAvailable;
+
+function runBacktest(){
+  const strategyId = document.getElementById('btStrategy').value;
+  const sessionId = document.getElementById('btSession').value;
+  const stratFn = STRATEGIES_JS[strategyId];
+  if(!candleData || !candleData.length){ alert('No data loaded for this timeframe.'); return; }
+
+  const candles = candleData;
+  const atr14 = atrSeries(candles, 14);
+  const ctx = {};
+  const trades = [];
+  let equity = 1000; // normalized starting balance for backtest purposes
+  const equityCurve = [{time: candles[0].time, equity}];
+  let openTrade = null;
+
+  const minWarmup = 70;
+  for(let i=minWarmup;i<candles.length;i++){
+    const c = candles[i];
+
+    if(openTrade){
+      const hitStop = openTrade.direction==='long' ? c.low<=openTrade.stop : c.high>=openTrade.stop;
+      const hitTarget = openTrade.direction==='long' ? c.high>=openTrade.target : c.low<=openTrade.target;
+      if(hitStop || hitTarget){
+        const exitPrice = hitStop ? openTrade.stop : openTrade.target;
+        const pnl = (openTrade.direction==='long' ? (exitPrice-openTrade.entry) : (openTrade.entry-exitPrice)) * openTrade.units;
+        equity += pnl;
+        trades.push({...openTrade, exit:exitPrice, exitTime:c.time, pnl, outcome: hitTarget?'win':'loss'});
+        equityCurve.push({time:c.time, equity});
+        openTrade = null;
+      }
+    }
+
+    if(openTrade) continue;
+    if(sessionId!=='24h' && !inSession(sessionId, c.time)) continue;
+
+    const sig = stratFn(candles, i, ctx);
+    if(!sig || sig.direction==='none') continue;
+
+    const atrNow = atr14[i] || (equity*0.002);
+    const stopDist = atrNow*1.5, targetDist = atrNow*2.5;
+    const entry = c.close;
+    const stop = sig.direction==='long' ? entry-stopDist : entry+stopDist;
+    const target = sig.direction==='long' ? entry+targetDist : entry-targetDist;
+    const riskAmount = equity*0.005;
+    const units = riskAmount/stopDist;
+
+    openTrade = { direction:sig.direction, entry, stop, target, units, time:c.time, reason:sig.reason };
+  }
+
+  renderResults(trades, equityCurve);
+}
+
+function renderResults(trades, equityCurve){
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('resultsPanel').style.display = 'block';
+
+  const closed = trades;
+  const wins = closed.filter(t=>t.pnl>0);
+  const losses = closed.filter(t=>t.pnl<=0);
+  const netPnl = closed.reduce((s,t)=>s+t.pnl,0);
+  const grossWin = wins.reduce((s,t)=>s+t.pnl,0);
+  const grossLoss = Math.abs(losses.reduce((s,t)=>s+t.pnl,0));
+  const winRate = closed.length ? (wins.length/closed.length*100) : 0;
+  const pf = grossLoss>0 ? (grossWin/grossLoss) : (grossWin>0 ? Infinity : 0);
+
+  let peak=-Infinity, maxDD=0;
+  equityCurve.forEach(e=>{ peak=Math.max(peak,e.equity); maxDD=Math.min(maxDD, ((e.equity-peak)/peak)*100||0); });
+
+  document.getElementById('rNetPnl').textContent = (netPnl>=0?'+':'')+netPnl.toFixed(2);
+  document.getElementById('rNetPnl').className = 'stat-val ' + (netPnl>=0?'up':'down');
+  document.getElementById('rNetPnlPct').textContent = `${(netPnl/1000*100).toFixed(2)}% of starting equity`;
+  document.getElementById('rWinRate').textContent = winRate.toFixed(1)+'%';
+  document.getElementById('rWinCount').textContent = `${wins.length}W / ${losses.length}L`;
+  document.getElementById('rPF').textContent = isFinite(pf) ? pf.toFixed(2) : '∞';
+  document.getElementById('rMaxDD').textContent = maxDD.toFixed(1)+'%';
+  document.getElementById('rMaxDD').className = 'stat-val ' + (maxDD<0?'down':'');
+  document.getElementById('rTotalTrades').textContent = closed.length;
+  document.getElementById('rAvgTrade').textContent = closed.length ? `avg $${(netPnl/closed.length).toFixed(2)}` : '';
+
+  const c = document.getElementById('btChart'), ctx = c.getContext('2d');
+  const w = c.clientWidth, h = 200; c.width=w; c.height=h;
+  ctx.clearRect(0,0,w,h);
+  if(equityCurve.length>1){
+    const vals = equityCurve.map(e=>e.equity);
+    const min = Math.min(...vals), max = Math.max(...vals)||min+1;
+    const rising = vals[vals.length-1]>=vals[0];
+    const grad = ctx.createLinearGradient(0,0,0,h);
+    grad.addColorStop(0, rising?'rgba(0,229,160,0.18)':'rgba(255,77,106,0.18)');
+    grad.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.beginPath();
+    vals.forEach((v,i)=>{ const x=(i/(vals.length-1))*w; const y=h-((v-min)/(max-min||1))*h*0.85-h*0.05; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+    ctx.strokeStyle = rising?'#00E5A0':'#FF4D6A'; ctx.lineWidth=1.8; ctx.stroke();
+    ctx.lineTo(w,h); ctx.lineTo(0,h); ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+  }
+
+  document.getElementById('tradeLogCount').textContent = `${closed.length} trades`;
+  document.getElementById('btTradeRows').innerHTML = closed.slice().reverse().map((t,idx)=>`
+    <tr>
+      <td>${closed.length-idx}</td>
+      <td>${new Date(t.time*1000).toLocaleString()}</td>
+      <td>${t.direction}</td>
+      <td>${t.entry.toFixed(2)}</td>
+      <td>${t.exit.toFixed(2)}</td>
+      <td class="${t.pnl>0?'win':'loss'}">${t.pnl>=0?'+':''}${t.pnl.toFixed(2)}</td>
+      <td>${t.reason}</td>
+    </tr>`).join('') || '<tr><td colspan="7" class="empty">No trades in this backtest</td></tr>';
+
+  document.getElementById('pushBtn').onclick = () => pushToDemo();
+}
+
+async function pushToDemo(){
+  if(!LS.token){ alert('Add a GitHub token in "Set repo / token" to push to demo.'); return; }
+  const strategyId = document.getElementById('btStrategy').value;
+  const sessionId = document.getElementById('btSession').value;
+
+  const getRes = await fetch(`https://api.github.com/repos/${LS.owner}/${LS.repo}/contents/control/strategy_config.json`,
+    { headers: { Authorization: `token ${LS.token}` } });
+  if(!getRes.ok){ alert(`Could not read current config (HTTP ${getRes.status}).`); return; }
+  const getData = await getRes.json();
+
+  const newContent = JSON.stringify({
+    active_strategy: strategyId, active_session: sessionId,
+    updated_at: new Date().toISOString(), updated_by: 'backtest-lab',
+  }, null, 2);
+
+  const putRes = await fetch(`https://api.github.com/repos/${LS.owner}/${LS.repo}/contents/control/strategy_config.json`, {
+    method: 'PUT',
+    headers: { Authorization: `token ${LS.token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: `Backtest lab: promote ${strategyId} / ${sessionId} to demo`, content: btoa(newContent), sha: getData.sha }),
+  });
+
+  const note = document.getElementById('pushNote');
+  if(putRes.ok){ note.textContent = 'Pushed — your connector will pick this up on its next cycle.'; note.className='stat-sub up'; }
+  else{ note.textContent = 'Failed — check token has Contents: read/write.'; note.className='stat-sub down'; }
+}
+
+document.getElementById('runBtn').onclick = () => {
+  document.getElementById('runNote').textContent = 'Running…';
+  setTimeout(() => { runBacktest(); document.getElementById('runNote').textContent = ''; }, 10);
+};
+
+checkDataAvailable();
+</script>
+</body>
+</html>
