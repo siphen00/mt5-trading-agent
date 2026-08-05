@@ -30,7 +30,9 @@ except ImportError:
 
 from connector import config
 from connector.git_sync import commit_and_push
-from strategy.signals import build_signal, atr_filter_ok
+from strategy.signals import atr_filter_ok
+from strategy.strategies import STRATEGIES, DEFAULT_STRATEGY
+from strategy.sessions import in_session, DEFAULT_SESSION
 from strategy.ollama_veto import get_ollama_vote
 
 TIMEFRAME_MAP = {
@@ -68,6 +70,21 @@ def read_status() -> dict:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         return {"power": "off", "mode": "demo"}
+
+
+def read_strategy_config() -> dict:
+    """Read control/strategy_config.json — the dashboard's strategy/session selector writes here."""
+    try:
+        with open(config.STRATEGY_CONFIG_FILE) as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        data = {}
+    strategy_id = data.get("active_strategy", DEFAULT_STRATEGY)
+    session_id = data.get("active_session", DEFAULT_SESSION)
+    if strategy_id not in STRATEGIES:
+        print(f"[connector] Unknown strategy '{strategy_id}' in control file, falling back to {DEFAULT_STRATEGY}")
+        strategy_id = DEFAULT_STRATEGY
+    return {"active_strategy": strategy_id, "active_session": session_id}
 
 
 def get_candles(symbol: str, timeframe_str: str, count: int = 200) -> pd.DataFrame:
@@ -246,14 +263,21 @@ def run_cycle():
         print(f"[connector] {datetime.now(timezone.utc).strftime('%H:%M:%S')} — power is OFF, idling")
         return  # agent is paused from the dashboard — do nothing
 
+    strategy_cfg = read_strategy_config()
+    active_strategy_id = strategy_cfg["active_strategy"]
+    active_session_id = strategy_cfg["active_session"]
+    strategy_fn = STRATEGIES[active_strategy_id]
+    session_active = in_session(active_session_id)
+
     open_positions = mt5.positions_get(symbol=config.SYMBOL) or []
-    state_snapshot = {}
+    state_snapshot = {"active_strategy": active_strategy_id, "active_session": active_session_id,
+                       "session_active": session_active}
 
     for tf in config.TIMEFRAMES:
         df = get_candles(config.SYMBOL, tf)
         write_candle_snapshot(tf, df)
         atr_ok = atr_filter_ok(df, config.ATR_MIN_MULTIPLIER)
-        signal = build_signal(df, config.EMA_FAST, config.EMA_SLOW)
+        signal = strategy_fn(df)
 
         state_snapshot[tf] = {
             "direction": signal.direction,
@@ -262,21 +286,26 @@ def run_cycle():
             "atr_ok": atr_ok,
         }
 
+        if not session_active:
+            continue  # outside the selected trading session — evaluate and log, but don't trade
         if not atr_ok or signal.direction == "none":
             continue
         if len(open_positions) >= config.MAX_CONCURRENT_TRADES:
             continue
 
+        # Ollama is a universal confirm/veto layer regardless of which
+        # strategy is active — each strategy already encapsulates its own
+        # internal confluence, so this is the one external sanity check
+        # rather than a vote-counting threshold.
         ollama_vote = get_ollama_vote(signal)
         signal.votes["ollama"] = ollama_vote
         state_snapshot[tf]["votes"] = signal.votes
-        total_votes = sum(1 for v in signal.votes.values() if v == signal.direction)
 
-        if total_votes < config.VOTES_REQUIRED:
+        if ollama_vote != signal.direction:
             continue
 
         trade = place_trade(config.SYMBOL, signal.direction, tf, {
-            "reason": signal.reason,
+            "reason": f"[{active_strategy_id}] {signal.reason}",
             "votes": signal.votes,
             "meta": signal.meta,
         })
@@ -292,10 +321,11 @@ def run_cycle():
          *[f"data/candles_{tf}.json" for tf in config.TIMEFRAMES]],
         f"Trade sync {datetime.now(timezone.utc).isoformat()}",
     )
+    session_note = f"{active_session_id}{'✓' if session_active else '(closed)'}"
     summary = " | ".join(f"{tf}: {state_snapshot[tf]['direction']} ({state_snapshot[tf]['reason']})"
                           for tf in config.TIMEFRAMES if tf in state_snapshot)
     sync_status = "synced" if pushed else "SYNC FAILED — see git_sync errors above"
-    print(f"[connector] {datetime.now(timezone.utc).strftime('%H:%M:%S')} — {summary} — {sync_status}")
+    print(f"[connector] {datetime.now(timezone.utc).strftime('%H:%M:%S')} — [{active_strategy_id}/{session_note}] {summary} — {sync_status}")
 
 
 def main():

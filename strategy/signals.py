@@ -40,6 +40,16 @@ def atr(df: pd.DataFrame, period: int = 14) -> pd.Series:
     return tr.rolling(period).mean()
 
 
+def rsi(series: pd.Series, period: int = 14) -> pd.Series:
+    delta = series.diff()
+    gain = delta.clip(lower=0)
+    loss = -delta.clip(upper=0)
+    avg_gain = gain.ewm(alpha=1 / period, adjust=False).mean()
+    avg_loss = loss.ewm(alpha=1 / period, adjust=False).mean()
+    rs = avg_gain / avg_loss.replace(0, np.nan)
+    return 100 - (100 / (1 + rs))
+
+
 def ema_cross_signal(df: pd.DataFrame, fast: int = 9, slow: int = 21) -> tuple[Direction, dict]:
     """Classic EMA crossover, confirmed on the most recently closed candle."""
     fast_ema = ema(df["close"], fast)

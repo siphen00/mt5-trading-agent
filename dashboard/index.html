@@ -5,102 +5,7 @@
 <title>APEX — BTC Trading Terminal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#080B10; --glass:rgba(20,27,38,0.55); --glass-border:rgba(255,255,255,0.07); --glass-hi:rgba(255,255,255,0.03);
-    --green:#00E5A0; --green-dim:rgba(0,229,160,0.12);
-    --red:#FF4D6A; --red-dim:rgba(255,77,106,0.12);
-    --amber:#FFB627; --amber-dim:rgba(255,182,39,0.12);
-    --text:#E9EDF4; --text2:#8A93A6; --text3:#4E5768;
-    --mono:'IBM Plex Mono',monospace; --sans:'Inter',sans-serif;
-  }
-  *{box-sizing:border-box; margin:0; padding:0;}
-  body{
-    background:radial-gradient(ellipse 80% 50% at 20% -10%, rgba(0,229,160,0.06), transparent),
-      radial-gradient(ellipse 80% 50% at 80% 110%, rgba(255,77,106,0.05), transparent), var(--bg);
-    color:var(--text); font-family:var(--sans); padding:20px; min-height:100vh;
-  }
-  .wrap{max-width:1400px; margin:0 auto;}
-
-  .ticker{background:var(--glass); border:1px solid var(--glass-border); border-radius:8px; backdrop-filter:blur(20px);
-    padding:9px 0; margin-bottom:16px; overflow:hidden; white-space:nowrap; font-family:var(--mono); font-size:12px; color:var(--text2);}
-  .ticker-track{display:inline-flex; animation:ticker-scroll 28s linear infinite;}
-  .ticker:hover .ticker-track{animation-play-state:paused;}
-  @keyframes ticker-scroll{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
-  .ticker span{margin-right:36px; padding-left:18px;} .ticker b{color:var(--text); font-weight:500;}
-  .up{color:var(--green);} .down{color:var(--red);}
-
-  .header{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;}
-  .header-rule{height:1px; margin-bottom:18px;
-    background:linear-gradient(90deg, rgba(0,229,160,0.5), rgba(255,77,106,0.3) 60%, transparent);}
-  .brand{display:flex; align-items:center; gap:10px;}
-  .brand-mark{width:30px; height:30px; border-radius:7px; background:linear-gradient(135deg,var(--green),#00A876);
-    display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-weight:600; font-size:13px; color:#04140E;
-    box-shadow:0 0 18px rgba(0,229,160,0.35);}
-  .brand-name{font-family:var(--mono); font-size:15px; font-weight:600; letter-spacing:0.5px;
-    background:linear-gradient(90deg, var(--text), var(--green)); -webkit-background-clip:text; background-clip:text; color:transparent;}
-  .brand-sub{font-size:11px; color:var(--text3); letter-spacing:1px; text-transform:uppercase;}
-  .controls{display:flex; align-items:center; gap:12px;}
-  .mode-pill{font-family:var(--mono); font-size:11px; padding:6px 12px; border-radius:20px; cursor:pointer;
-    background:var(--amber-dim); color:var(--amber); border:1px solid rgba(255,182,39,0.3); letter-spacing:0.5px;}
-  .power-btn{display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12px;
-    background:var(--green-dim); color:var(--green); border:1px solid rgba(0,229,160,0.35);
-    padding:9px 16px; border-radius:8px; cursor:pointer; letter-spacing:0.5px; font-weight:500; transition:transform 0.15s;}
-  .power-btn:hover{transform:translateY(-1px);}
-  .power-btn .dot{width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); animation:pulse-dot 1.8s ease-in-out infinite;}
-  @keyframes pulse-dot{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
-  .power-btn.off{background:var(--red-dim); color:var(--red); border-color:rgba(255,77,106,0.35);}
-  .power-btn.off .dot{background:var(--red); box-shadow:0 0 8px var(--red);}
-  .settings-btn{background:transparent; border:1px solid var(--glass-border); color:var(--text3); border-radius:8px; padding:9px 12px; cursor:pointer; font-family:var(--mono); font-size:11px; transition:all 0.15s;}
-  .settings-btn:hover{border-color:var(--glass-hi); color:var(--text2);}
-  .settings-btn.active{background:var(--green-dim); color:var(--green); border-color:rgba(0,229,160,0.35);}
-
-  .stats{display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr 1fr; gap:12px; margin-bottom:16px;}
-  .card{background:var(--glass); border:1px solid var(--glass-border); border-radius:12px; backdrop-filter:blur(20px); padding:16px 18px; transition:transform 0.15s, border-color 0.15s;}
-  .card:hover{transform:translateY(-2px); border-color:rgba(255,255,255,0.14);}
-  .card.hero{background:linear-gradient(160deg, rgba(0,229,160,0.10), var(--glass)); border-color:rgba(0,229,160,0.22); position:relative; overflow:hidden;}
-  .card.hero::after{content:""; position:absolute; top:-40%; right:-20%; width:140px; height:140px; border-radius:50%;
-    background:radial-gradient(circle, rgba(0,229,160,0.18), transparent 70%); pointer-events:none;}
-  .stat-label{font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px; display:flex; align-items:center; gap:6px;}
-  .stat-val{font-family:var(--mono); font-size:22px; font-weight:600;}
-  .card.hero .stat-val{font-size:30px;}
-  .stat-sub{font-family:var(--mono); font-size:11px; color:var(--text2); margin-top:4px;}
-
-  .row{display:grid; gap:16px; margin-bottom:16px;}
-  .row.split{grid-template-columns:2fr 1fr;}
-  .panel{background:var(--glass); border:1px solid var(--glass-border); border-radius:12px; backdrop-filter:blur(20px); padding:18px 20px; position:relative;}
-  .panel::before{content:""; position:absolute; top:0; left:16px; right:16px; height:2px; border-radius:2px;
-    background:linear-gradient(90deg, transparent, var(--accent, rgba(255,255,255,0.15)), transparent);}
-  .panel.accent-green{--accent:rgba(0,229,160,0.55);}
-  .panel.accent-amber{--accent:rgba(255,182,39,0.55);}
-  .panel.accent-red{--accent:rgba(255,77,106,0.4);}
-  .panel-title{font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; gap:8px;}
-  .panel-title .icon{width:13px; height:13px; opacity:0.7; vertical-align:-2px; margin-right:6px;}
-  .panel-title b{color:var(--text2); font-weight:500;}
-  canvas{width:100%; height:180px; display:block;}
-  .strategy-row{display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--glass-hi); font-family:var(--mono); font-size:12px;}
-  .strategy-row:last-child{border-bottom:none;}
-  .badge{padding:3px 9px; border-radius:5px; font-size:10px; font-weight:600; letter-spacing:0.5px;}
-  .badge.buy{background:var(--green-dim); color:var(--green);} .badge.sell{background:var(--red-dim); color:var(--red);} .badge.wait{background:var(--amber-dim); color:var(--amber);}
-  table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12px;}
-  th{text-align:left; color:var(--text3); font-weight:500; font-size:10px; text-transform:uppercase; letter-spacing:0.6px; padding:0 12px 10px; border-bottom:1px solid var(--glass-border);}
-  td{padding:11px 12px; border-bottom:1px solid var(--glass-hi); color:var(--text2);}
-  tr:hover td{background:rgba(255,255,255,0.02);}
-  td.win{color:var(--green);} td.loss{color:var(--red);}
-  .tf-tag{background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; font-size:10px; color:var(--text2);}
-  .journal{margin-top:16px;}
-  .j-entry{padding:14px 0; border-bottom:1px solid var(--glass-hi);} .j-entry:last-child{border-bottom:none;}
-  .j-head{display:flex; justify-content:space-between; margin-bottom:6px;}
-  .j-date{font-family:var(--mono); font-size:11px; color:var(--text3);}
-  .j-source{font-family:var(--mono); font-size:10px; padding:2px 8px; border-radius:4px;}
-  .j-source.ollama-daily{background:rgba(255,255,255,0.06); color:var(--text2);} .j-source.ollama-weekly{background:var(--green-dim); color:var(--green);}
-  .j-body{font-size:13px; color:var(--text2); line-height:1.6;}
-  .footer-note{text-align:center; font-family:var(--mono); font-size:10px; color:var(--text3); margin-top:20px; letter-spacing:0.5px;}
-  .empty{color:var(--text3); font-size:12px; font-family:var(--mono); padding:20px 0; text-align:center;}
-  dialog{background:#0D121A; color:var(--text); border:1px solid var(--glass-border); border-radius:12px; padding:20px; width:360px; font-family:var(--sans);}
-  dialog input{width:100%; margin:10px 0; padding:9px; background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:6px; color:var(--text); font-family:var(--mono); font-size:12px;}
-  dialog button{margin-top:8px; padding:8px 14px; border-radius:6px; border:1px solid var(--glass-border); background:var(--green-dim); color:var(--green); cursor:pointer; font-family:var(--mono); font-size:12px;}
-</style>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div class="wrap">
@@ -118,6 +23,11 @@
   </div>
   <div class="header-rule"></div>
 
+  <div class="nav">
+    <a href="index.html" class="active">Live dashboard</a>
+    <a href="backtest.html">Backtest lab</a>
+  </div>
+
   <div class="stats">
     <div class="card hero">
       <div class="stat-label">
@@ -131,6 +41,24 @@
     <div class="card"><div class="stat-label">Win rate</div><div class="stat-val" id="winRate">—</div><div class="stat-sub" id="winCount"></div></div>
     <div class="card"><div class="stat-label">Open positions</div><div class="stat-val" id="openPositions">—</div><div class="stat-sub">5m + 15m scalper</div></div>
     <div class="card"><div class="stat-label">Max drawdown</div><div class="stat-val" id="maxDD">—</div><div class="stat-sub">since start</div></div>
+  </div>
+
+  <div class="panel accent-green" style="margin-bottom:16px;">
+    <div class="panel-title">
+      <span>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 12h10v8H4zM18 12h2v8h-2z"/></svg>
+        Strategy control <b id="strategyUpdated">—</b>
+      </span>
+      <a href="backtest.html" class="settings-btn" style="text-decoration:none;">Backtest lab →</a>
+    </div>
+    <div class="stat-label" style="margin-bottom:8px;">Strategy</div>
+    <div id="strategyCards" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin-bottom:16px;">
+      <div class="empty">Loading strategies…</div>
+    </div>
+    <div class="stat-label" style="margin-bottom:8px;">Session</div>
+    <div id="sessionButtons" style="display:flex; gap:8px; flex-wrap:wrap;">
+      <div class="empty">Loading sessions…</div>
+    </div>
   </div>
 
   <div class="row split">
@@ -229,6 +157,7 @@ document.getElementById('saveSettings').onclick = () => {
   dialog.close();
   loadAll();
   loadExecChart();
+  loadStrategyConfig();
 };
 
 function rawUrl(path){
@@ -237,6 +166,23 @@ function rawUrl(path){
 
 async function fetchJson(path, fallback){
   if(!LS.owner || !LS.repo) return fallback;
+
+  // With a token: read via the GitHub API directly. This is NOT behind the
+  // raw.githubusercontent.com CDN cache (which ignores our cache-busting
+  // query param and can lag ~5 minutes behind the real commit) — so this
+  // path gets you the true current data instantly.
+  if(LS.token){
+    try{
+      const res = await fetch(`https://api.github.com/repos/${LS.owner}/${LS.repo}/contents/${path}`,
+        { headers: { Authorization: `token ${LS.token}` } });
+      if(!res.ok) return fallback;
+      const data = await res.json();
+      return JSON.parse(decodeURIComponent(escape(atob(data.content))));
+    }catch(e){ return fallback; }
+  }
+
+  // Without a token: fall back to the cached raw file (read-only view still
+  // works, just with the CDN's inherent lag).
   try{
     const res = await fetch(rawUrl(path));
     if(!res.ok) return fallback;
@@ -497,6 +443,91 @@ async function togglePower(){
 document.getElementById('powerBtn').onclick = togglePower;
 document.getElementById('modePill').onclick = () => alert('Switch demo/live from the settings — kept as a deliberate manual step, not a casual toggle.');
 
+// --- Strategy / session control (writes control/strategy_config.json) ---
+const STRATEGY_META = [
+  { id: 'ema_smc', name: 'EMA + SMC', desc: 'Trend confluence: EMA crossover + market structure' },
+  { id: 'vwap_reversion', name: 'VWAP Reversion', desc: 'Mean-reversion fade, best in ranging conditions' },
+  { id: 'bb_squeeze', name: 'BB Squeeze', desc: 'Volatility contraction → breakout' },
+  { id: 'rsi_divergence', name: 'RSI Divergence', desc: 'Reversal on price/RSI divergence' },
+  { id: 'orb_london', name: 'ORB · London', desc: 'Opening range breakout, London open' },
+  { id: 'orb_new_york', name: 'ORB · New York', desc: 'Opening range breakout, NY open' },
+];
+const SESSION_META = [
+  { id: '24h', name: '24/7' },
+  { id: 'asia', name: 'Asia' },
+  { id: 'london', name: 'London' },
+  { id: 'new_york', name: 'New York' },
+  { id: 'london_ny_overlap', name: 'London/NY Overlap' },
+];
+
+let currentStrategyConfig = { active_strategy: 'ema_smc', active_session: '24h' };
+
+// Shared GitHub read-modify-write helper for any control/*.json file — same
+// pattern proven by togglePower: read live via the API (not the CDN-cached
+// raw file), merge in changes, write back with the sha for a clean update.
+async function writeControlFile(path, patch, commitMessage){
+  if(!LS.token){ alert('Add a GitHub token in "Set repo / token" to control the agent.'); return false; }
+
+  const getRes = await fetch(`https://api.github.com/repos/${LS.owner}/${LS.repo}/contents/${path}`,
+    { headers: { Authorization: `token ${LS.token}` } });
+  if(!getRes.ok){ alert(`Could not read ${path} (HTTP ${getRes.status}).`); return false; }
+  const getData = await getRes.json();
+
+  let current = {};
+  try{ current = JSON.parse(atob(getData.content)); }catch(e){ /* use empty defaults */ }
+
+  const updated = { ...current, ...patch, updated_at: new Date().toISOString(), updated_by: 'dashboard' };
+
+  const putRes = await fetch(`https://api.github.com/repos/${LS.owner}/${LS.repo}/contents/${path}`, {
+    method: 'PUT',
+    headers: { Authorization: `token ${LS.token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: commitMessage, content: btoa(JSON.stringify(updated, null, 2)), sha: getData.sha }),
+  });
+
+  if(!putRes.ok){ alert(`Could not update ${path} — check token has Contents: read/write.`); return false; }
+  return true;
+}
+
+function renderStrategyControls(){
+  const cardsEl = document.getElementById('strategyCards');
+  cardsEl.innerHTML = STRATEGY_META.map(s => `
+    <div class="strategy-card ${s.id === currentStrategyConfig.active_strategy ? 'active' : ''}" data-strategy="${s.id}">
+      <div class="name">${s.name}</div>
+      <div class="desc">${s.desc}</div>
+    </div>`).join('');
+  cardsEl.querySelectorAll('.strategy-card').forEach(el => {
+    el.onclick = async () => {
+      const id = el.dataset.strategy;
+      if(id === currentStrategyConfig.active_strategy) return;
+      const ok = await writeControlFile('control/strategy_config.json', { active_strategy: id }, `Dashboard: strategy → ${id}`);
+      if(ok){ currentStrategyConfig.active_strategy = id; renderStrategyControls(); }
+    };
+  });
+
+  const sessionEl = document.getElementById('sessionButtons');
+  sessionEl.innerHTML = SESSION_META.map(s => `
+    <button class="session-btn ${s.id === currentStrategyConfig.active_session ? 'active' : ''}" data-session="${s.id}">${s.name}</button>`).join('');
+  sessionEl.querySelectorAll('.session-btn').forEach(el => {
+    el.onclick = async () => {
+      const id = el.dataset.session;
+      if(id === currentStrategyConfig.active_session) return;
+      const ok = await writeControlFile('control/strategy_config.json', { active_session: id }, `Dashboard: session → ${id}`);
+      if(ok){ currentStrategyConfig.active_session = id; renderStrategyControls(); }
+    };
+  });
+}
+
+async function loadStrategyConfig(){
+  const cfg = await fetchJson('control/strategy_config.json', currentStrategyConfig);
+  currentStrategyConfig = {
+    active_strategy: cfg.active_strategy || 'ema_smc',
+    active_session: cfg.active_session || '24h',
+  };
+  renderStrategyControls();
+  document.getElementById('strategyUpdated').textContent = cfg.updated_at
+    ? new Date(cfg.updated_at).toLocaleTimeString() : '—';
+}
+
 async function loadAll(){
   document.getElementById('symbolLabel').textContent = LS.repo ? `BTC/USD · ${LS.repo}` : 'BTC/USD · Scalp Engine';
   document.getElementById('footerNote').textContent = LS.owner && LS.repo
@@ -522,8 +553,10 @@ window.addEventListener('resize', drawChart);
 initExecChart();
 loadAll();
 loadExecChart();
+loadStrategyConfig();
 setInterval(loadAll, 30000); // refresh every 30s
 setInterval(loadExecChart, 30000);
+setInterval(loadStrategyConfig, 30000);
 </script>
 </body>
 </html>

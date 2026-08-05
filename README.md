@@ -89,6 +89,55 @@ execution chart's exit markers won't show real numbers until that's built.
 Worth doing next — happy to add a loop that polls open MT5 positions and
 updates the trade record when one closes.
 
+## Multiple strategies, sessions, and the backtest lab
+
+The bot now runs one of six selectable strategies, each a complete standalone
+signal generator (not just extra votes in one combined engine):
+
+- **EMA + SMC** — trend confluence (the original strategy)
+- **VWAP Reversion** — mean-reversion fade at VWAP band extremes, best in ranging conditions
+- **BB Squeeze** — volatility contraction → breakout
+- **RSI Divergence** — reversal on price/RSI divergence
+- **ORB · London** / **ORB · New York** — opening range breakout, tied to a specific session open
+
+Ollama remains a universal confirm/veto layer regardless of which strategy is
+active — a trade only fires if Ollama agrees with the active strategy's signal.
+
+**Sessions** (Asia / London / New York / London-NY Overlap / 24-7) gate *when*
+the bot is allowed to trade, independent of which strategy is picked.
+
+**Everything is switched from the dashboard**, no config file editing:
+- The **Strategy control** panel on the live dashboard lets you pick a
+  strategy and session with one click each — writes to
+  `control/strategy_config.json`, which the connector reads every cycle.
+- The **Backtest lab** (`dashboard/backtest.html`, linked from the nav bar)
+  runs a full JS reimplementation of all six strategies *in your browser*
+  against historical candles, shows win rate/profit factor/drawdown/equity
+  curve/trade log, and has a **"Push to demo"** button that writes the
+  tested strategy+session straight to the same control file — no manual step.
+
+**The backtest lab needs historical data exported first.** GitHub Pages is
+static — there's no server to compute a backtest against live MT5 history —
+so the connector machine needs to export a data snapshot for the browser to
+test against:
+
+```powershell
+python -m connector.export_backtest_data
+```
+
+This pulls 5000 candles per timeframe (~17 days of M5, ~52 days of M15 for
+24/7 crypto) and pushes them to `data/backtest_M5.json` / `backtest_M15.json`.
+Re-run it whenever you want fresher data — weekly is plenty for most purposes.
+It's deliberately separate from the live loop so it doesn't bloat the repo
+or slow down 15-second cycles.
+
+**Known limitation worth knowing:** the JS strategy logic in `backtest.html`
+is a faithful *port* of the Python logic in `strategy/strategies.py`, not
+the same code running twice. If you ever tune a strategy's parameters in
+Python, the backtest lab won't reflect that change until the same edit is
+made in the JS version — they can drift out of sync if only one side gets
+updated.
+
 ## Demo → live checklist
 
 Don't flip `mode` to `live` on a whim. Before doing it, you want at minimum:

@@ -14,7 +14,7 @@ MT5_SERVER = os.getenv("MT5_SERVER", "")
 MT5_PATH = os.getenv("MT5_PATH", "")  # path to terminal64.exe, optional
 
 # --- Instrument & timeframes ---
-SYMBOL = "BTCUSDm"          # match your broker's exact symbol name, e.g. BTCUSD, BTCUSD.m
+SYMBOL = "BTCUSD"          # match your broker's exact symbol name, e.g. BTCUSD, BTCUSD.m
 TIMEFRAMES = ["M5", "M15"]  # 5-minute and 15-minute scalping
 
 # --- Risk management ---
@@ -25,7 +25,10 @@ ATR_MIN_MULTIPLIER = 1.0     # skip entries when ATR is below this vs its 20-per
                               # (this is the "low volatility chop" filter from the weekly review)
 
 # --- Strategy voting ---
-VOTES_REQUIRED = 2           # 2-of-3 voting engine: EMA cross, SMC structure, Ollama veto
+VOTES_REQUIRED = 2           # deprecated — kept for reference; trade confirmation is now
+                              # "does Ollama agree with whichever strategy is active" (see
+                              # run_cycle in mt5_connector.py), not a fixed vote count, since
+                              # different strategies have different internal vote structures
 EMA_FAST = 9
 EMA_SLOW = 21
 
@@ -41,6 +44,7 @@ GIT_PUSH_RETRY_DELAY_SEC = 3
 # --- Control loop ---
 POLL_INTERVAL_SEC = 15        # how often the connector checks control/status.json and looks for signals
 STATUS_FILE = os.path.join(REPO_PATH, "control", "status.json")
+STRATEGY_CONFIG_FILE = os.path.join(REPO_PATH, "control", "strategy_config.json")
 TRADES_FILE = os.path.join(REPO_PATH, "data", "trades.json")
 EQUITY_FILE = os.path.join(REPO_PATH, "data", "equity.json")
 JOURNAL_LOG_FILE = os.path.join(REPO_PATH, "data", "raw_trade_log.jsonl")  # append-only, feeds the journal scripts
