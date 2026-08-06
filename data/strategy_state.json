@@ -3,12 +3,12 @@
   "active_session": "24h",
   "session_active": true,
   "M5": {
-    "direction": "short",
+    "direction": "none",
     "votes": {
       "ema": "none",
-      "smc": "short"
+      "smc": "none"
     },
-    "reason": "SMC short (bos_bearish/none)",
+    "reason": "no confluence",
     "atr_ok": false
   },
   "M15": {
@@ -20,5 +20,5 @@
     "reason": "no confluence",
     "atr_ok": true
   },
-  "updated_at": "2026-08-06T11:09:32.748276+00:00"
+  "updated_at": "2026-08-06T11:09:53.766386+00:00"
 }
