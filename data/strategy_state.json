@@ -14,13 +14,14 @@
     "atr_ok": true
   },
   "M15": {
-    "direction": "none",
+    "direction": "short",
     "votes": {
-      "orb": "none",
-      "volume": "none"
+      "orb": "short",
+      "volume": "none",
+      "ollama": "none"
     },
-    "reason": "inside opening range",
+    "reason": "ORB breakout (short), range 64704.0-64901.6",
     "atr_ok": true
   },
-  "updated_at": "2026-08-06T15:42:57.221981+00:00"
+  "updated_at": "2026-08-06T15:43:18.184233+00:00"
 }
