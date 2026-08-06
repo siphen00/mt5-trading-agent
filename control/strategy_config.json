@@ -1,6 +1,6 @@
 {
-  "active_strategy": "ema_smc",
+  "active_strategy": "vwap_reversion",
   "active_session": "24h",
-  "updated_at": "2026-08-06T11:10:01.454Z",
+  "updated_at": "2026-08-06T11:10:32.331Z",
   "updated_by": "dashboard"
 }
