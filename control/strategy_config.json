@@ -1,6 +1,6 @@
 {
-  "active_strategy": "orb_london",
+  "active_strategy": "rsi_divergence",
   "active_session": "london",
-  "updated_at": "2026-08-06T11:16:22.696Z",
-  "updated_by": "backtest-lab"
+  "updated_at": "2026-08-06T11:39:28.517Z",
+  "updated_by": "dashboard"
 }
