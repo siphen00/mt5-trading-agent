@@ -3,12 +3,12 @@
   "active_session": "24h",
   "session_active": true,
   "M5": {
-    "direction": "long",
+    "direction": "none",
     "votes": {
-      "vwap_band": "long",
+      "vwap_band": "none",
       "volume": "none"
     },
-    "reason": "VWAP band reversion (long)",
+    "reason": "no confluence",
     "atr_ok": false
   },
   "M15": {
@@ -18,7 +18,7 @@
       "volume": "none"
     },
     "reason": "no confluence",
-    "atr_ok": true
+    "atr_ok": false
   },
-  "updated_at": "2026-08-06T11:14:56.652716+00:00"
+  "updated_at": "2026-08-06T11:15:14.684192+00:00"
 }
