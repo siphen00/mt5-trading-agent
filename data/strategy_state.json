@@ -10,7 +10,7 @@
       "rsi_divergence": "long",
       "rsi_level": "none"
     },
-    "reason": "RSI divergence (long, RSI=49.8)",
+    "reason": "RSI divergence (long, RSI=47.8)",
     "atr_ok": false
   },
   "M15": {
@@ -19,8 +19,8 @@
       "rsi_divergence": "long",
       "rsi_level": "none"
     },
-    "reason": "RSI divergence (long, RSI=45.2)",
+    "reason": "RSI divergence (long, RSI=44.5)",
     "atr_ok": false
   },
-  "updated_at": "2026-08-06T20:40:35.055540+00:00"
+  "updated_at": "2026-08-06T20:41:04.898999+00:00"
 }
