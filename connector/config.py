@@ -14,7 +14,7 @@ MT5_SERVER = os.getenv("MT5_SERVER", "")
 MT5_PATH = os.getenv("MT5_PATH", "")  # path to terminal64.exe, optional
 
 # --- Instrument & timeframes ---
-SYMBOL = "BTCUSD"          # match your broker's exact symbol name, e.g. BTCUSD, BTCUSD.m
+SYMBOL = "BTCUSDm"          # match your broker's exact symbol name, e.g. BTCUSD, BTCUSD.m
 TIMEFRAMES = ["M5", "M15"]  # 5-minute and 15-minute scalping
 
 # --- Risk management ---
