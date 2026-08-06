@@ -4,10 +4,10 @@
     "direction": "short",
     "volume": 0.32,
     "entry": 64579.51,
-    "current_price": 64593.99,
+    "current_price": 64581.42,
     "sl": 0.0,
     "tp": 0.0,
-    "profit": -4.64,
+    "profit": -0.61,
     "source": "manual",
     "opened_at": "2026-08-06T11:45:51+00:00"
   }
