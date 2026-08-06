@@ -14,7 +14,7 @@ MT5_SERVER = os.getenv("MT5_SERVER", "")
 MT5_PATH = os.getenv("MT5_PATH", "")  # path to terminal64.exe, optional
 
 # --- Instrument & timeframes ---
-SYMBOL = "BTCUSDm"          # match your broker's exact symbol name, e.g. BTCUSD, BTCUSD.m
+SYMBOL = "BTCUSD"          # match your broker's exact symbol name, e.g. BTCUSD, BTCUSD.m
 TIMEFRAMES = ["M5", "M15"]  # 5-minute and 15-minute scalping
 
 # --- Risk management ---
@@ -46,5 +46,8 @@ POLL_INTERVAL_SEC = 15        # how often the connector checks control/status.js
 STATUS_FILE = os.path.join(REPO_PATH, "control", "status.json")
 STRATEGY_CONFIG_FILE = os.path.join(REPO_PATH, "control", "strategy_config.json")
 TRADES_FILE = os.path.join(REPO_PATH, "data", "trades.json")
+OPEN_POSITIONS_FILE = os.path.join(REPO_PATH, "data", "open_positions.json")
+BOT_MAGIC = 20260802  # tags every order this bot places — used to tell bot trades apart
+                       # from anything you place manually in the MT5 terminal
 EQUITY_FILE = os.path.join(REPO_PATH, "data", "equity.json")
 JOURNAL_LOG_FILE = os.path.join(REPO_PATH, "data", "raw_trade_log.jsonl")  # append-only, feeds the journal scripts

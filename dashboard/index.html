@@ -97,6 +97,19 @@
     <canvas id="chart"></canvas>
   </div>
 
+  <div class="panel accent-green" style="margin-bottom:16px;">
+    <div class="panel-title">
+      <span>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        Open positions <b>live from MT5, bot + manual</b>
+      </span>
+    </div>
+    <table>
+      <thead><tr><th>Ticket</th><th>Side</th><th>Volume</th><th>Entry</th><th>Current</th><th>Floating P&L</th><th>Source</th></tr></thead>
+      <tbody id="openPositionRows"><tr><td colspan="7" class="empty">No open positions</td></tr></tbody>
+    </table>
+  </div>
+
   <div class="panel" style="margin-bottom:16px;">
     <div class="panel-title">
       <span>
@@ -105,8 +118,8 @@
       </span>
     </div>
     <table>
-      <thead><tr><th>Time</th><th>TF</th><th>Side</th><th>Entry</th><th>Exit</th><th>Lots</th><th>P&L</th><th>Signal</th></tr></thead>
-      <tbody id="tradeRows"><tr><td colspan="8" class="empty">No trades yet</td></tr></tbody>
+      <thead><tr><th>Time</th><th>TF</th><th>Side</th><th>Entry</th><th>Exit</th><th>Lots</th><th>P&L</th><th>Source</th><th>Signal</th></tr></thead>
+      <tbody id="tradeRows"><tr><td colspan="9" class="empty">No trades yet</td></tr></tbody>
     </table>
   </div>
 
@@ -360,7 +373,11 @@ function renderStrategyRows(state){
 }
 
 function renderTrades(trades){
-  const rows = trades.slice(-15).reverse().map(t => `
+  const rows = trades.slice(-15).reverse().map(t => {
+    const sourceLabel = t.source === 'bot' ? 'BOT' : (t.source === 'manual' ? 'MANUAL' : '—');
+    const sourceBadge = t.source ? `<span class="badge ${t.source==='bot'?'buy':'wait'}">${sourceLabel}</span>` : '—';
+    const closedNote = t.closed_by ? `<div class="stat-sub" style="margin-top:2px;">closed: ${t.closed_by}</div>` : '';
+    return `
     <tr>
       <td>${t.time ? new Date(t.time).toLocaleString() : '—'}</td>
       <td><span class="tf-tag">${t.timeframe||'—'}</span></td>
@@ -369,9 +386,11 @@ function renderTrades(trades){
       <td>${t.exit!=null ? t.exit.toLocaleString() : '—'}</td>
       <td>${t.lots ?? '—'}</td>
       <td class="${(t.pnl||0)>0?'win':(t.pnl||0)<0?'loss':''}">${t.pnl!=null ? fmtMoney(t.pnl) : (t.status==='open'?'open':'—')}</td>
-      <td>${t.reason||'—'}</td>
-    </tr>`).join('');
-  document.getElementById('tradeRows').innerHTML = rows || '<tr><td colspan="8" class="empty">No trades yet</td></tr>';
+      <td>${sourceBadge}</td>
+      <td>${t.reason||'—'}${closedNote}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tradeRows').innerHTML = rows || '<tr><td colspan="9" class="empty">No trades yet</td></tr>';
 }
 
 function renderJournal(entries){
@@ -534,19 +553,39 @@ async function loadAll(){
     ? `SOURCE: ${LS.owner}/${LS.repo} · REFRESHED ${new Date().toLocaleTimeString()}`
     : 'CONFIGURE REPO TO CONNECT LIVE DATA';
 
-  const [trades, equity, journal, strategyState] = await Promise.all([
+  const [trades, equity, journal, strategyState, openPositions] = await Promise.all([
     fetchJson('data/trades.json', []),
     fetchJson('data/equity.json', []),
     fetchJson('data/journal.json', []),
     fetchJson('data/strategy_state.json', {}),
+    fetchJson('data/open_positions.json', []),
   ]);
 
   renderStats(trades, equity);
   renderTicker(strategyState, equity);
   renderStrategyRows(strategyState);
   renderTrades(trades);
+  renderOpenPositions(openPositions);
   renderJournal(journal);
   await refreshStatusDisplay();
+}
+
+function renderOpenPositions(positions){
+  const rows = positions.map(p => {
+    const sourceLabel = p.source === 'bot' ? 'BOT' : 'MANUAL';
+    const sourceBadge = `<span class="badge ${p.source==='bot'?'buy':'wait'}">${sourceLabel}</span>`;
+    return `
+    <tr>
+      <td>${p.ticket}</td>
+      <td>${p.direction}</td>
+      <td>${p.volume}</td>
+      <td>${p.entry!=null ? p.entry.toLocaleString() : '—'}</td>
+      <td>${p.current_price!=null ? p.current_price.toLocaleString() : '—'}</td>
+      <td class="${(p.profit||0)>0?'win':(p.profit||0)<0?'loss':''}">${fmtMoney(p.profit||0)}</td>
+      <td>${sourceBadge}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('openPositionRows').innerHTML = rows || '<tr><td colspan="7" class="empty">No open positions</td></tr>';
 }
 
 window.addEventListener('resize', drawChart);
