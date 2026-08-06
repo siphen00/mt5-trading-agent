@@ -3,12 +3,12 @@
   "active_session": "24h",
   "session_active": true,
   "M5": {
-    "direction": "long",
+    "direction": "none",
     "votes": {
       "ema": "none",
-      "smc": "long"
+      "smc": "none"
     },
-    "reason": "SMC long (none/ob_bullish_retest)",
+    "reason": "no confluence",
     "atr_ok": false
   },
   "M15": {
@@ -20,5 +20,5 @@
     "reason": "no confluence",
     "atr_ok": false
   },
-  "updated_at": "2026-08-06T11:03:22.061073+00:00"
+  "updated_at": "2026-08-06T11:03:40.171113+00:00"
 }
