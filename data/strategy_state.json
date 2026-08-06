@@ -1,6 +1,6 @@
 {
   "active_strategy": "orb_london",
-  "active_session": "london",
+  "active_session": "new_york",
   "session_active": true,
   "open_positions_bot": 0,
   "open_positions_manual": 0,
@@ -22,5 +22,5 @@
     "reason": "inside opening range",
     "atr_ok": true
   },
-  "updated_at": "2026-08-06T13:40:59.885863+00:00"
+  "updated_at": "2026-08-06T13:41:25.149046+00:00"
 }
