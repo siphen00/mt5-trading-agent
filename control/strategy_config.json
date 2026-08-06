@@ -1,6 +1,6 @@
 {
-  "active_strategy": "vwap_reversion",
+  "active_strategy": "bb_squeeze",
   "active_session": "24h",
-  "updated_at": "2026-08-06T11:10:32.331Z",
+  "updated_at": "2026-08-06T11:10:34.084Z",
   "updated_by": "dashboard"
 }
