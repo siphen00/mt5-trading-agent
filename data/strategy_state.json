@@ -1,24 +1,26 @@
 {
-  "active_strategy": "orb_london",
+  "active_strategy": "bb_squeeze",
   "active_session": "london",
   "session_active": true,
+  "open_positions_bot": 0,
+  "open_positions_manual": 0,
   "M5": {
     "direction": "none",
     "votes": {
-      "orb": "none",
+      "bb_breakout": "none",
       "volume": "none"
     },
-    "reason": "inside opening range",
+    "reason": "no squeeze/breakout",
     "atr_ok": false
   },
   "M15": {
     "direction": "none",
     "votes": {
-      "orb": "none",
+      "bb_breakout": "none",
       "volume": "none"
     },
-    "reason": "inside opening range",
-    "atr_ok": false
+    "reason": "no squeeze/breakout",
+    "atr_ok": true
   },
-  "updated_at": "2026-08-06T11:37:09.736116+00:00"
+  "updated_at": "2026-08-06T11:44:48.101442+00:00"
 }
