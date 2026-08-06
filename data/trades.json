@@ -281,8 +281,12 @@
     "reason": "opened manually in MT5",
     "votes": {},
     "meta": {},
-    "status": "open",
+    "status": "closed",
     "source": "manual",
-    "time": "2026-08-06T11:45:51+00:00"
+    "time": "2026-08-06T11:45:51+00:00",
+    "exit": 64590.58,
+    "exit_time": "2026-08-06T11:47:37+00:00",
+    "pnl": -3.55,
+    "closed_by": "manual"
   }
 ]

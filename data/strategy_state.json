@@ -3,7 +3,7 @@
   "active_session": "london",
   "session_active": true,
   "open_positions_bot": 0,
-  "open_positions_manual": 1,
+  "open_positions_manual": 0,
   "M5": {
     "direction": "none",
     "votes": {
@@ -22,5 +22,5 @@
     "reason": "inside opening range",
     "atr_ok": false
   },
-  "updated_at": "2026-08-06T11:47:25.499757+00:00"
+  "updated_at": "2026-08-06T11:47:43.435394+00:00"
 }
