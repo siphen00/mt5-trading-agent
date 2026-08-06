@@ -1,6 +1,6 @@
 {
   "active_strategy": "ema_smc",
-  "active_session": "24h",
-  "updated_at": "2026-08-04T00:00:00Z",
-  "updated_by": "initial-setup"
+  "active_session": "asia",
+  "updated_at": "2026-08-06T11:09:52.894Z",
+  "updated_by": "dashboard"
 }
