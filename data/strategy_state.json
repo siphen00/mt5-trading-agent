@@ -5,12 +5,13 @@
   "open_positions_bot": 0,
   "open_positions_manual": 0,
   "M5": {
-    "direction": "none",
+    "direction": "short",
     "votes": {
-      "orb": "none",
-      "volume": "none"
+      "orb": "short",
+      "volume": "none",
+      "ollama": "none"
     },
-    "reason": "inside opening range",
+    "reason": "ORB breakout (short), range 64751.0-64879.9",
     "atr_ok": true
   },
   "M15": {
@@ -22,5 +23,5 @@
     "reason": "inside opening range",
     "atr_ok": true
   },
-  "updated_at": "2026-08-06T15:18:15.240744+00:00"
+  "updated_at": "2026-08-06T15:18:42.986619+00:00"
 }
