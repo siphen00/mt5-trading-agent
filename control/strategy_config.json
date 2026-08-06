@@ -1,6 +1,6 @@
 {
-  "active_strategy": "rsi_divergence",
+  "active_strategy": "bb_squeeze",
   "active_session": "london",
-  "updated_at": "2026-08-06T11:39:28.517Z",
+  "updated_at": "2026-08-06T11:39:32.905Z",
   "updated_by": "dashboard"
 }
