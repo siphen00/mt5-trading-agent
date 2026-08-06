@@ -1,7 +1,7 @@
 {
   "active_strategy": "rsi_divergence",
   "active_session": "new_york",
-  "session_active": true,
+  "session_active": false,
   "open_positions_bot": 0,
   "open_positions_manual": 0,
   "M5": {
@@ -10,7 +10,7 @@
       "rsi_divergence": "long",
       "rsi_level": "none"
     },
-    "reason": "RSI divergence (long, RSI=43.6)",
+    "reason": "RSI divergence (long, RSI=44.4)",
     "atr_ok": false
   },
   "M15": {
@@ -19,8 +19,8 @@
       "rsi_divergence": "long",
       "rsi_level": "none"
     },
-    "reason": "RSI divergence (long, RSI=42.6)",
+    "reason": "RSI divergence (long, RSI=43.1)",
     "atr_ok": false
   },
-  "updated_at": "2026-08-06T20:59:47.920483+00:00"
+  "updated_at": "2026-08-06T21:00:09.504024+00:00"
 }
