@@ -1,6 +1,6 @@
 {
-  "active_strategy": "orb_london",
+  "active_strategy": "vwap_reversion",
   "active_session": "new_york",
-  "updated_at": "2026-08-06T14:52:35.160Z",
+  "updated_at": "2026-08-06T19:36:55.959Z",
   "updated_by": "dashboard"
 }
