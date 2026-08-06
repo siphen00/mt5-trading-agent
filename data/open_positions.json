@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "ticket": 3051938396,
+    "direction": "short",
+    "volume": 0.32,
+    "entry": 64579.51,
+    "current_price": 64593.99,
+    "sl": 0.0,
+    "tp": 0.0,
+    "profit": -4.64,
+    "source": "manual",
+    "opened_at": "2026-08-06T11:45:51+00:00"
+  }
+]

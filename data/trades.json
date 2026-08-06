@@ -268,5 +268,21 @@
     "pnl": -3.59,
     "time": "2026-08-04T15:54:53+00:00",
     "exit_time": "2026-08-04T23:15:53+00:00"
+  },
+  {
+    "ticket": 3051938396,
+    "symbol": "BTCUSDm",
+    "timeframe": "MANUAL",
+    "direction": "short",
+    "entry": 64579.51,
+    "stop": 0.0,
+    "target": 0.0,
+    "lots": 0.32,
+    "reason": "opened manually in MT5",
+    "votes": {},
+    "meta": {},
+    "status": "open",
+    "source": "manual",
+    "time": "2026-08-06T11:45:51+00:00"
   }
 ]
