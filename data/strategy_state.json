@@ -1,24 +1,24 @@
 {
-  "active_strategy": "vwap_reversion",
-  "active_session": "24h",
+  "active_strategy": "orb_london",
+  "active_session": "london",
   "session_active": true,
   "M5": {
     "direction": "none",
     "votes": {
-      "vwap_band": "none",
+      "orb": "none",
       "volume": "none"
     },
-    "reason": "no confluence",
+    "reason": "inside opening range",
     "atr_ok": false
   },
   "M15": {
     "direction": "none",
     "votes": {
-      "vwap_band": "none",
+      "orb": "none",
       "volume": "none"
     },
-    "reason": "no confluence",
+    "reason": "inside opening range",
     "atr_ok": true
   },
-  "updated_at": "2026-08-06T11:16:26.850738+00:00"
+  "updated_at": "2026-08-06T11:16:52.702249+00:00"
 }
