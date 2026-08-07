@@ -11,7 +11,7 @@
       "volume": "none"
     },
     "reason": "inside opening range",
-    "atr_ok": true
+    "atr_ok": false
   },
   "M15": {
     "direction": "none",
@@ -22,5 +22,5 @@
     "reason": "inside opening range",
     "atr_ok": true
   },
-  "updated_at": "2026-08-07T10:29:44.995230+00:00"
+  "updated_at": "2026-08-07T10:30:03.811981+00:00"
 }
