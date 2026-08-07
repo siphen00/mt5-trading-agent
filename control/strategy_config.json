@@ -1,6 +1,6 @@
 {
-  "active_strategy": "orb_london",
+  "active_strategy": "ema_smc",
   "active_session": "new_york",
-  "updated_at": "2026-08-07T09:25:36.257Z",
+  "updated_at": "2026-08-07T11:16:36.701Z",
   "updated_by": "dashboard"
 }
