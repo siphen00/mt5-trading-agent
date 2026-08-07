@@ -4,10 +4,10 @@
     "direction": "long",
     "volume": 0.01,
     "entry": 64975.340000000004,
-    "current_price": 65142.14,
+    "current_price": 65132.1,
     "sl": 64804.25,
     "tp": 65260.49,
-    "profit": 1.67,
+    "profit": 1.57,
     "source": "bot",
     "opened_at": "2026-08-07T11:21:10+00:00"
   },
@@ -16,10 +16,10 @@
     "direction": "long",
     "volume": 0.01,
     "entry": 64978.57,
-    "current_price": 65142.14,
+    "current_price": 65132.1,
     "sl": 64807.45,
     "tp": 65263.77,
-    "profit": 1.63,
+    "profit": 1.53,
     "source": "bot",
     "opened_at": "2026-08-07T11:21:33+00:00"
   }
