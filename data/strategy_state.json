@@ -11,7 +11,7 @@
       "smc": "long"
     },
     "reason": "SMC long (bos_bullish/ob_bullish_retest)",
-    "atr_ok": false
+    "atr_ok": true
   },
   "M15": {
     "direction": "long",
@@ -19,8 +19,8 @@
       "ema": "none",
       "smc": "long"
     },
-    "reason": "SMC long (bos_bullish/none)",
+    "reason": "SMC long (bos_bullish/ob_bullish_retest)",
     "atr_ok": true
   },
-  "updated_at": "2026-08-07T11:22:48.014075+00:00"
+  "updated_at": "2026-08-07T11:23:06.533264+00:00"
 }
