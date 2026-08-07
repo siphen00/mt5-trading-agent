@@ -1,26 +1,26 @@
 {
-  "active_strategy": "rsi_divergence",
+  "active_strategy": "orb_london",
   "active_session": "new_york",
   "session_active": false,
   "open_positions_bot": 0,
   "open_positions_manual": 0,
   "M5": {
-    "direction": "long",
+    "direction": "none",
     "votes": {
-      "rsi_divergence": "long",
-      "rsi_level": "none"
+      "orb": "none",
+      "volume": "none"
     },
-    "reason": "RSI divergence (long, RSI=83.1)",
+    "reason": "inside opening range",
     "atr_ok": true
   },
   "M15": {
     "direction": "none",
     "votes": {
-      "rsi_divergence": "none",
-      "rsi_level": "none"
+      "orb": "none",
+      "volume": "none"
     },
-    "reason": "no divergence",
+    "reason": "inside opening range",
     "atr_ok": true
   },
-  "updated_at": "2026-08-07T09:25:38.230291+00:00"
+  "updated_at": "2026-08-07T09:26:08.005570+00:00"
 }
