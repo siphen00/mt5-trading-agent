@@ -5,22 +5,22 @@
   "open_positions_bot": 0,
   "open_positions_manual": 0,
   "M5": {
+    "direction": "long",
+    "votes": {
+      "rsi_divergence": "long",
+      "rsi_level": "none"
+    },
+    "reason": "RSI divergence (long, RSI=82.5)",
+    "atr_ok": true
+  },
+  "M15": {
     "direction": "none",
     "votes": {
       "rsi_divergence": "none",
       "rsi_level": "none"
     },
     "reason": "no divergence",
-    "atr_ok": false
+    "atr_ok": true
   },
-  "M15": {
-    "direction": "long",
-    "votes": {
-      "rsi_divergence": "long",
-      "rsi_level": "none"
-    },
-    "reason": "RSI divergence (long, RSI=46.4)",
-    "atr_ok": false
-  },
-  "updated_at": "2026-08-07T09:24:46.909855+00:00"
+  "updated_at": "2026-08-07T09:25:18.279259+00:00"
 }
