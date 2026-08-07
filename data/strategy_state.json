@@ -5,12 +5,12 @@
   "open_positions_bot": 2,
   "open_positions_manual": 0,
   "M5": {
-    "direction": "long",
+    "direction": "none",
     "votes": {
       "ema": "none",
-      "smc": "long"
+      "smc": "none"
     },
-    "reason": "SMC long (bos_bullish/ob_bullish_retest)",
+    "reason": "no confluence",
     "atr_ok": true
   },
   "M15": {
@@ -22,5 +22,5 @@
     "reason": "SMC long (bos_bullish/none)",
     "atr_ok": true
   },
-  "updated_at": "2026-08-07T11:24:56.813777+00:00"
+  "updated_at": "2026-08-07T11:25:15.153853+00:00"
 }
