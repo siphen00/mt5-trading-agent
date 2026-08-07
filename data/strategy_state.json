@@ -2,7 +2,7 @@
   "active_strategy": "ema_smc",
   "active_session": "london",
   "session_active": true,
-  "open_positions_bot": 0,
+  "open_positions_bot": 1,
   "open_positions_manual": 0,
   "M5": {
     "direction": "none",
@@ -23,5 +23,5 @@
     "reason": "SMC long (bos_bullish/none)",
     "atr_ok": true
   },
-  "updated_at": "2026-08-07T11:21:11.310451+00:00"
+  "updated_at": "2026-08-07T11:21:34.447358+00:00"
 }
