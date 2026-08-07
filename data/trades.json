@@ -318,8 +318,12 @@
       "atr_ok": true,
       "atr": 114.05928571428636
     },
-    "status": "open",
-    "source": "bot"
+    "status": "closed",
+    "source": "bot",
+    "exit": 65260.49,
+    "exit_time": "2026-08-07T12:30:03+00:00",
+    "pnl": 2.85,
+    "closed_by": "bot (take profit)"
   },
   {
     "ticket": 3057065560,
@@ -350,7 +354,11 @@
       "atr_ok": true,
       "atr": 114.07857142857185
     },
-    "status": "open",
-    "source": "bot"
+    "status": "closed",
+    "source": "bot",
+    "exit": 65263.77,
+    "exit_time": "2026-08-07T12:30:03+00:00",
+    "pnl": 2.85,
+    "closed_by": "bot (take profit)"
   }
 ]
