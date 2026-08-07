@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "ticket": 3057991101,
+    "direction": "long",
+    "volume": 0.01,
+    "entry": 65247.91,
+    "current_price": 65249.83,
+    "sl": 65081.42,
+    "tp": 65513.79,
+    "profit": 0.02,
+    "source": "bot",
+    "opened_at": "2026-08-07T12:51:27+00:00"
+  }
+]

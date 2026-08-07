@@ -2,14 +2,14 @@
   "active_strategy": "ema_smc",
   "active_session": "london",
   "session_active": true,
-  "open_positions_bot": 0,
+  "open_positions_bot": 1,
   "open_positions_manual": 0,
   "M5": {
     "direction": "long",
     "votes": {
       "ema": "none",
       "smc": "long",
-      "ollama": "long"
+      "ollama": "none"
     },
     "reason": "SMC long (none/ob_bullish_retest)",
     "atr_ok": true
@@ -23,5 +23,5 @@
     "reason": "no confluence",
     "atr_ok": true
   },
-  "updated_at": "2026-08-07T12:51:27.974501+00:00"
+  "updated_at": "2026-08-07T12:51:56.261992+00:00"
 }
