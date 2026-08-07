@@ -14,13 +14,14 @@
     "atr_ok": false
   },
   "M15": {
-    "direction": "none",
+    "direction": "long",
     "votes": {
       "ema": "none",
-      "smc": "none"
+      "smc": "long",
+      "ollama": "long"
     },
-    "reason": "no confluence",
+    "reason": "SMC long (bos_bullish/none)",
     "atr_ok": true
   },
-  "updated_at": "2026-08-07T11:20:47.926146+00:00"
+  "updated_at": "2026-08-07T11:21:11.310451+00:00"
 }

@@ -288,5 +288,37 @@
     "exit_time": "2026-08-06T11:47:37+00:00",
     "pnl": -3.55,
     "closed_by": "manual"
+  },
+  {
+    "ticket": 3057063968,
+    "time": "2026-08-07T11:21:11.294587+00:00",
+    "symbol": "BTCUSDm",
+    "timeframe": "M15",
+    "direction": "long",
+    "entry": 64975.34,
+    "stop": 64804.25,
+    "target": 65260.49,
+    "lots": 0.01,
+    "reason": "[ema_smc] SMC long (bos_bullish/none)",
+    "votes": {
+      "ema": "none",
+      "smc": "long",
+      "ollama": "long"
+    },
+    "meta": {
+      "ema_fast": 64811.25,
+      "ema_slow": 64646.48,
+      "bos": "bos_bullish",
+      "order_block": "none",
+      "sweep": "none",
+      "fvg": "fvg_bullish",
+      "swing_high": 64937.79,
+      "gap_low": 64868.97,
+      "gap_high": 64877.43,
+      "atr_ok": true,
+      "atr": 114.05928571428636
+    },
+    "status": "open",
+    "source": "bot"
   }
 ]
