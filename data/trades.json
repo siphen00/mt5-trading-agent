@@ -424,7 +424,11 @@
       "atr_ok": true,
       "atr": 108.09285714285735
     },
-    "status": "open",
-    "source": "bot"
+    "status": "closed",
+    "source": "bot",
+    "exit": 65093.020000000004,
+    "exit_time": "2026-08-07T13:25:01+00:00",
+    "pnl": -1.65,
+    "closed_by": "bot (stop loss)"
   }
 ]
