@@ -393,5 +393,38 @@
     },
     "status": "open",
     "source": "bot"
+  },
+  {
+    "ticket": 3058000340,
+    "time": "2026-08-07T12:52:24.731198+00:00",
+    "symbol": "BTCUSDm",
+    "timeframe": "M5",
+    "direction": "long",
+    "entry": 65257.99,
+    "stop": 65095.85,
+    "target": 65528.22,
+    "lots": 0.01,
+    "reason": "[ema_smc] SMC long (none/ob_bullish_retest)",
+    "votes": {
+      "ema": "none",
+      "smc": "long",
+      "ollama": "long"
+    },
+    "meta": {
+      "ema_fast": 65107.37,
+      "ema_slow": 65036.46,
+      "bos": "none",
+      "order_block": "ob_bullish_retest",
+      "sweep": "none",
+      "fvg": "fvg_bullish",
+      "ob_low": 64928.0,
+      "ob_high": 65283.17,
+      "gap_low": 65167.01,
+      "gap_high": 65194.63,
+      "atr_ok": true,
+      "atr": 108.09285714285735
+    },
+    "status": "open",
+    "source": "bot"
   }
 ]
