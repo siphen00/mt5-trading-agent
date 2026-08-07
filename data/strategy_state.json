@@ -2,26 +2,25 @@
   "active_strategy": "ema_smc",
   "active_session": "london",
   "session_active": true,
-  "open_positions_bot": 1,
+  "open_positions_bot": 2,
   "open_positions_manual": 0,
   "M5": {
-    "direction": "none",
+    "direction": "long",
     "votes": {
       "ema": "none",
-      "smc": "none"
+      "smc": "long"
     },
-    "reason": "no confluence",
+    "reason": "SMC long (bos_bullish/ob_bullish_retest)",
     "atr_ok": false
   },
   "M15": {
     "direction": "long",
     "votes": {
       "ema": "none",
-      "smc": "long",
-      "ollama": "long"
+      "smc": "long"
     },
     "reason": "SMC long (bos_bullish/none)",
     "atr_ok": true
   },
-  "updated_at": "2026-08-07T11:21:34.447358+00:00"
+  "updated_at": "2026-08-07T11:21:52.864547+00:00"
 }
