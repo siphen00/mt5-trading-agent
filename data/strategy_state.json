@@ -1,7 +1,7 @@
 {
   "active_strategy": "ema_smc",
   "active_session": "london",
-  "session_active": true,
+  "session_active": false,
   "open_positions_bot": 0,
   "open_positions_manual": 0,
   "M5": {
@@ -22,5 +22,5 @@
     "reason": "no confluence",
     "atr_ok": true
   },
-  "updated_at": "2026-08-07T15:59:43.270720+00:00"
+  "updated_at": "2026-08-07T16:00:03.979049+00:00"
 }
