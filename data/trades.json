@@ -391,8 +391,12 @@
       "atr_ok": true,
       "atr": 108.09285714285735
     },
-    "status": "open",
-    "source": "bot"
+    "status": "closed",
+    "source": "bot",
+    "exit": 65073.24,
+    "exit_time": "2026-08-07T13:28:35+00:00",
+    "pnl": -1.75,
+    "closed_by": "bot (stop loss)"
   },
   {
     "ticket": 3058000340,
