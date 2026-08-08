@@ -7,17 +7,6 @@
   "open_positions_bot": 0,
   "open_positions_manual": 0,
   "M5": {
-    "direction": "long",
-    "votes": {
-      "ema": "none",
-      "smc": "long"
-    },
-    "reason": "SMC long (bos_bullish/ob_bullish_retest)",
-    "atr_ok": true,
-    "bar_time": "2026-08-08T14:20:00+00:00",
-    "new_bar": false
-  },
-  "M15": {
     "direction": "none",
     "votes": {
       "ema": "none",
@@ -25,8 +14,20 @@
     },
     "reason": "no confluence",
     "atr_ok": true,
-    "bar_time": "2026-08-08T14:00:00+00:00",
+    "bar_time": "2026-08-08T14:25:00+00:00",
     "new_bar": true
   },
-  "updated_at": "2026-08-08T14:29:57.234832+00:00"
+  "M15": {
+    "direction": "long",
+    "votes": {
+      "ema": "none",
+      "smc": "long",
+      "ollama": "long"
+    },
+    "reason": "SMC long (bos_bullish/ob_bullish_retest)",
+    "atr_ok": true,
+    "bar_time": "2026-08-08T14:15:00+00:00",
+    "new_bar": true
+  },
+  "updated_at": "2026-08-08T14:30:21.893633+00:00"
 }
