@@ -1,0 +1,1098 @@
+diff --git a/connector/broker_time.py b/connector/broker_time.py
+new file mode 100644
+index 00000000..1d54f8f5
+--- /dev/null
++++ b/connector/broker_time.py
+@@ -0,0 +1,68 @@
++"""
++Broker timezone handling.
++
++The bug this fixes
++------------------
++MT5 returns candle timestamps and tick times in the BROKER'S SERVER timezone,
++not UTC. Exness servers typically run UTC+2 (winter) / UTC+3 (summer). The old
++code did `pd.to_datetime(df["time"], unit="s", utc=True)` — i.e. it took server
++seconds and *labelled* them UTC. Everything downstream that depends on the clock
++was therefore shifted by the server offset:
++
++  * strategy/sessions.py windows ("London" 07:00-16:00 UTC) selected the wrong
++    hours of the day.
++  * orb_signal()'s opening range started at the wrong candle.
++  * The date used for "today" could roll over at the wrong moment.
++
++Approach
++--------
++Detect the offset once per run by comparing a live server tick timestamp against
++real UTC, then subtract it so every downstream consumer sees true UTC. Offsets
++are rounded to the nearest half hour (some brokers use :30). The value can be
++pinned in config if you'd rather not rely on detection.
++
++Pure functions here so they're testable without a live terminal.
++"""
++
++from __future__ import annotations
++
++
++def detect_offset_hours(server_epoch: float, true_utc_epoch: float) -> float:
++    """
++    Offset in hours between the broker's clock and real UTC.
++
++    `server_epoch` is what MT5 hands back (e.g. symbol_info_tick().time), which
++    is "seconds since epoch" computed against SERVER local time. `true_utc_epoch`
++    is real UTC (time.time()). A UTC+3 server reads ~10800s ahead.
++
++    Rounded to the nearest 0.5h so normal network/poll jitter (seconds) can't
++    produce a bogus fractional offset.
++    """
++    raw_hours = (server_epoch - true_utc_epoch) / 3600.0
++    return round(raw_hours * 2) / 2
++
++
++def to_utc_epoch(server_epoch: float, offset_hours: float) -> float:
++    """Convert one broker-clock timestamp to true UTC."""
++    return server_epoch - offset_hours * 3600.0
++
++
++def normalise_candle_times(times, offset_hours: float):
++    """
++    Convert a sequence/Series of broker-clock candle times to true UTC.
++    Works with a pandas Series or a plain list.
++    """
++    shift = offset_hours * 3600.0
++    try:
++        return times - shift  # pandas Series / numpy array
++    except TypeError:
++        return [t - shift for t in times]
++
++
++def bar_seconds(timeframe_str: str) -> int:
++    """Bar length in seconds, used for the new-bar gate."""
++    table = {"M1": 60, "M5": 300, "M15": 900, "M30": 1800, "H1": 3600, "H4": 14400, "D1": 86400}
++    try:
++        return table[timeframe_str]
++    except KeyError:
++        raise ValueError(f"unknown timeframe {timeframe_str!r}") from None
+diff --git a/connector/config.py b/connector/config.py
+index d9dda51c..a02d1c34 100644
+--- a/connector/config.py
++++ b/connector/config.py
+@@ -20,10 +20,30 @@ TIMEFRAMES = ["M5", "M15"]  # 5-minute and 15-minute scalping
+ # --- Risk management ---
+ RISK_PER_TRADE_PCT = 0.5     # % of equity risked per trade
+ MAX_CONCURRENT_TRADES = 2    # one per timeframe by default
+-MAX_DAILY_LOSS_PCT = 3.0     # kill switch: stop trading for the day past this
++MAX_DAILY_LOSS_PCT = 3.0     # kill switch: stop trading for the day past this.
++                              # NOW ENFORCED in run_cycle via connector/risk.py —
++                              # previously this value existed in config and was
++                              # referenced nowhere else in the codebase.
+ ATR_MIN_MULTIPLIER = 1.0     # skip entries when ATR is below this vs its 20-period average
+                               # (this is the "low volatility chop" filter from the weekly review)
+ 
++# Hard ceiling on the risk a single trade may actually carry. The broker's
++# minimum lot (0.01) can force far more risk than RISK_PER_TRADE_PCT asks for on
++# a small account: at ~$78 equity with a ~$300 ATR stop, 0.5% intends ~$0.39 of
++# risk but the minimum lot risks ~$3, i.e. ~4%. Trades exceeding this ceiling are
++# REFUSED with a loud log line rather than silently taken oversized.
++MAX_EFFECTIVE_RISK_PCT = 1.5
++
++# Spread gate: skip entries when the spread is a large fraction of ATR, since
++# the trade then has to beat the broker before it beats the market.
++MAX_SPREAD_ATR_FRACTION = 0.15   # e.g. skip if spread > 15% of ATR
++SPREAD_STOP_MULTIPLE = 3.0       # stop must be at least this many spreads wide
++
++# Broker clock. MT5 reports candle/tick times in SERVER time, not UTC (Exness is
++# typically UTC+2/+3). Leave as None to auto-detect on startup by comparing a
++# live tick against real UTC; set a number to pin it (e.g. 3.0 for UTC+3).
++BROKER_UTC_OFFSET_HOURS = None
++
+ # --- Strategy voting ---
+ VOTES_REQUIRED = 2           # deprecated — kept for reference; trade confirmation is now
+                               # "does Ollama agree with whichever strategy is active" (see
+diff --git a/connector/mt5_connector.py b/connector/mt5_connector.py
+index 8857ed86..ea4de755 100644
+--- a/connector/mt5_connector.py
++++ b/connector/mt5_connector.py
+@@ -29,6 +29,8 @@ except ImportError:
+     mt5 = None  # allows this file to be imported for testing on non-Windows machines
+ 
+ from connector import config
++from connector import risk as risk_mod
++from connector import broker_time
+ from connector.git_sync import commit_and_push
+ from strategy.signals import atr_filter_ok
+ from strategy.strategies import STRATEGIES, DEFAULT_STRATEGY
+@@ -41,6 +43,65 @@ TIMEFRAME_MAP = {
+ }
+ 
+ 
++# Broker clock offset vs true UTC, detected once per run (see connector/broker_time.py).
++_BROKER_OFFSET_HOURS: float | None = None
++
++# Last CLOSED bar we actually evaluated, per timeframe. Guards against
++# re-evaluating the same bar on every 15s poll (a 5-minute bar would otherwise
++# be acted on ~20 times). In-memory on purpose: after a restart we simply
++# evaluate the current closed bar once, with no stale flag to get stuck.
++_LAST_BAR_SEEN: dict[str, int] = {}
++
++
++def get_broker_offset_hours() -> float:
++    """Detect (once) how far the broker's clock sits from true UTC."""
++    global _BROKER_OFFSET_HOURS
++    if config.BROKER_UTC_OFFSET_HOURS is not None:
++        return float(config.BROKER_UTC_OFFSET_HOURS)
++    if _BROKER_OFFSET_HOURS is None:
++        tick = mt5.symbol_info_tick(config.SYMBOL)
++        if tick is None:
++            print("[connector] WARNING: no tick for broker-time detection, assuming UTC+0")
++            _BROKER_OFFSET_HOURS = 0.0
++        else:
++            _BROKER_OFFSET_HOURS = broker_time.detect_offset_hours(tick.time, time.time())
++            print(f"[connector] Broker clock detected at UTC{_BROKER_OFFSET_HOURS:+g} — "
++                  f"candle times normalised to true UTC for session/ORB logic")
++    return _BROKER_OFFSET_HOURS
++
++
++def get_symbol_spec(symbol: str) -> risk_mod.SymbolSpec:
++    """Adapt MT5's symbol_info into the pure SymbolSpec used by connector/risk.py."""
++    info = mt5.symbol_info(symbol)
++    if info is None:
++        raise RuntimeError(f"Symbol '{symbol}' not found when reading contract specs")
++    return risk_mod.SymbolSpec(
++        tick_size=info.trade_tick_size or info.point,
++        tick_value=info.trade_tick_value,
++        volume_min=info.volume_min,
++        volume_max=info.volume_max,
++        volume_step=info.volume_step,
++        digits=info.digits,
++        point=info.point,
++        stops_level=info.trade_stops_level,
++        freeze_level=info.trade_freeze_level,
++    )
++
++
++def realized_pnl_today(offset_hours: float) -> float:
++    """
++    Sum of today's closed P&L (profit + commission + swap) since 00:00 UTC.
++    Used by the daily-loss breaker. history_deals_get expects broker-clock
++    datetimes, so the UTC day boundary is converted back into broker time.
++    """
++    now_utc = datetime.now(timezone.utc)
++    day_start_utc = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
++    # Convert the UTC window into the broker's clock for the history query.
++    to_broker = timedelta(hours=offset_hours)
++    deals = mt5.history_deals_get(day_start_utc + to_broker, now_utc + to_broker) or []
++    return sum(d.profit + d.commission + d.swap for d in deals)
++
++
+ def connect() -> bool:
+     if mt5 is None:
+         raise RuntimeError(
+@@ -104,22 +165,32 @@ def get_candles(symbol: str, timeframe_str: str, count: int = 200) -> pd.DataFra
+         if not mt5.symbol_select(symbol, True):
+             raise RuntimeError(f"Could not add '{symbol}' to Market Watch: {mt5.last_error()}")
+ 
+-    rates = mt5.copy_rates_from_pos(symbol, tf, 0, count)
++    # Fetch one extra bar because position 0 is the CURRENTLY FORMING candle.
++    rates = mt5.copy_rates_from_pos(symbol, tf, 0, count + 1)
+     if rates is None or len(rates) == 0:
+         raise RuntimeError(f"No candle data returned for {symbol} {timeframe_str}: {mt5.last_error()}")
+     df = pd.DataFrame(rates)
+     df.rename(columns={"tick_volume": "volume"}, inplace=True)
++
++    # Drop the incomplete bar. Every strategy reads .iloc[-1]; with the forming
++    # candle present, its close kept changing on each 15s poll, so signals could
++    # appear and then un-appear (repainting) and the same bar could be traded
++    # repeatedly. Strategies now only ever see CLOSED candles.
++    if len(df) > 1:
++        df = df.iloc[:-1].reset_index(drop=True)
++
++    # MT5 timestamps are in broker server time. Normalise to true UTC so
++    # sessions.py windows and orb_signal's opening range land on the right hours.
++    df["time"] = broker_time.normalise_candle_times(df["time"], get_broker_offset_hours())
+     return df
+ 
+ 
+-def calc_position_size(equity: float, entry: float, stop: float) -> float:
+-    """Risk a fixed % of equity per trade based on stop distance."""
+-    risk_amount = equity * (config.RISK_PER_TRADE_PCT / 100)
+-    stop_distance = abs(entry - stop)
+-    if stop_distance == 0:
+-        return 0.01  # fallback minimum lot, avoid divide-by-zero
+-    lots = risk_amount / stop_distance
+-    return round(max(lots, 0.01), 2)
++# Position sizing now lives in connector/risk.py (calc_position_size there),
++# which converts stop distance to money using the symbol's tick value/tick size
++# and refuses trades where the broker's minimum lot would blow past the risk
++# target. The old version here assumed 1 lot moved $1 per $1 of price and used
++# max(lots, 0.01), which silently turned a 0.5% trade into roughly 4% on a
++# small account.
+ 
+ 
+ def place_trade(symbol: str, direction: str, timeframe: str, signal_meta: dict) -> dict | None:
+@@ -127,18 +198,27 @@ def place_trade(symbol: str, direction: str, timeframe: str, signal_meta: dict)
+     tick = mt5.symbol_info_tick(symbol)
+     info = mt5.symbol_info(symbol)
+     equity = mt5.account_info().equity
+-
+-    # Broker's minimum distance (in points) between the entry price and SL/TP —
+-    # this is exactly what "Invalid stops" (10016) means when violated.
+-    min_stop_distance = max(info.trade_stops_level, info.trade_freeze_level, 1) * info.point
++    spec = get_symbol_spec(symbol)
+ 
+     # signal_meta is shaped {"reason":..., "votes":..., "meta": {...}} by every
+     # caller — the real ATR value (when available) lives in meta["atr"], not
+     # at the top level. Previously this looked in the wrong place and silently
+     # fell back to a tiny equity-based guess every single time.
+     atr_estimate = (signal_meta.get("meta") or {}).get("atr") or (equity * 0.002)
+-    stop_distance = max(atr_estimate * 1.5, min_stop_distance * 1.5)  # safety margin above minimum
+-    target_distance = max(atr_estimate * 2.5, min_stop_distance * 2.5)
++
++    # --- Spread gate ------------------------------------------------------
++    spread_check = risk_mod.check_spread(tick.bid, tick.ask, atr_estimate,
++                                         config.MAX_SPREAD_ATR_FRACTION)
++    if not spread_check.ok:
++        print(f"[connector] Trade skipped — {spread_check.reason}")
++        return None
++
++    # Stop must clear the broker's minimum distance (the 10016 "Invalid stops"
++    # cause) AND be wide enough that the spread isn't a big share of the risk.
++    floor_distance = risk_mod.min_stop_distance(spec, spread_check.spread,
++                                                config.SPREAD_STOP_MULTIPLE)
++    stop_distance = max(atr_estimate * 1.5, floor_distance)
++    target_distance = max(atr_estimate * 2.5, floor_distance * 1.67)
+ 
+     if direction == "long":
+         entry = tick.ask
+@@ -157,8 +237,20 @@ def place_trade(symbol: str, direction: str, timeframe: str, signal_meta: dict)
+     stop = round(stop, info.digits)
+     target = round(target, info.digits)
+ 
+-    lots = calc_position_size(equity, entry, stop)
+-    lots = max(info.volume_min, round(lots / info.volume_step) * info.volume_step)
++    # --- Position sizing (contract-aware, with a hard risk ceiling) --------
++    sizing = risk_mod.calc_position_size(
++        equity=equity, entry=entry, stop=stop, spec=spec,
++        risk_pct=config.RISK_PER_TRADE_PCT,
++        max_effective_risk_pct=config.MAX_EFFECTIVE_RISK_PCT,
++    )
++    if not sizing.ok:
++        print(f"[connector] TRADE REFUSED — {sizing.reason}")
++        return None
++    if sizing.floored_by_min_lot:
++        print(f"[connector] NOTE: minimum lot raised risk to {sizing.effective_risk_pct:.2f}% "
++              f"(${sizing.effective_risk:.2f}) vs target {config.RISK_PER_TRADE_PCT:.2f}% "
++              f"(${sizing.intended_risk:.2f}) — within the {config.MAX_EFFECTIVE_RISK_PCT:.2f}% ceiling")
++    lots = sizing.lots
+ 
+     request = {
+         "action": mt5.TRADE_ACTION_DEAL,
+@@ -193,6 +285,12 @@ def place_trade(symbol: str, direction: str, timeframe: str, signal_meta: dict)
+         "stop": stop,
+         "target": target,
+         "lots": lots,
++        # Recorded so you can audit later what was ACTUALLY risked per trade
++        # rather than assuming it matched RISK_PER_TRADE_PCT.
++        "risk_amount": round(sizing.effective_risk, 2),
++        "risk_pct": round(sizing.effective_risk_pct, 3),
++        "risk_floored_by_min_lot": sizing.floored_by_min_lot,
++        "spread_at_entry": round(spread_check.spread, 2),
+         "reason": signal_meta.get("reason", ""),
+         "votes": signal_meta.get("votes", {}),
+         "meta": signal_meta.get("meta", {}),
+@@ -422,8 +520,24 @@ def run_cycle():
+ 
+     open_snapshot = sync_trade_state()
+     bot_open_count = sum(1 for p in open_snapshot if p["source"] == "bot")
++
++    # --- Daily loss breaker -------------------------------------------------
++    # Recomputed from broker truth every cycle (stateless, so it can't get stuck
++    # halted across a restart). Blocks NEW entries only — existing positions keep
++    # their SL/TP and are left alone.
++    acct = mt5.account_info()
++    daily = risk_mod.evaluate_daily_loss(
++        equity_now=acct.equity, balance_now=acct.balance,
++        realized_today=realized_pnl_today(get_broker_offset_hours()),
++        max_daily_loss_pct=config.MAX_DAILY_LOSS_PCT,
++    )
++    if daily.halted:
++        print(f"[connector] DAILY LOSS LIMIT HIT — {daily.reason}")
++
+     state_snapshot = {"active_strategy": active_strategy_id, "active_session": active_session_id,
+                        "session_active": session_active,
++                       "daily_loss_pct": round(daily.loss_pct, 2),
++                       "daily_loss_halted": daily.halted,
+                        "open_positions_bot": bot_open_count, "open_positions_manual": len(open_snapshot) - bot_open_count}
+ 
+     for tf in config.TIMEFRAMES:
+@@ -432,20 +546,37 @@ def run_cycle():
+         atr_ok = atr_filter_ok(df, config.ATR_MIN_MULTIPLIER)
+         signal = strategy_fn(df)
+ 
++        # New-bar gate: only ACT once per closed bar. The connector polls every
++        # 15s, so without this a single M5 bar would be evaluated ~20 times and
++        # could be entered repeatedly. Evaluation/logging still happens every
++        # cycle so the dashboard stays live; only trading is gated.
++        last_bar_time = int(df["time"].iloc[-1])
++        is_new_bar = _LAST_BAR_SEEN.get(tf) != last_bar_time
++
+         state_snapshot[tf] = {
+             "direction": signal.direction,
+             "votes": signal.votes,
+             "reason": signal.reason,
+             "atr_ok": atr_ok,
++            "bar_time": datetime.fromtimestamp(last_bar_time, tz=timezone.utc).isoformat(),
++            "new_bar": is_new_bar,
+         }
+ 
++        if daily.halted:
++            continue  # kill switch active — no new entries today
+         if not session_active:
+             continue  # outside the selected trading session — evaluate and log, but don't trade
++        if not is_new_bar:
++            continue  # already acted on this closed bar
+         if not atr_ok or signal.direction == "none":
+             continue
+         if bot_open_count >= config.MAX_CONCURRENT_TRADES:
+             continue
+ 
++        # Mark the bar consumed at the point we commit to acting on it, so a
++        # downstream veto/refusal doesn't cause a retry on the very next poll.
++        _LAST_BAR_SEEN[tf] = last_bar_time
++
+         # Ollama is a universal confirm/veto layer regardless of which
+         # strategy is active — each strategy already encapsulates its own
+         # internal confluence, so this is the one external sanity check
+@@ -478,7 +609,9 @@ def run_cycle():
+     summary = " | ".join(f"{tf}: {state_snapshot[tf]['direction']} ({state_snapshot[tf]['reason']})"
+                           for tf in config.TIMEFRAMES if tf in state_snapshot)
+     sync_status = "synced" if pushed else "SYNC FAILED — see git_sync errors above"
+-    print(f"[connector] {datetime.now(timezone.utc).strftime('%H:%M:%S')} — [{active_strategy_id}/{session_note}] {summary} — {sync_status}")
++    risk_note = f"day {daily.loss_pct:+.2f}%{' HALTED' if daily.halted else ''}"
++    print(f"[connector] {datetime.now(timezone.utc).strftime('%H:%M:%S')} — [{active_strategy_id}/{session_note}] "
++          f"{summary} — {risk_note} — {sync_status}")
+ 
+ 
+ def main():
+diff --git a/connector/risk.py b/connector/risk.py
+new file mode 100644
+index 00000000..9e27768d
+--- /dev/null
++++ b/connector/risk.py
+@@ -0,0 +1,224 @@
++"""
++Risk management: position sizing, spread gating, and the daily-loss breaker.
++
++All pure functions taking plain values/dicts — no MT5 imports — so the maths
++that decides how much money is at stake can actually be unit-tested without a
++live terminal. The connector adapts MT5 objects into these.
++
++Three bugs this module fixes
++----------------------------
++1. SIZING IGNORED CONTRACT SPECS. The old calc_position_size did
++   `lots = risk_amount / stop_distance`, which silently assumes one lot moves
++   $1 per $1 of price. Correct conversion needs the symbol's tick value and
++   tick size: value_per_price_unit = tick_value / tick_size.
++
++2. MINIMUM LOT SIZE SILENTLY BLEW THROUGH THE RISK TARGET. At ~$78 equity and
++   0.5% risk, intended risk is ~$0.39. With an ATR-based stop around $300 the
++   correct size is ~0.0013 lots — far below Exness's 0.01 minimum. The old code
++   did `max(lots, 0.01)`, quietly turning a 0.5% trade into roughly 4%, and with
++   MAX_CONCURRENT_TRADES=2 about 8% of the account at risk at once. Now the
++   floor is detected, the true effective risk is reported, and the trade is
++   REFUSED when it exceeds MAX_EFFECTIVE_RISK_PCT rather than being taken
++   silently oversized.
++
++3. SPREAD WAS NEVER CHECKED. Scalping M5 BTC where the spread can be a large
++   fraction of a 1.5x ATR stop, with no spread awareness anywhere. Now the
++   spread is compared to ATR, and the stop is never allowed to sit so close
++   that spread alone dominates the trade.
++"""
++
++from __future__ import annotations
++from dataclasses import dataclass
++from typing import Optional
++
++
++# ---------------------------------------------------------------------------
++# Position sizing
++# ---------------------------------------------------------------------------
++
++@dataclass
++class SymbolSpec:
++    """The broker facts that determine what a lot is actually worth."""
++    tick_size: float        # symbol_info.trade_tick_size (price increment)
++    tick_value: float       # symbol_info.trade_tick_value (account ccy per tick, per lot)
++    volume_min: float       # symbol_info.volume_min
++    volume_max: float       # symbol_info.volume_max
++    volume_step: float      # symbol_info.volume_step
++    digits: int             # symbol_info.digits
++    point: float            # symbol_info.point
++    stops_level: int = 0    # symbol_info.trade_stops_level (in points)
++    freeze_level: int = 0   # symbol_info.trade_freeze_level (in points)
++
++    def value_per_price_unit(self) -> float:
++        """Account-currency P&L per 1.0 of price movement, per 1.0 lot."""
++        if self.tick_size <= 0:
++            raise ValueError("tick_size must be > 0")
++        return self.tick_value / self.tick_size
++
++
++@dataclass
++class SizingResult:
++    lots: float
++    intended_risk: float          # what RISK_PER_TRADE_PCT asked for
++    effective_risk: float         # what this lot size actually risks
++    effective_risk_pct: float     # as % of equity
++    floored_by_min_lot: bool      # min lot forced us above the intended risk
++    capped_by_max_lot: bool
++    ok: bool                      # False => do not trade
++    reason: str = ""
++
++
++def _round_to_step(value: float, step: float) -> float:
++    if step <= 0:
++        return value
++    # round() then normalise float noise (0.30000000000000004 -> 0.3)
++    return round(round(value / step) * step, 8)
++
++
++def calc_position_size(
++    equity: float,
++    entry: float,
++    stop: float,
++    spec: SymbolSpec,
++    risk_pct: float,
++    max_effective_risk_pct: float,
++) -> SizingResult:
++    """
++    Size a position from a real risk budget, honouring contract specs.
++
++    Returns a SizingResult; when `ok` is False the caller must NOT place the
++    trade — that's the guard against min-lot silently multiplying your risk.
++    """
++    stop_distance = abs(entry - stop)
++    if stop_distance <= 0:
++        return SizingResult(0.0, 0.0, 0.0, 0.0, False, False, False,
++                            "stop distance is zero")
++    if equity <= 0:
++        return SizingResult(0.0, 0.0, 0.0, 0.0, False, False, False,
++                            "equity is zero or negative")
++
++    intended_risk = equity * (risk_pct / 100.0)
++    risk_per_lot = stop_distance * spec.value_per_price_unit()
++    if risk_per_lot <= 0:
++        return SizingResult(0.0, intended_risk, 0.0, 0.0, False, False, False,
++                            "risk per lot is zero (bad tick value/size)")
++
++    raw_lots = intended_risk / risk_per_lot
++    lots = _round_to_step(raw_lots, spec.volume_step)
++
++    floored = False
++    capped = False
++    if lots < spec.volume_min:
++        lots = spec.volume_min
++        floored = True
++    if spec.volume_max and lots > spec.volume_max:
++        lots = spec.volume_max
++        capped = True
++
++    effective_risk = lots * risk_per_lot
++    effective_pct = (effective_risk / equity) * 100.0
++
++    ok = True
++    reason = ""
++    if effective_pct > max_effective_risk_pct:
++        ok = False
++        reason = (
++            f"min lot {spec.volume_min} forces {effective_pct:.2f}% risk "
++            f"(${effective_risk:.2f}) vs target {risk_pct:.2f}% (${intended_risk:.2f}); "
++            f"ceiling is {max_effective_risk_pct:.2f}%. Account too small for this "
++            f"stop distance — trade refused."
++        )
++
++    return SizingResult(lots, intended_risk, effective_risk, effective_pct,
++                        floored, capped, ok, reason)
++
++
++# ---------------------------------------------------------------------------
++# Spread gate
++# ---------------------------------------------------------------------------
++
++@dataclass
++class SpreadCheck:
++    ok: bool
++    spread: float
++    spread_atr_fraction: Optional[float]
++    reason: str = ""
++
++
++def check_spread(bid: float, ask: float, atr: Optional[float],
++                 max_atr_fraction: float) -> SpreadCheck:
++    """
++    Refuse to trade when the spread is large relative to the move we're
++    targeting. A $40 spread against a $150 ATR means the trade starts deep
++    underwater and the edge has to overcome the broker before it overcomes
++    the market.
++    """
++    spread = ask - bid
++    if spread < 0:
++        return SpreadCheck(False, spread, None, "negative spread (bad tick)")
++    if not atr or atr <= 0:
++        # No ATR yet (warmup): allow, since the ATR filter upstream also
++        # abstains in that state rather than blocking everything.
++        return SpreadCheck(True, spread, None, "no ATR available, spread check skipped")
++    fraction = spread / atr
++    if fraction > max_atr_fraction:
++        return SpreadCheck(False, spread, fraction,
++                           f"spread {spread:.2f} is {fraction:.1%} of ATR {atr:.2f} "
++                           f"(max {max_atr_fraction:.0%})")
++    return SpreadCheck(True, spread, fraction)
++
++
++def min_stop_distance(spec: SymbolSpec, spread: float,
++                      spread_multiple: float = 3.0) -> float:
++    """
++    Floor for the stop distance: the broker's own minimum, and enough room that
++    the spread isn't a meaningful share of the stop.
++    """
++    broker_min = max(spec.stops_level, spec.freeze_level, 1) * spec.point
++    return max(broker_min * 1.5, spread * spread_multiple)
++
++
++# ---------------------------------------------------------------------------
++# Daily loss breaker
++# ---------------------------------------------------------------------------
++
++@dataclass
++class DailyLossState:
++    halted: bool
++    day_start_balance: float
++    realized_today: float
++    equity_now: float
++    loss_pct: float
++    reason: str = ""
++
++
++def evaluate_daily_loss(equity_now: float, balance_now: float,
++                        realized_today: float, max_daily_loss_pct: float) -> DailyLossState:
++    """
++    The kill switch that config.MAX_DAILY_LOSS_PCT promised but was never wired
++    to anything (the constant appeared in config.py and nowhere else in the
++    codebase).
++
++    Measures from the day's STARTING BALANCE and compares against current
++    EQUITY, so open floating losses count too — otherwise the bot could sail
++    past the limit as long as it hadn't closed anything yet.
++
++    Stateless by design: recomputed from broker truth every cycle, so there's
++    no "halted" flag that can get stuck on across a restart.
++    """
++    day_start_balance = balance_now - realized_today
++    if day_start_balance <= 0:
++        return DailyLossState(True, day_start_balance, realized_today, equity_now, 0.0,
++                              "cannot determine day-start balance")
++
++    change_pct = (equity_now - day_start_balance) / day_start_balance * 100.0
++    loss_pct = -change_pct  # positive number means we're down
++
++    if loss_pct >= max_daily_loss_pct:
++        return DailyLossState(
++            True, day_start_balance, realized_today, equity_now, loss_pct,
++            f"daily loss {loss_pct:.2f}% >= limit {max_daily_loss_pct:.2f}% "
++            f"(day start ${day_start_balance:.2f} -> equity ${equity_now:.2f}). "
++            f"No new trades until the next UTC day."
++        )
++    return DailyLossState(False, day_start_balance, realized_today, equity_now, loss_pct)
+diff --git a/connector/test_connector_integration.py b/connector/test_connector_integration.py
+new file mode 100644
+index 00000000..6aa265ef
+--- /dev/null
++++ b/connector/test_connector_integration.py
+@@ -0,0 +1,235 @@
++"""
++Connector integration tests against a mocked MetaTrader5 module.
++
++Run from repo root:  python3 -m connector.test_connector_integration
++
++Verifies the behaviour that can't be checked in pure functions:
++  1. get_candles drops the currently-forming bar and normalises times to UTC.
++  2. The new-bar gate stops the same closed bar being traded on every 15s poll.
++  3. The daily-loss breaker blocks new entries.
++  4. place_trade refuses a trade when min lot would exceed the risk ceiling,
++     and rejects entries when the spread is too wide.
++"""
++import sys
++import types
++from datetime import datetime, timezone
++
++import numpy as np
++import pandas as pd
++
++passed = 0
++def check(name, cond):
++    global passed
++    assert cond, f"FAIL: {name}"
++    passed += 1
++    print(f"  ok  {name}")
++
++
++# ---------------------------------------------------------------------------
++# Mock MetaTrader5
++# ---------------------------------------------------------------------------
++BROKER_OFFSET_H = 3.0   # pretend the broker runs UTC+3
++BAR = 300               # M5
++
++class _Info:
++    visible = True
++    digits = 2
++    point = 0.01
++    trade_tick_size = 0.01
++    trade_tick_value = 0.01
++    volume_min = 0.01
++    volume_max = 100.0
++    volume_step = 0.01
++    trade_stops_level = 0
++    trade_freeze_level = 0
++
++class _Tick:
++    def __init__(self, bid, ask, t):
++        self.bid, self.ask, self.time = bid, ask, t
++
++class _Acct:
++    def __init__(self, equity, balance):
++        self.equity, self.balance = equity, balance
++
++class _Result:
++    def __init__(self, retcode, order):
++        self.retcode, self.order, self.comment = retcode, order, "ok"
++
++
++def make_mock(equity=5000.0, balance=5000.0, spread=10.0, deals=(), n_bars=120,
++              last_closed_utc=None):
++    """Build a fake MT5 module. Candle times are returned in BROKER time."""
++    m = types.ModuleType("MetaTrader5")
++    m.TIMEFRAME_M5, m.TIMEFRAME_M15 = 5, 15
++    m.TRADE_ACTION_DEAL = 1
++    m.ORDER_TYPE_BUY, m.ORDER_TYPE_SELL = 0, 1
++    m.ORDER_TIME_GTC, m.ORDER_FILLING_IOC = 0, 1
++    m.TRADE_RETCODE_DONE = 10009
++    m.POSITION_TYPE_BUY = 0
++
++    # last_closed_utc = UTC time of the newest CLOSED bar.
++    if last_closed_utc is None:
++        last_closed_utc = 1_754_600_000 - (1_754_600_000 % BAR)
++    m._last_closed_utc = last_closed_utc
++    m._orders = []
++
++    def copy_rates_from_pos(symbol, tf, start, count):
++        # Position 0 is the forming bar: one bar AFTER the last closed one.
++        # Read from the module attribute (not the closure local) so tests can
++        # advance the clock mid-run.
++        forming_utc = m._last_closed_utc + BAR
++        times_utc = [forming_utc - i * BAR for i in range(count)][::-1]
++        # MT5 hands these back on the BROKER clock.
++        times_broker = [t + BROKER_OFFSET_H * 3600 for t in times_utc]
++        rows = []
++        for i, t in enumerate(times_broker):
++            base = 115000 + (i % 5) * 20
++            rows.append((t, base, base + 60, base - 60, base + 10, 500, 2, 500))
++        return np.array(rows, dtype=[("time", "f8"), ("open", "f8"), ("high", "f8"),
++                                     ("low", "f8"), ("close", "f8"),
++                                     ("tick_volume", "f8"), ("spread", "f8"),
++                                     ("real_volume", "f8")])
++
++    m.copy_rates_from_pos = copy_rates_from_pos
++    m.symbol_info = lambda s: _Info()
++    # Tick time is on the broker clock — that's what offset detection reads.
++    m.symbol_info_tick = lambda s: _Tick(115000 - spread / 2, 115000 + spread / 2,
++                                         __import__("time").time() + BROKER_OFFSET_H * 3600)
++    m.account_info = lambda: _Acct(equity, balance)
++    m.positions_get = lambda **kw: []
++    m.history_deals_get = lambda *a, **kw: list(deals)
++    m.last_error = lambda: (0, "none")
++    m.symbol_select = lambda s, v: True
++
++    def order_send(req):
++        m._orders.append(req)
++        return _Result(m.TRADE_RETCODE_DONE, 1000 + len(m._orders))
++    m.order_send = order_send
++    return m
++
++
++class _Deal:
++    def __init__(self, profit, commission=0.0, swap=0.0, entry=1):
++        self.profit, self.commission, self.swap, self.entry = profit, commission, swap, entry
++
++
++def load_connector(mock):
++    """(Re)import the connector bound to a fresh mock."""
++    sys.modules["MetaTrader5"] = mock
++    for name in list(sys.modules):
++        if name.startswith("connector.mt5_connector"):
++            del sys.modules[name]
++    import connector.mt5_connector as c
++    c.mt5 = mock
++    c.TIMEFRAME_MAP = {"M5": mock.TIMEFRAME_M5, "M15": mock.TIMEFRAME_M15}
++    c._BROKER_OFFSET_HOURS = None
++    c._LAST_BAR_SEEN.clear()
++    return c
++
++
++# ---------------------------------------------------------------------------
++print("A. forming candle is dropped, times normalised to UTC")
++
++mock = make_mock()
++c = load_connector(mock)
++df = c.get_candles("BTCUSDm", "M5", count=100)
++
++check("returns exactly `count` closed bars", len(df) == 100)
++newest = int(df["time"].iloc[-1])
++check("newest bar is the last CLOSED bar, not the forming one",
++      newest == mock._last_closed_utc)
++check("forming bar is absent", newest + BAR not in set(df["time"].astype(int)))
++check("times are true UTC (aligned to the bar grid)", newest % BAR == 0)
++check("broker offset was detected as +3", c.get_broker_offset_hours() == 3.0)
++
++# Without the fix the newest timestamp would be 3h ahead and one bar later.
++check("uncorrected time would have been 3h off",
++      (newest + BROKER_OFFSET_H * 3600) - newest == 10800)
++
++
++# ---------------------------------------------------------------------------
++print("B. new-bar gate prevents repeat entries on the same bar")
++
++def run_polls(mock, c, polls, advance_bar_after=None):
++    """Run run_cycle several times; optionally roll to a new bar partway."""
++    import connector.config as cfg
++    c.sync_trade_state = lambda: []
++    # Must stub this: the real one appends to data/trades.json and
++    # data/raw_trade_log.jsonl, so tests would pollute live trade history.
++    c.append_trade_record = lambda t: None
++    c.update_equity_snapshot = lambda: None
++    c.write_strategy_state = lambda s: None
++    c.write_candle_snapshot = lambda *a, **k: None
++    c.commit_and_push = lambda *a, **k: True
++    c.read_status = lambda: {"power": "on", "mode": "demo"}
++    c.read_strategy_config = lambda: {"active_strategy": "always_long",
++                                      "active_session": "24h"}
++    # Deterministic always-fire strategy so we're testing the GATE, not TA.
++    from strategy.signals import Signal
++    c.STRATEGIES = {"always_long": lambda df: Signal(
++        direction="long", votes={"t": "long"}, vote_count=1, reason="test",
++        meta={"atr": 300.0, "atr_ok": True})}
++    c.get_ollama_vote = lambda sig: "long"
++    c.atr_filter_ok = lambda df, mult=1.0: True
++    cfg.TIMEFRAMES = ["M5"]
++    for i in range(polls):
++        if advance_bar_after is not None and i == advance_bar_after:
++            mock._last_closed_utc += BAR
++        c.run_cycle()
++
++mock = make_mock(equity=5000.0, balance=5000.0)
++c = load_connector(mock)
++run_polls(mock, c, polls=5)
++check("5 polls of the SAME closed bar produce exactly 1 order", len(mock._orders) == 1)
++
++mock = make_mock(equity=5000.0, balance=5000.0)
++c = load_connector(mock)
++run_polls(mock, c, polls=6, advance_bar_after=3)
++check("a new bar re-enables trading (2 orders across 2 bars)", len(mock._orders) == 2)
++
++
++# ---------------------------------------------------------------------------
++print("C. daily loss breaker blocks new entries")
++
++# Day started at 5000; realized -300 today, equity 4700 => -6% vs 3% limit.
++mock = make_mock(equity=4700.0, balance=4700.0, deals=[_Deal(-300.0)])
++c = load_connector(mock)
++run_polls(mock, c, polls=3, advance_bar_after=1)
++check("no orders placed while daily loss limit is breached", len(mock._orders) == 0)
++
++# Small loss: trading continues.
++mock = make_mock(equity=4950.0, balance=4950.0, deals=[_Deal(-50.0)])
++c = load_connector(mock)
++run_polls(mock, c, polls=2)
++check("a 1% down day still trades", len(mock._orders) == 1)
++
++
++# ---------------------------------------------------------------------------
++print("D. place_trade refuses oversized risk and wide spreads")
++
++# The real account: $78 equity. Min lot forces ~3.8% risk => refuse.
++mock = make_mock(equity=78.0, balance=78.0)
++c = load_connector(mock)
++trade = c.place_trade("BTCUSDm", "long", "M5", {"reason": "t", "votes": {}, "meta": {"atr": 300.0}})
++check("trade refused on $78 account (min lot exceeds risk ceiling)", trade is None)
++check("no order was sent to the broker", len(mock._orders) == 0)
++
++# Healthy account: trade goes through, and records true risk.
++mock = make_mock(equity=5000.0, balance=5000.0)
++c = load_connector(mock)
++trade = c.place_trade("BTCUSDm", "long", "M5", {"reason": "t", "votes": {}, "meta": {"atr": 300.0}})
++check("healthy account trade is placed", trade is not None)
++check("trade records the actual risk taken", trade["risk_pct"] > 0)
++check("trade records the spread paid", trade["spread_at_entry"] == 10.0)
++check("stop is below entry for a long", trade["stop"] < trade["entry"])
++check("sl/tp rounded to symbol digits",
++      round(trade["stop"], 2) == trade["stop"] and round(trade["target"], 2) == trade["target"])
++
++# Wide spread ($60 vs $300 ATR = 20% > 15% cap) => rejected.
++mock = make_mock(equity=5000.0, balance=5000.0, spread=60.0)
++c = load_connector(mock)
++trade = c.place_trade("BTCUSDm", "long", "M5", {"reason": "t", "votes": {}, "meta": {"atr": 300.0}})
++check("wide spread blocks the trade", trade is None)
++check("no order sent on wide spread", len(mock._orders) == 0)
++
++print(f"\nALL PASSED ({passed} assertions)")
+diff --git a/connector/test_risk.py b/connector/test_risk.py
+new file mode 100644
+index 00000000..1b20f0cb
+--- /dev/null
++++ b/connector/test_risk.py
+@@ -0,0 +1,164 @@
++"""
++Tests for connector/risk.py and connector/broker_time.py.
++
++Run from repo root:  python3 -m connector.test_risk
++
++These cover the maths that decides how much money is at stake, using the actual
++account numbers from this project (~$78 equity, BTCUSDm, 0.01 minimum lot).
++"""
++from connector.risk import (
++    SymbolSpec, calc_position_size, check_spread, min_stop_distance, evaluate_daily_loss,
++)
++from connector import broker_time
++
++passed = 0
++def check(name, cond):
++    global passed
++    assert cond, f"FAIL: {name}"
++    passed += 1
++    print(f"  ok  {name}")
++
++
++# Exness-style BTCUSDm: 1 lot = 1 BTC, $0.01 per $0.01 move => $1 per $1 per lot.
++BTC = SymbolSpec(tick_size=0.01, tick_value=0.01, volume_min=0.01, volume_max=100.0,
++                 volume_step=0.01, digits=2, point=0.01, stops_level=0, freeze_level=0)
++
++
++# ---------------------------------------------------------------------------
++print("A. position sizing — contract conversion")
++
++check("value per price unit = tick_value/tick_size", BTC.value_per_price_unit() == 1.0)
++
++# A symbol where 1 lot = 0.1 BTC would have half the tick value: sizing must
++# double the lots for the same risk. This is the conversion the old code lacked.
++HALF = SymbolSpec(tick_size=0.01, tick_value=0.005, volume_min=0.01, volume_max=100.0,
++                  volume_step=0.01, digits=2, point=0.01)
++# $50 risk over a $250 stop => 0.20 lots on BTC, exactly on the 0.01 step.
++big = calc_position_size(10000, 100000, 99750, BTC, 0.5, 5.0)
++half = calc_position_size(10000, 100000, 99750, HALF, 0.5, 5.0)
++check("BTC spec sizes to 0.20 lots", abs(big.lots - 0.20) < 1e-9)
++check("halved tick value doubles the lot size", abs(half.lots - 0.40) < 1e-9)
++check("both risk the same money despite different lots",
++      abs(big.effective_risk - half.effective_risk) < 1e-6)
++
++
++# ---------------------------------------------------------------------------
++print("B. the real account: min lot blows through the risk target")
++
++# $78 equity, 0.5% target = $0.39. ATR-based stop ~$300 => correct size 0.0013
++# lots, far under the 0.01 minimum. Minimum lot risks ~$3 = ~3.8%.
++r = calc_position_size(equity=78.0, entry=115000.0, stop=114700.0, spec=BTC,
++                       risk_pct=0.5, max_effective_risk_pct=1.5)
++check("intended risk is $0.39", abs(r.intended_risk - 0.39) < 0.01)
++check("min lot floor was hit", r.floored_by_min_lot)
++check("lots landed on the 0.01 minimum", r.lots == 0.01)
++check("effective risk is ~$3", abs(r.effective_risk - 3.0) < 0.01)
++check("effective risk pct is ~3.8%", 3.7 < r.effective_risk_pct < 3.9)
++check("TRADE REFUSED: 3.8% exceeds the 1.5% ceiling", not r.ok)
++check("refusal explains itself", "min lot" in r.reason and "refused" in r.reason.lower())
++
++# Same setup on a properly-sized account: no floor, risk on target, allowed.
++r2 = calc_position_size(equity=5000.0, entry=115000.0, stop=114700.0, spec=BTC,
++                        risk_pct=0.5, max_effective_risk_pct=1.5)
++check("healthy account is not floored", not r2.floored_by_min_lot)
++check("healthy account risk ~0.5%", abs(r2.effective_risk_pct - 0.5) < 0.15)
++check("healthy account trade allowed", r2.ok)
++
++# Tighter stop makes min lot affordable even on the small account.
++r3 = calc_position_size(equity=78.0, entry=115000.0, stop=114990.0, spec=BTC,
++                        risk_pct=0.5, max_effective_risk_pct=1.5)
++check("tight stop keeps small account under the ceiling", r3.ok)
++check("tight stop needs no min-lot floor at all", not r3.floored_by_min_lot)
++check("tight stop risk lands on the 0.5% target", abs(r3.effective_risk_pct - 0.5) < 0.05)
++
++# Guards
++check("zero stop distance refused", not calc_position_size(78, 115000, 115000, BTC, 0.5, 1.5).ok)
++check("zero equity refused", not calc_position_size(0, 115000, 114700, BTC, 0.5, 1.5).ok)
++
++# Volume step rounding must land on a legal multiple.
++STEP = SymbolSpec(tick_size=0.01, tick_value=0.01, volume_min=0.1, volume_max=50.0,
++                  volume_step=0.1, digits=2, point=0.01)
++rs = calc_position_size(100000, 115000, 114700, STEP, 0.5, 5.0)
++check("lots align to volume_step", abs(rs.lots / 0.1 - round(rs.lots / 0.1)) < 1e-6)
++check("lots never exceed volume_max", rs.lots <= STEP.volume_max)
++
++
++# ---------------------------------------------------------------------------
++print("C. spread gate")
++
++ok = check_spread(bid=114990, ask=115000, atr=300.0, max_atr_fraction=0.15)
++check("$10 spread vs $300 ATR passes", ok.ok and abs(ok.spread - 10) < 1e-9)
++bad = check_spread(bid=114940, ask=115000, atr=300.0, max_atr_fraction=0.15)
++check("$60 spread vs $300 ATR (20%) is rejected", not bad.ok)
++check("rejection names the numbers", "ATR" in bad.reason)
++check("no ATR yet => allowed (warmup)", check_spread(114990, 115000, None, 0.15).ok)
++check("negative spread rejected", not check_spread(115000, 114990, 300.0, 0.15).ok)
++
++# Stop floor must keep spread a small share of risk.
++spec_stops = SymbolSpec(tick_size=0.01, tick_value=0.01, volume_min=0.01, volume_max=100,
++                        volume_step=0.01, digits=2, point=0.01, stops_level=500)
++floor = min_stop_distance(spec_stops, spread=20.0, spread_multiple=3.0)
++check("stop floor respects broker stops_level", floor >= 500 * 0.01 * 1.5)
++check("stop floor respects 3x spread", floor >= 60.0)
++
++
++# ---------------------------------------------------------------------------
++print("D. daily loss breaker")
++
++# Started the day at $100 (balance 90 after realized -10), equity now 96 => -4%.
++d = evaluate_daily_loss(equity_now=96.0, balance_now=90.0, realized_today=-10.0,
++                        max_daily_loss_pct=3.0)
++check("day start balance reconstructed as $100", abs(d.day_start_balance - 100.0) < 1e-9)
++check("loss of 4% trips the 3% limit", d.halted)
++check("loss pct reported positive when down", abs(d.loss_pct - 4.0) < 1e-9)
++
++d2 = evaluate_daily_loss(equity_now=98.0, balance_now=98.0, realized_today=-2.0,
++                         max_daily_loss_pct=3.0)
++check("2% loss does not halt", not d2.halted)
++
++# Floating losses must count — nothing realized yet, but equity is down 5%.
++d3 = evaluate_daily_loss(equity_now=95.0, balance_now=100.0, realized_today=0.0,
++                         max_daily_loss_pct=3.0)
++check("unrealized drawdown alone trips the breaker", d3.halted)
++
++d4 = evaluate_daily_loss(equity_now=110.0, balance_now=105.0, realized_today=5.0,
++                         max_daily_loss_pct=3.0)
++check("profitable day never halts", not d4.halted and d4.loss_pct < 0)
++check("exactly at the limit halts", evaluate_daily_loss(97.0, 100.0, 0.0, 3.0).halted)
++
++
++# ---------------------------------------------------------------------------
++print("E. broker time")
++
++UTC_NOW = 1_754_600_000.0
++check("UTC+3 server detected", broker_time.detect_offset_hours(UTC_NOW + 3*3600, UTC_NOW) == 3.0)
++check("UTC+2 server detected", broker_time.detect_offset_hours(UTC_NOW + 2*3600, UTC_NOW) == 2.0)
++check("UTC+0 server detected", broker_time.detect_offset_hours(UTC_NOW, UTC_NOW) == 0.0)
++check("half-hour offset supported", broker_time.detect_offset_hours(UTC_NOW + 5.5*3600, UTC_NOW) == 5.5)
++check("poll jitter of a few seconds doesn't skew offset",
++      broker_time.detect_offset_hours(UTC_NOW + 3*3600 + 7, UTC_NOW) == 3.0)
++check("negative offset (UTC-5) supported",
++      broker_time.detect_offset_hours(UTC_NOW - 5*3600, UTC_NOW) == -5.0)
++
++check("to_utc_epoch removes the offset",
++      broker_time.to_utc_epoch(UTC_NOW + 3*3600, 3.0) == UTC_NOW)
++check("normalise handles plain lists",
++      broker_time.normalise_candle_times([UTC_NOW + 3*3600], 3.0) == [UTC_NOW])
++check("bar_seconds M5", broker_time.bar_seconds("M5") == 300)
++check("bar_seconds M15", broker_time.bar_seconds("M15") == 900)
++
++# The bug in practice: a 07:00 UTC+3 candle is really 04:00 UTC. Treating it as
++# UTC put it inside the London window (07-16) when it was actually pre-session.
++import datetime as _dt
++server_7am = _dt.datetime(2026, 8, 7, 7, 0, tzinfo=_dt.timezone.utc).timestamp()
++true_utc = broker_time.to_utc_epoch(server_7am, 3.0)
++check("server 07:00 is really 04:00 UTC",
++      _dt.datetime.fromtimestamp(true_utc, tz=_dt.timezone.utc).hour == 4)
++
++from strategy.sessions import in_session
++check("uncorrected time wrongly reads as in-London",
++      in_session("london", _dt.datetime.fromtimestamp(server_7am, tz=_dt.timezone.utc)))
++check("corrected time correctly reads as outside London",
++      not in_session("london", _dt.datetime.fromtimestamp(true_utc, tz=_dt.timezone.utc)))
++
++print(f"\nALL PASSED ({passed} assertions)")
+diff --git a/dashboard/backtest.html b/dashboard/backtest.html
+index ed1d0f0e..ede31eea 100644
+--- a/dashboard/backtest.html
++++ b/dashboard/backtest.html
+@@ -54,6 +54,18 @@
+           <option value="on" disabled>On — not available in browser backtests</option>
+         </select>
+       </div>
++      <div class="bt-field">
++        <label>Spread (price units)</label>
++        <input id="btSpread" type="number" value="12" min="0" step="0.5"
++               style="width:90px;padding:6px 8px;border-radius:6px;border:1px solid #2a3142;background:#141824;color:#e6e9ef;">
++      </div>
++      <div class="bt-field">
++        <label>ATR chop filter</label>
++        <select id="btAtrFilter">
++          <option value="on">On — match live connector</option>
++          <option value="off">Off</option>
++        </select>
++      </div>
+     </div>
+     <button class="run-btn" id="runBtn">Run backtest</button>
+     <span class="stat-sub" id="runNote" style="margin-left:12px;"></span>
+@@ -320,6 +332,23 @@ function orbSignal(candles, i, sessionStartHour, rangeCandles=3){
+   return {direction, reason:`ORB breakout ${direction}`};
+ }
+ 
++// Mirrors of connector/config.py + connector/risk.py so backtest results are
++// comparable to live execution instead of an optimistic best case.
++const MAX_SPREAD_ATR_FRACTION = 0.15;
++const SPREAD_STOP_MULTIPLE = 3.0;
++
++// Mirror of strategy/signals.py atr_filter_ok: skip when current ATR is below
++// its 20-period average (the low-volatility chop filter).
++function atrFilterOk(atr14, i, period=20, minMultiplier=1.0){
++  if(i < period) return true;            // not enough data yet — don't block
++  const cur = atr14[i];
++  if(!cur) return true;
++  let sum = 0, n = 0;
++  for(let j=i-period+1;j<=i;j++){ if(atr14[j]){ sum += atr14[j]; n++; } }
++  if(!n) return true;
++  return cur >= (sum/n) * minMultiplier;
++}
++
+ const SESSIONS_JS = {
+   '24h': {start:0, end:24}, 'asia': {start:0,end:9}, 'london': {start:7,end:16},
+   'new_york': {start:12,end:21}, 'london_ny_overlap': {start:12,end:16},
+@@ -370,6 +399,9 @@ function runBacktest(){
+   const stratFn = STRATEGIES_JS[strategyId];
+   if(!candleData || !candleData.length){ alert('No data loaded for this timeframe.'); return; }
+ 
++  const spread = parseFloat(document.getElementById('btSpread').value) || 0;
++  const useAtrFilter = document.getElementById('btAtrFilter').value === 'on';
++
+   const candles = candleData;
+   const atr14 = atrSeries(candles, 14);
+   const ctx = {};
+@@ -398,12 +430,22 @@ function runBacktest(){
+     if(openTrade) continue;
+     if(sessionId!=='24h' && !inSession(sessionId, c.time)) continue;
+ 
++    // ATR chop filter — the live connector skips entries when ATR is below its
++    // own 20-period average. Without this the backtest was trading setups the
++    // real bot would never take.
++    if(useAtrFilter && !atrFilterOk(atr14, i)) continue;
++
+     const sig = stratFn(candles, i, ctx);
+     if(!sig || sig.direction==='none') continue;
+ 
+     const atrNow = atr14[i] || (equity*0.002);
+-    const stopDist = atrNow*1.5, targetDist = atrNow*2.5;
+-    const entry = c.close;
++    // Spread gate, mirroring connector/risk.py check_spread.
++    if(atrNow>0 && (spread/atrNow) > MAX_SPREAD_ATR_FRACTION) continue;
++
++    const stopDist = Math.max(atrNow*1.5, spread*SPREAD_STOP_MULTIPLE);
++    const targetDist = Math.max(atrNow*2.5, spread*SPREAD_STOP_MULTIPLE*1.67);
++    // Entry pays the spread: buy at ask, sell at bid.
++    const entry = sig.direction==='long' ? c.close + spread/2 : c.close - spread/2;
+     const stop = sig.direction==='long' ? entry-stopDist : entry+stopDist;
+     const target = sig.direction==='long' ? entry+targetDist : entry-targetDist;
+     const riskAmount = equity*0.005;

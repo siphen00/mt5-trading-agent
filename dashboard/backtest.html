@@ -54,6 +54,18 @@
           <option value="on" disabled>On — not available in browser backtests</option>
         </select>
       </div>
+      <div class="bt-field">
+        <label>Spread (price units)</label>
+        <input id="btSpread" type="number" value="12" min="0" step="0.5"
+               style="width:90px;padding:6px 8px;border-radius:6px;border:1px solid #2a3142;background:#141824;color:#e6e9ef;">
+      </div>
+      <div class="bt-field">
+        <label>ATR chop filter</label>
+        <select id="btAtrFilter">
+          <option value="on">On — match live connector</option>
+          <option value="off">Off</option>
+        </select>
+      </div>
     </div>
     <button class="run-btn" id="runBtn">Run backtest</button>
     <span class="stat-sub" id="runNote" style="margin-left:12px;"></span>
@@ -320,6 +332,23 @@ function orbSignal(candles, i, sessionStartHour, rangeCandles=3){
   return {direction, reason:`ORB breakout ${direction}`};
 }
 
+// Mirrors of connector/config.py + connector/risk.py so backtest results are
+// comparable to live execution instead of an optimistic best case.
+const MAX_SPREAD_ATR_FRACTION = 0.15;
+const SPREAD_STOP_MULTIPLE = 3.0;
+
+// Mirror of strategy/signals.py atr_filter_ok: skip when current ATR is below
+// its 20-period average (the low-volatility chop filter).
+function atrFilterOk(atr14, i, period=20, minMultiplier=1.0){
+  if(i < period) return true;            // not enough data yet — don't block
+  const cur = atr14[i];
+  if(!cur) return true;
+  let sum = 0, n = 0;
+  for(let j=i-period+1;j<=i;j++){ if(atr14[j]){ sum += atr14[j]; n++; } }
+  if(!n) return true;
+  return cur >= (sum/n) * minMultiplier;
+}
+
 const SESSIONS_JS = {
   '24h': {start:0, end:24}, 'asia': {start:0,end:9}, 'london': {start:7,end:16},
   'new_york': {start:12,end:21}, 'london_ny_overlap': {start:12,end:16},
@@ -370,6 +399,9 @@ function runBacktest(){
   const stratFn = STRATEGIES_JS[strategyId];
   if(!candleData || !candleData.length){ alert('No data loaded for this timeframe.'); return; }
 
+  const spread = parseFloat(document.getElementById('btSpread').value) || 0;
+  const useAtrFilter = document.getElementById('btAtrFilter').value === 'on';
+
   const candles = candleData;
   const atr14 = atrSeries(candles, 14);
   const ctx = {};
@@ -398,12 +430,22 @@ function runBacktest(){
     if(openTrade) continue;
     if(sessionId!=='24h' && !inSession(sessionId, c.time)) continue;
 
+    // ATR chop filter — the live connector skips entries when ATR is below its
+    // own 20-period average. Without this the backtest was trading setups the
+    // real bot would never take.
+    if(useAtrFilter && !atrFilterOk(atr14, i)) continue;
+
     const sig = stratFn(candles, i, ctx);
     if(!sig || sig.direction==='none') continue;
 
     const atrNow = atr14[i] || (equity*0.002);
-    const stopDist = atrNow*1.5, targetDist = atrNow*2.5;
-    const entry = c.close;
+    // Spread gate, mirroring connector/risk.py check_spread.
+    if(atrNow>0 && (spread/atrNow) > MAX_SPREAD_ATR_FRACTION) continue;
+
+    const stopDist = Math.max(atrNow*1.5, spread*SPREAD_STOP_MULTIPLE);
+    const targetDist = Math.max(atrNow*2.5, spread*SPREAD_STOP_MULTIPLE*1.67);
+    // Entry pays the spread: buy at ask, sell at bid.
+    const entry = sig.direction==='long' ? c.close + spread/2 : c.close - spread/2;
     const stop = sig.direction==='long' ? entry-stopDist : entry+stopDist;
     const target = sig.direction==='long' ? entry+targetDist : entry-targetDist;
     const riskAmount = equity*0.005;

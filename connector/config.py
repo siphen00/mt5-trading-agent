@@ -20,9 +20,29 @@ TIMEFRAMES = ["M5", "M15"]  # 5-minute and 15-minute scalping
 # --- Risk management ---
 RISK_PER_TRADE_PCT = 0.5     # % of equity risked per trade
 MAX_CONCURRENT_TRADES = 2    # one per timeframe by default
-MAX_DAILY_LOSS_PCT = 3.0     # kill switch: stop trading for the day past this
+MAX_DAILY_LOSS_PCT = 3.0     # kill switch: stop trading for the day past this.
+                              # NOW ENFORCED in run_cycle via connector/risk.py —
+                              # previously this value existed in config and was
+                              # referenced nowhere else in the codebase.
 ATR_MIN_MULTIPLIER = 1.0     # skip entries when ATR is below this vs its 20-period average
                               # (this is the "low volatility chop" filter from the weekly review)
+
+# Hard ceiling on the risk a single trade may actually carry. The broker's
+# minimum lot (0.01) can force far more risk than RISK_PER_TRADE_PCT asks for on
+# a small account: at ~$78 equity with a ~$300 ATR stop, 0.5% intends ~$0.39 of
+# risk but the minimum lot risks ~$3, i.e. ~4%. Trades exceeding this ceiling are
+# REFUSED with a loud log line rather than silently taken oversized.
+MAX_EFFECTIVE_RISK_PCT = 1.5
+
+# Spread gate: skip entries when the spread is a large fraction of ATR, since
+# the trade then has to beat the broker before it beats the market.
+MAX_SPREAD_ATR_FRACTION = 0.15   # e.g. skip if spread > 15% of ATR
+SPREAD_STOP_MULTIPLE = 3.0       # stop must be at least this many spreads wide
+
+# Broker clock. MT5 reports candle/tick times in SERVER time, not UTC (Exness is
+# typically UTC+2/+3). Leave as None to auto-detect on startup by comparing a
+# live tick against real UTC; set a number to pin it (e.g. 3.0 for UTC+3).
+BROKER_UTC_OFFSET_HOURS = None
 
 # --- Strategy voting ---
 VOTES_REQUIRED = 2           # deprecated — kept for reference; trade confirmation is now
