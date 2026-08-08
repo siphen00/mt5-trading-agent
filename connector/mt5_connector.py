@@ -38,6 +38,8 @@ from strategy.sessions import in_session, DEFAULT_SESSION
 from strategy.ollama_veto import get_ollama_vote
 
 TIMEFRAME_MAP = {
+    "M1": getattr(mt5, "TIMEFRAME_M1", None) if mt5 else None,
+    "M3": getattr(mt5, "TIMEFRAME_M3", None) if mt5 else None,
     "M5": getattr(mt5, "TIMEFRAME_M5", None) if mt5 else None,
     "M15": getattr(mt5, "TIMEFRAME_M15", None) if mt5 else None,
 }

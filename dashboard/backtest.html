@@ -21,6 +21,7 @@
   <div class="nav">
     <a href="index.html">Live dashboard</a>
     <a href="backtest.html" class="active">Backtest lab</a>
+    <a href="trenches.html">Trenches</a>
   </div>
 
   <div class="panel accent-amber" style="margin-bottom:16px;">
@@ -39,7 +40,9 @@
       <div class="bt-field">
         <label>Timeframe</label>
         <select id="btTimeframe">
-          <option value="M5">5 minute</option>
+          <option value="M1">1 minute</option>
+          <option value="M3">3 minute</option>
+          <option value="M5" selected>5 minute</option>
           <option value="M15">15 minute</option>
         </select>
       </div>
@@ -69,6 +72,45 @@
     </div>
     <button class="run-btn" id="runBtn">Run backtest</button>
     <span class="stat-sub" id="runNote" style="margin-left:12px;"></span>
+  </div>
+
+  <div class="panel accent-amber" id="customPanel" style="margin-bottom:16px;">
+    <div class="panel-title">
+      <span>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+        Customise your strategy
+      </span>
+      <span class="stat-sub">plain English → rules → backtest, via local Ollama</span>
+    </div>
+    <p class="stat-sub" style="margin-bottom:10px; line-height:1.6;">
+      Describe an entry in your own words, e.g. <i>"go long when the 9 EMA crosses above the 21 EMA and RSI is under 60;
+      exit at 2× ATR"</i>. Your local Ollama turns it into rules you can review, edit, and backtest — same engine as the lab.
+    </p>
+    <textarea id="nlText" rows="3" placeholder="Describe your strategy in plain English…"
+      style="width:100%; box-sizing:border-box; padding:10px; border-radius:8px; border:1px solid #2a3142; background:#141824; color:#e6e9ef; font-family:var(--mono,monospace); font-size:13px;"></textarea>
+    <div class="bt-form" style="margin-top:10px; align-items:flex-end;">
+      <div class="bt-field">
+        <label>Ollama host</label>
+        <input id="ollamaHost" value="http://localhost:11434"
+          style="width:190px;padding:6px 8px;border-radius:6px;border:1px solid #2a3142;background:#141824;color:#e6e9ef;">
+      </div>
+      <button class="run-btn" id="genBtn">Generate rules</button>
+      <span class="stat-sub" id="genNote" style="margin-left:4px;"></span>
+    </div>
+    <div id="mixedWarn" class="stat-sub" style="display:none; margin-top:8px; color:#ffd7de;"></div>
+    <div id="specWrap" style="display:none; margin-top:12px;">
+      <label class="stat-sub">Generated rules (editable JSON — fix anything the model got wrong, then backtest)</label>
+      <textarea id="specJson" rows="10"
+        style="width:100%; box-sizing:border-box; margin-top:6px; padding:10px; border-radius:8px; border:1px solid #2a3142; background:#0f1320; color:#8fe; font-family:var(--mono,monospace); font-size:12px;"></textarea>
+      <div style="margin-top:10px;">
+        <button class="run-btn" id="runCustomBtn">Backtest these rules</button>
+        <span class="stat-sub" id="customNote" style="margin-left:8px;"></span>
+      </div>
+      <p class="stat-sub" style="margin-top:8px; line-height:1.5;">
+        Custom rules run in the browser only — they can't be pushed to the live connector (it runs the Python
+        strategies, not these). Use this to explore ideas, then port a winner into <code>strategy/strategies.py</code>.
+      </p>
+    </div>
   </div>
 
   <div id="resultsPanel" style="display:none;">
@@ -126,6 +168,7 @@
   <button id="saveSettings">Save</button>
 </dialog>
 
+<script src="strategy_engine.js"></script>
 <script>
 const LS = {
   owner: localStorage.getItem('apex_owner') || '',
@@ -512,7 +555,9 @@ function renderResults(trades, equityCurve){
       <td>${t.reason}</td>
     </tr>`).join('') || '<tr><td colspan="7" class="empty">No trades in this backtest</td></tr>';
 
-  document.getElementById('pushBtn').onclick = () => pushToDemo();
+  const pushBtn = document.getElementById('pushBtn');
+  pushBtn.disabled = false; pushBtn.style.opacity = 1;
+  pushBtn.onclick = () => pushToDemo();
 }
 
 async function pushToDemo(){
@@ -545,6 +590,81 @@ document.getElementById('runBtn').onclick = () => {
   document.getElementById('runNote').textContent = 'Running…';
   setTimeout(() => { runBacktest(); document.getElementById('runNote').textContent = ''; }, 10);
 };
+
+// ============================================================
+// Customise your strategy — plain English → DSL (via Ollama) → backtest.
+// Uses the shared engine (strategy_engine.js). Never eval's model output;
+// the model returns JSON that the sandboxed DSL interprets.
+// ============================================================
+(function(){
+  const genBtn = document.getElementById('genBtn');
+  const genNote = document.getElementById('genNote');
+  const specWrap = document.getElementById('specWrap');
+  const specJson = document.getElementById('specJson');
+  const mixedWarn = document.getElementById('mixedWarn');
+
+  // Warn about the browser mixed-content block up front when on https (Pages).
+  if(location.protocol === 'https:'){
+    mixedWarn.style.display = 'block';
+    mixedWarn.innerHTML = 'Heads up: this page is on <b>https</b>, and browsers block https pages from calling ' +
+      '<b>http://localhost</b> (mixed content). To use Ollama generation, open the dashboard locally over ' +
+      '<code>http://localhost</code> (e.g. <code>python -m http.server</code> in the <code>dashboard/</code> folder), ' +
+      'and run Ollama with <code>OLLAMA_ORIGINS=*</code>. You can still paste/edit rules JSON below and backtest it.';
+  }
+
+  genBtn.onclick = async () => {
+    const text = document.getElementById('nlText').value.trim();
+    if(!text){ genNote.textContent = 'Describe a strategy first.'; return; }
+    const host = document.getElementById('ollamaHost').value.trim() || 'http://localhost:11434';
+    genBtn.disabled = true; genNote.className = 'stat-sub'; genNote.textContent = 'Asking Ollama…';
+    try{
+      const spec = await TE.generateSpecFromText(text, { host });
+      specJson.value = JSON.stringify(spec, null, 2);
+      specWrap.style.display = 'block';
+      genNote.textContent = 'Rules generated — review and backtest below.'; genNote.className = 'stat-sub up';
+    }catch(e){
+      genNote.textContent = e.message; genNote.className = 'stat-sub down';
+      // Offer a hand-editable skeleton so the feature still works offline.
+      if(specWrap.style.display === 'none'){
+        specJson.value = JSON.stringify({
+          name: "my strategy",
+          long: [{ left:{indicator:"ema",period:9}, op:"cross_above", right:{indicator:"ema",period:21} }],
+          short: [],
+          stop_atr: 1.5, target_atr: 2.5
+        }, null, 2);
+        specWrap.style.display = 'block';
+      }
+    }finally{ genBtn.disabled = false; }
+  };
+
+  document.getElementById('runCustomBtn').onclick = () => {
+    const customNote = document.getElementById('customNote');
+    if(!candleData || !candleData.length){ customNote.textContent = 'No data loaded — pick a timeframe with exported data above.'; customNote.className='stat-sub down'; return; }
+    let spec;
+    try{ spec = JSON.parse(specJson.value); }
+    catch(e){ customNote.textContent = 'Rules are not valid JSON.'; customNote.className='stat-sub down'; return; }
+    let signalFn;
+    try{ signalFn = TE.compileSpec(spec); }
+    catch(e){ customNote.textContent = 'Invalid rules: ' + e.message; customNote.className='stat-sub down'; return; }
+
+    const spread = parseFloat(document.getElementById('btSpread').value) || 0;
+    const useAtrFilter = document.getElementById('btAtrFilter').value === 'on';
+    const sessionId = document.getElementById('btSession').value;
+    const res = TE.runBacktest(candleData, signalFn, {
+      spread,
+      guards: { atrFilter: useAtrFilter, spreadReject: true, dailyLoss: false },
+      sessionFilter: sessionId==='24h' ? null : (t)=>inSession(sessionId, t),
+    });
+    customNote.textContent = `${res.stats.totalTrades} trades · net ${res.stats.netPnl>=0?'+':''}${res.stats.netPnl.toFixed(2)}`;
+    customNote.className = 'stat-sub ' + (res.stats.netPnl>=0?'up':'down');
+    renderResults(res.trades, res.equityCurve);
+    // Custom rules can't be pushed to the Python connector — make that explicit.
+    const pushBtn = document.getElementById('pushBtn');
+    pushBtn.disabled = true; pushBtn.style.opacity = 0.5;
+    document.getElementById('pushNote').textContent = 'Custom browser rules can\u2019t be pushed to the live connector.';
+    document.getElementById('pushNote').className = 'stat-sub';
+  };
+})();
 
 checkDataAvailable();
 </script>

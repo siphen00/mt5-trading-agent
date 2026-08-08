@@ -1,0 +1,1188 @@
+diff --git a/connector/export_backtest_data.py b/connector/export_backtest_data.py
+index 1e78e24..b0af411 100644
+--- a/connector/export_backtest_data.py
++++ b/connector/export_backtest_data.py
+@@ -30,6 +30,12 @@ from connector.git_sync import commit_and_push
+ # range of conditions without the export file getting unwieldy.
+ CANDLE_COUNT = 5000
+ 
++# Timeframes to export for the backtest pages. Independent of config.TIMEFRAMES
++# (which is what the LIVE connector trades) — the Trenches page needs 1m/3m data
++# and the lab now offers those too. M1 at 5000 candles ≈ ~3.5 days of 24/7
++# crypto; plenty to test a scalp across varied conditions.
++EXPORT_TIMEFRAMES = ["M1", "M3", "M5", "M15"]
++
+ 
+ def export_timeframe(tf: str):
+     print(f"[export_backtest_data] Pulling {CANDLE_COUNT} {tf} candles for {config.SYMBOL}...")
+@@ -50,11 +56,11 @@ def main():
+         print("[export_backtest_data] Could not connect to MT5.")
+         sys.exit(1)
+ 
+-    for tf in config.TIMEFRAMES:
++    for tf in EXPORT_TIMEFRAMES:
+         export_timeframe(tf)
+ 
+     pushed = commit_and_push(
+-        [f"data/backtest_{tf}.json" for tf in config.TIMEFRAMES],
++        [f"data/backtest_{tf}.json" for tf in EXPORT_TIMEFRAMES],
+         f"Backtest data export {datetime.now(timezone.utc).isoformat()}",
+     )
+     print("[export_backtest_data] Synced to GitHub." if pushed else
+diff --git a/connector/mt5_connector.py b/connector/mt5_connector.py
+index ea4de75..885e287 100644
+--- a/connector/mt5_connector.py
++++ b/connector/mt5_connector.py
+@@ -38,6 +38,8 @@ from strategy.sessions import in_session, DEFAULT_SESSION
+ from strategy.ollama_veto import get_ollama_vote
+ 
+ TIMEFRAME_MAP = {
++    "M1": getattr(mt5, "TIMEFRAME_M1", None) if mt5 else None,
++    "M3": getattr(mt5, "TIMEFRAME_M3", None) if mt5 else None,
+     "M5": getattr(mt5, "TIMEFRAME_M5", None) if mt5 else None,
+     "M15": getattr(mt5, "TIMEFRAME_M15", None) if mt5 else None,
+ }
+diff --git a/dashboard/backtest.html b/dashboard/backtest.html
+index ede31ee..38f01db 100644
+--- a/dashboard/backtest.html
++++ b/dashboard/backtest.html
+@@ -21,6 +21,7 @@
+   <div class="nav">
+     <a href="index.html">Live dashboard</a>
+     <a href="backtest.html" class="active">Backtest lab</a>
++    <a href="trenches.html">Trenches</a>
+   </div>
+ 
+   <div class="panel accent-amber" style="margin-bottom:16px;">
+@@ -39,7 +40,9 @@
+       <div class="bt-field">
+         <label>Timeframe</label>
+         <select id="btTimeframe">
+-          <option value="M5">5 minute</option>
++          <option value="M1">1 minute</option>
++          <option value="M3">3 minute</option>
++          <option value="M5" selected>5 minute</option>
+           <option value="M15">15 minute</option>
+         </select>
+       </div>
+@@ -71,6 +74,45 @@
+     <span class="stat-sub" id="runNote" style="margin-left:12px;"></span>
+   </div>
+ 
++  <div class="panel accent-amber" id="customPanel" style="margin-bottom:16px;">
++    <div class="panel-title">
++      <span>
++        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
++        Customise your strategy
++      </span>
++      <span class="stat-sub">plain English → rules → backtest, via local Ollama</span>
++    </div>
++    <p class="stat-sub" style="margin-bottom:10px; line-height:1.6;">
++      Describe an entry in your own words, e.g. <i>"go long when the 9 EMA crosses above the 21 EMA and RSI is under 60;
++      exit at 2× ATR"</i>. Your local Ollama turns it into rules you can review, edit, and backtest — same engine as the lab.
++    </p>
++    <textarea id="nlText" rows="3" placeholder="Describe your strategy in plain English…"
++      style="width:100%; box-sizing:border-box; padding:10px; border-radius:8px; border:1px solid #2a3142; background:#141824; color:#e6e9ef; font-family:var(--mono,monospace); font-size:13px;"></textarea>
++    <div class="bt-form" style="margin-top:10px; align-items:flex-end;">
++      <div class="bt-field">
++        <label>Ollama host</label>
++        <input id="ollamaHost" value="http://localhost:11434"
++          style="width:190px;padding:6px 8px;border-radius:6px;border:1px solid #2a3142;background:#141824;color:#e6e9ef;">
++      </div>
++      <button class="run-btn" id="genBtn">Generate rules</button>
++      <span class="stat-sub" id="genNote" style="margin-left:4px;"></span>
++    </div>
++    <div id="mixedWarn" class="stat-sub" style="display:none; margin-top:8px; color:#ffd7de;"></div>
++    <div id="specWrap" style="display:none; margin-top:12px;">
++      <label class="stat-sub">Generated rules (editable JSON — fix anything the model got wrong, then backtest)</label>
++      <textarea id="specJson" rows="10"
++        style="width:100%; box-sizing:border-box; margin-top:6px; padding:10px; border-radius:8px; border:1px solid #2a3142; background:#0f1320; color:#8fe; font-family:var(--mono,monospace); font-size:12px;"></textarea>
++      <div style="margin-top:10px;">
++        <button class="run-btn" id="runCustomBtn">Backtest these rules</button>
++        <span class="stat-sub" id="customNote" style="margin-left:8px;"></span>
++      </div>
++      <p class="stat-sub" style="margin-top:8px; line-height:1.5;">
++        Custom rules run in the browser only — they can't be pushed to the live connector (it runs the Python
++        strategies, not these). Use this to explore ideas, then port a winner into <code>strategy/strategies.py</code>.
++      </p>
++    </div>
++  </div>
++
+   <div id="resultsPanel" style="display:none;">
+     <div class="bt-results">
+       <div class="card"><div class="stat-label">Net P&L</div><div class="stat-val" id="rNetPnl">—</div><div class="stat-sub" id="rNetPnlPct"></div></div>
+@@ -126,6 +168,7 @@
+   <button id="saveSettings">Save</button>
+ </dialog>
+ 
++<script src="strategy_engine.js"></script>
+ <script>
+ const LS = {
+   owner: localStorage.getItem('apex_owner') || '',
+@@ -512,7 +555,9 @@ function renderResults(trades, equityCurve){
+       <td>${t.reason}</td>
+     </tr>`).join('') || '<tr><td colspan="7" class="empty">No trades in this backtest</td></tr>';
+ 
+-  document.getElementById('pushBtn').onclick = () => pushToDemo();
++  const pushBtn = document.getElementById('pushBtn');
++  pushBtn.disabled = false; pushBtn.style.opacity = 1;
++  pushBtn.onclick = () => pushToDemo();
+ }
+ 
+ async function pushToDemo(){
+@@ -546,6 +591,81 @@ document.getElementById('runBtn').onclick = () => {
+   setTimeout(() => { runBacktest(); document.getElementById('runNote').textContent = ''; }, 10);
+ };
+ 
++// ============================================================
++// Customise your strategy — plain English → DSL (via Ollama) → backtest.
++// Uses the shared engine (strategy_engine.js). Never eval's model output;
++// the model returns JSON that the sandboxed DSL interprets.
++// ============================================================
++(function(){
++  const genBtn = document.getElementById('genBtn');
++  const genNote = document.getElementById('genNote');
++  const specWrap = document.getElementById('specWrap');
++  const specJson = document.getElementById('specJson');
++  const mixedWarn = document.getElementById('mixedWarn');
++
++  // Warn about the browser mixed-content block up front when on https (Pages).
++  if(location.protocol === 'https:'){
++    mixedWarn.style.display = 'block';
++    mixedWarn.innerHTML = 'Heads up: this page is on <b>https</b>, and browsers block https pages from calling ' +
++      '<b>http://localhost</b> (mixed content). To use Ollama generation, open the dashboard locally over ' +
++      '<code>http://localhost</code> (e.g. <code>python -m http.server</code> in the <code>dashboard/</code> folder), ' +
++      'and run Ollama with <code>OLLAMA_ORIGINS=*</code>. You can still paste/edit rules JSON below and backtest it.';
++  }
++
++  genBtn.onclick = async () => {
++    const text = document.getElementById('nlText').value.trim();
++    if(!text){ genNote.textContent = 'Describe a strategy first.'; return; }
++    const host = document.getElementById('ollamaHost').value.trim() || 'http://localhost:11434';
++    genBtn.disabled = true; genNote.className = 'stat-sub'; genNote.textContent = 'Asking Ollama…';
++    try{
++      const spec = await TE.generateSpecFromText(text, { host });
++      specJson.value = JSON.stringify(spec, null, 2);
++      specWrap.style.display = 'block';
++      genNote.textContent = 'Rules generated — review and backtest below.'; genNote.className = 'stat-sub up';
++    }catch(e){
++      genNote.textContent = e.message; genNote.className = 'stat-sub down';
++      // Offer a hand-editable skeleton so the feature still works offline.
++      if(specWrap.style.display === 'none'){
++        specJson.value = JSON.stringify({
++          name: "my strategy",
++          long: [{ left:{indicator:"ema",period:9}, op:"cross_above", right:{indicator:"ema",period:21} }],
++          short: [],
++          stop_atr: 1.5, target_atr: 2.5
++        }, null, 2);
++        specWrap.style.display = 'block';
++      }
++    }finally{ genBtn.disabled = false; }
++  };
++
++  document.getElementById('runCustomBtn').onclick = () => {
++    const customNote = document.getElementById('customNote');
++    if(!candleData || !candleData.length){ customNote.textContent = 'No data loaded — pick a timeframe with exported data above.'; customNote.className='stat-sub down'; return; }
++    let spec;
++    try{ spec = JSON.parse(specJson.value); }
++    catch(e){ customNote.textContent = 'Rules are not valid JSON.'; customNote.className='stat-sub down'; return; }
++    let signalFn;
++    try{ signalFn = TE.compileSpec(spec); }
++    catch(e){ customNote.textContent = 'Invalid rules: ' + e.message; customNote.className='stat-sub down'; return; }
++
++    const spread = parseFloat(document.getElementById('btSpread').value) || 0;
++    const useAtrFilter = document.getElementById('btAtrFilter').value === 'on';
++    const sessionId = document.getElementById('btSession').value;
++    const res = TE.runBacktest(candleData, signalFn, {
++      spread,
++      guards: { atrFilter: useAtrFilter, spreadReject: true, dailyLoss: false },
++      sessionFilter: sessionId==='24h' ? null : (t)=>inSession(sessionId, t),
++    });
++    customNote.textContent = `${res.stats.totalTrades} trades · net ${res.stats.netPnl>=0?'+':''}${res.stats.netPnl.toFixed(2)}`;
++    customNote.className = 'stat-sub ' + (res.stats.netPnl>=0?'up':'down');
++    renderResults(res.trades, res.equityCurve);
++    // Custom rules can't be pushed to the Python connector — make that explicit.
++    const pushBtn = document.getElementById('pushBtn');
++    pushBtn.disabled = true; pushBtn.style.opacity = 0.5;
++    document.getElementById('pushNote').textContent = 'Custom browser rules can\u2019t be pushed to the live connector.';
++    document.getElementById('pushNote').className = 'stat-sub';
++  };
++})();
++
+ checkDataAvailable();
+ </script>
+ </body>
+diff --git a/dashboard/index.html b/dashboard/index.html
+index 9b792d3..3021c47 100644
+--- a/dashboard/index.html
++++ b/dashboard/index.html
+@@ -26,6 +26,7 @@
+   <div class="nav">
+     <a href="index.html" class="active">Live dashboard</a>
+     <a href="backtest.html">Backtest lab</a>
++    <a href="trenches.html">Trenches</a>
+   </div>
+ 
+   <div class="stats">
+diff --git a/dashboard/strategy_engine.js b/dashboard/strategy_engine.js
+new file mode 100644
+index 0000000..7c7cd3e
+--- /dev/null
++++ b/dashboard/strategy_engine.js
+@@ -0,0 +1,487 @@
++/*
++ * strategy_engine.js — shared engine for the Backtest Lab and the Trenches page.
++ *
++ * ONE codebase for: the indicator library, a small human-readable strategy DSL
++ * + interpreter, the three "Trenches" strategies (aggressive 1m/3m scalps),
++ * a backtest runner that mirrors the FIXED lab runner (spread cost, ATR chop
++ * filter, optional daily-loss halt, entry at ask/bid), and the Ollama client
++ * that turns plain-language strategies into runnable DSL specs.
++ *
++ * Works in the browser (attaches window.TE) and in node (module.exports = TE)
++ * so it can be unit-tested headlessly.
++ *
++ * IMPORTANT REALITY CHECK (kept in code on purpose): the Trenches strategies
++ * are legitimate but AGGRESSIVE. Risky does not mean profitable — on 1m/3m the
++ * spread and slippage eat edge fast. This engine exists to let you find out a
++ * strategy DOESN'T work cheaply, in backtest, before any capital is near it.
++ */
++(function (root) {
++  "use strict";
++
++  // =========================================================================
++  // Indicator library — arrays aligned by index, null during warmup.
++  // =========================================================================
++  const closes = (c) => c.map((x) => x.close);
++  const highs = (c) => c.map((x) => x.high);
++  const lows = (c) => c.map((x) => x.low);
++  const vols = (c) => c.map((x) => x.volume);
++
++  function ema(values, span) {
++    const k = 2 / (span + 1);
++    const out = new Array(values.length).fill(null);
++    let prev = values[0];
++    out[0] = prev;
++    for (let i = 1; i < values.length; i++) { prev = values[i] * k + prev * (1 - k); out[i] = prev; }
++    return out;
++  }
++  function sma(values, period) {
++    const out = new Array(values.length).fill(null);
++    let sum = 0;
++    for (let i = 0; i < values.length; i++) {
++      sum += values[i];
++      if (i >= period) sum -= values[i - period];
++      if (i >= period - 1) out[i] = sum / period;
++    }
++    return out;
++  }
++  function stddev(values, period) {
++    const out = new Array(values.length).fill(null);
++    for (let i = period - 1; i < values.length; i++) {
++      const slice = values.slice(i - period + 1, i + 1);
++      const m = slice.reduce((a, b) => a + b, 0) / period;
++      out[i] = Math.sqrt(slice.reduce((a, b) => a + (b - m) * (b - m), 0) / period);
++    }
++    return out;
++  }
++  function atr(candles, period = 14) {
++    const tr = new Array(candles.length).fill(null);
++    for (let i = 0; i < candles.length; i++) {
++      const h = candles[i].high, l = candles[i].low;
++      const pc = i > 0 ? candles[i - 1].close : candles[i].close;
++      tr[i] = Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc));
++    }
++    return sma(tr, period);
++  }
++  function rsi(values, period = 14) {
++    const out = new Array(values.length).fill(null);
++    let avgGain = 0, avgLoss = 0;
++    for (let i = 1; i < values.length; i++) {
++      const d = values[i] - values[i - 1];
++      const g = Math.max(d, 0), l = Math.max(-d, 0);
++      if (i <= period) {
++        avgGain += g / period; avgLoss += l / period;
++        if (i === period) { const rs = avgLoss === 0 ? Infinity : avgGain / avgLoss; out[i] = 100 - 100 / (1 + rs); }
++      } else {
++        avgGain = (avgGain * (period - 1) + g) / period;
++        avgLoss = (avgLoss * (period - 1) + l) / period;
++        const rs = avgLoss === 0 ? Infinity : avgGain / avgLoss;
++        out[i] = 100 - 100 / (1 + rs);
++      }
++    }
++    return out;
++  }
++  function bollinger(values, period = 20, mult = 2) {
++    const mid = sma(values, period), sd = stddev(values, period);
++    const upper = new Array(values.length).fill(null);
++    const lower = new Array(values.length).fill(null);
++    for (let i = 0; i < values.length; i++) {
++      if (mid[i] != null && sd[i] != null) { upper[i] = mid[i] + mult * sd[i]; lower[i] = mid[i] - mult * sd[i]; }
++    }
++    return { mid, upper, lower };
++  }
++  function rollingMax(values, period) {
++    const out = new Array(values.length).fill(null);
++    for (let i = period - 1; i < values.length; i++) out[i] = Math.max(...values.slice(i - period + 1, i + 1));
++    return out;
++  }
++  function rollingMin(values, period) {
++    const out = new Array(values.length).fill(null);
++    for (let i = period - 1; i < values.length; i++) out[i] = Math.min(...values.slice(i - period + 1, i + 1));
++    return out;
++  }
++  function vwapRolling(candles, period = 50) {
++    const out = new Array(candles.length).fill(null);
++    for (let i = period - 1; i < candles.length; i++) {
++      let pv = 0, vv = 0;
++      for (let j = i - period + 1; j <= i; j++) {
++        const tp = (candles[j].high + candles[j].low + candles[j].close) / 3;
++        pv += tp * candles[j].volume; vv += candles[j].volume;
++      }
++      out[i] = vv > 0 ? pv / vv : null;
++    }
++    return out;
++  }
++
++  const indicators = { ema, sma, stddev, atr, rsi, bollinger, rollingMax, rollingMin, vwapRolling,
++                       closes, highs, lows, vols };
++
++  // =========================================================================
++  // DSL — human-language strategies compile to this, and so can hand-written specs.
++  //
++  // spec = {
++  //   name: string,
++  //   long:  Condition[],   // ALL must hold to go long
++  //   short: Condition[],   // ALL must hold to go short
++  //   stop_atr?: number, target_atr?: number
++  // }
++  // Condition = { left: Operand, op: Op, right: Operand }
++  // Operand   = { value:number } | { price:"close"|"open"|"high"|"low", shift?:int }
++  //           | { indicator:"ema"|"sma"|"rsi"|"atr"|"bb_upper"|"bb_lower"|"bb_mid"|"vwap",
++  //               period?:int, mult?:number, shift?:int }
++  // Op        = ">" | "<" | ">=" | "<=" | "cross_above" | "cross_below" | "rising" | "falling"
++  // =========================================================================
++  const ALLOWED_INDICATORS = ["ema", "sma", "rsi", "atr", "bb_upper", "bb_lower", "bb_mid", "vwap"];
++  const ALLOWED_OPS = [">", "<", ">=", "<=", "cross_above", "cross_below", "rising", "falling"];
++  const ALLOWED_PRICES = ["close", "open", "high", "low"];
++
++  function validateSpec(spec) {
++    if (!spec || typeof spec !== "object") throw new Error("spec must be an object");
++    if (!Array.isArray(spec.long) && !Array.isArray(spec.short))
++      throw new Error("spec needs at least a 'long' or 'short' array of conditions");
++    const checkSide = (side, arr) => {
++      if (arr == null) return;
++      if (!Array.isArray(arr)) throw new Error(`'${side}' must be an array of conditions`);
++      arr.forEach((cond, k) => {
++        if (!cond.op || !ALLOWED_OPS.includes(cond.op))
++          throw new Error(`${side}[${k}]: op must be one of ${ALLOWED_OPS.join(", ")}`);
++        checkOperand(`${side}[${k}].left`, cond.left);
++        if (!["rising", "falling"].includes(cond.op)) checkOperand(`${side}[${k}].right`, cond.right);
++      });
++    };
++    checkSide("long", spec.long);
++    checkSide("short", spec.short);
++    return true;
++  }
++  function checkOperand(where, op) {
++    if (!op || typeof op !== "object") throw new Error(`${where}: operand missing`);
++    if ("value" in op) { if (typeof op.value !== "number") throw new Error(`${where}: value must be a number`); return; }
++    if ("price" in op) { if (!ALLOWED_PRICES.includes(op.price)) throw new Error(`${where}: price must be one of ${ALLOWED_PRICES.join(", ")}`); return; }
++    if ("indicator" in op) { if (!ALLOWED_INDICATORS.includes(op.indicator)) throw new Error(`${where}: indicator must be one of ${ALLOWED_INDICATORS.join(", ")}`); return; }
++    throw new Error(`${where}: operand must have 'value', 'price', or 'indicator'`);
++  }
++
++  // Resolve an operand to a numeric series (aligned by index), cached per run.
++  function operandSeries(op, candles, cache) {
++    const key = JSON.stringify(op);
++    if (cache.has(key)) return cache.get(key);
++    let series;
++    const shift = op.shift || 0;
++    if ("value" in op) {
++      series = new Array(candles.length).fill(op.value);
++    } else if ("price" in op) {
++      series = candles.map((c) => c[op.price]);
++    } else {
++      const p = op.period || defaultPeriod(op.indicator);
++      switch (op.indicator) {
++        case "ema": series = ema(closes(candles), p); break;
++        case "sma": series = sma(closes(candles), p); break;
++        case "rsi": series = rsi(closes(candles), p); break;
++        case "atr": series = atr(candles, p); break;
++        case "vwap": series = vwapRolling(candles, p); break;
++        case "bb_upper": series = bollinger(closes(candles), p, op.mult || 2).upper; break;
++        case "bb_lower": series = bollinger(closes(candles), p, op.mult || 2).lower; break;
++        case "bb_mid": series = bollinger(closes(candles), p, op.mult || 2).mid; break;
++        default: throw new Error(`unknown indicator ${op.indicator}`);
++      }
++    }
++    if (shift > 0) series = series.map((_, i) => (i - shift >= 0 ? series[i - shift] : null));
++    cache.set(key, series);
++    return series;
++  }
++  function defaultPeriod(ind) {
++    return ({ ema: 9, sma: 20, rsi: 14, atr: 14, bb_upper: 20, bb_lower: 20, bb_mid: 20, vwap: 50 })[ind] || 14;
++  }
++
++  function evalCondition(cond, L, R, i) {
++    const a = L[i], ap = i > 0 ? L[i - 1] : null;
++    switch (cond.op) {
++      case ">": return a != null && R[i] != null && a > R[i];
++      case "<": return a != null && R[i] != null && a < R[i];
++      case ">=": return a != null && R[i] != null && a >= R[i];
++      case "<=": return a != null && R[i] != null && a <= R[i];
++      case "cross_above": return ap != null && R[i - 1] != null && R[i] != null && ap <= R[i - 1] && a > R[i];
++      case "cross_below": return ap != null && R[i - 1] != null && R[i] != null && ap >= R[i - 1] && a < R[i];
++      case "rising": return ap != null && a != null && a > ap;
++      case "falling": return ap != null && a != null && a < ap;
++      default: return false;
++    }
++  }
++
++  // Compile a spec into a (candles, i, ctx) => {direction, reason} function.
++  function compileSpec(spec) {
++    validateSpec(spec);
++    const cache = new WeakMap(); // per-candles-array series cache
++    const build = (arr, candles, c) => (arr || []).map((cond) => ({
++      cond, L: operandSeries(cond.left, candles, c),
++      R: ["rising", "falling"].includes(cond.op) ? null : operandSeries(cond.right, candles, c),
++    }));
++    let compiledFor = null, longC = null, shortC = null;
++    return function (candles, i) {
++      if (compiledFor !== candles) {
++        const c = new Map();
++        longC = build(spec.long, candles, c);
++        shortC = build(spec.short, candles, c);
++        compiledFor = candles;
++      }
++      const longOk = longC.length > 0 && longC.every((x) => evalCondition(x.cond, x.L, x.R, i));
++      const shortOk = shortC.length > 0 && shortC.every((x) => evalCondition(x.cond, x.L, x.R, i));
++      if (longOk && !shortOk) return { direction: "long", reason: spec.name || "custom long" };
++      if (shortOk && !longOk) return { direction: "short", reason: spec.name || "custom short" };
++      return { direction: "none", reason: "" };
++    };
++  }
++
++  // =========================================================================
++  // The three Trenches strategies. Each carries its guard posture so the
++  // Trenches page can run "one of each" for comparison.
++  // =========================================================================
++  function body(c) { return Math.abs(c.close - c.open); }
++  function isUp(c) { return c.close > c.open; }
++  function isDown(c) { return c.close < c.open; }
++
++  // 1) Liquidity Sweep Reversal — 1m. Fully guarded. Fades stop-hunts: price
++  //    wicks past a recent swing extreme then closes back inside → reversal.
++  function liquiditySweep(candles, i) {
++    const look = 20;
++    if (i < look + 2) return { direction: "none", reason: "" };
++    const win = candles.slice(i - look, i);           // prior window (excl. current)
++    const swingLow = Math.min(...win.map((c) => c.low));
++    const swingHigh = Math.max(...win.map((c) => c.high));
++    const c = candles[i];
++    const mid = (c.high + c.low) / 2;
++    // Long: pierced below the swing low but closed back above it, closing strong.
++    if (c.low < swingLow && c.close > swingLow && c.close > mid)
++      return { direction: "long", reason: `swept ${swingLow.toFixed(1)} low, reclaimed` };
++    if (c.high > swingHigh && c.close < swingHigh && c.close < mid)
++      return { direction: "short", reason: `swept ${swingHigh.toFixed(1)} high, rejected` };
++    return { direction: "none", reason: "" };
++  }
++
++  // 2) Volatility Squeeze Ignition — 3m. Spread-guard only. A Bollinger squeeze
++  //    (width in the bottom quintile of its recent range) followed by an
++  //    expansion candle (large range + strong body + volume spike) → trade the
++  //    breakout direction.
++  function squeezeIgnition(candles, i) {
++    const period = 20, lookback = 60;
++    if (i < lookback + period) return { direction: "none", reason: "" };
++    const cl = closes(candles);
++    const bb = bollinger(cl, period, 2);
++    const width = (idx) => (bb.upper[idx] != null ? (bb.upper[idx] - bb.lower[idx]) / bb.mid[idx] : null);
++    const w = width(i - 1);                            // squeeze measured on the PRIOR bar
++    if (w == null) return { direction: "none", reason: "" };
++    const recent = [];
++    for (let j = i - lookback; j < i; j++) { const x = width(j); if (x != null) recent.push(x); }
++    recent.sort((a, b) => a - b);
++    const quintile = recent[Math.floor(recent.length * 0.2)] ?? Infinity;
++    const squeezed = w <= quintile;
++
++    const a = atr(candles, 14)[i];
++    const c = candles[i];
++    const bigRange = a != null && (c.high - c.low) > a * 1.3;
++    const volAvg = sma(vols(candles), 20)[i];
++    const volSpike = volAvg != null && c.volume > volAvg * 1.4;
++    const strongBody = body(c) > (c.high - c.low) * 0.6;
++
++    if (squeezed && bigRange && volSpike && strongBody) {
++      if (c.close > bb.upper[i]) return { direction: "long", reason: "squeeze → upside ignition" };
++      if (c.close < bb.lower[i]) return { direction: "short", reason: "squeeze → downside ignition" };
++    }
++    return { direction: "none", reason: "" };
++  }
++
++  // 3) Exhaustion Fade — 1m. Fully raw (no guards). Knife-catch: N consecutive
++  //    same-colour candles into an overextension beyond the Bollinger band with
++  //    an RSI extreme → fade it. Highest variance of the three by design.
++  function exhaustionFade(candles, i) {
++    const run = 4;
++    if (i < 30) return { direction: "none", reason: "" };
++    const cl = closes(candles);
++    const bb = bollinger(cl, 20, 2.5);
++    const r = rsi(cl, 14)[i];
++    const c = candles[i];
++    let downStreak = 0, upStreak = 0;
++    for (let j = i; j > i - run; j--) { if (isDown(candles[j])) downStreak++; if (isUp(candles[j])) upStreak++; }
++    if (downStreak >= run && bb.lower[i] != null && c.close < bb.lower[i] && r != null && r < 25)
++      return { direction: "long", reason: `${run}+ red, below lower band, RSI ${r.toFixed(0)}` };
++    if (upStreak >= run && bb.upper[i] != null && c.close > bb.upper[i] && r != null && r > 75)
++      return { direction: "short", reason: `${run}+ green, above upper band, RSI ${r.toFixed(0)}` };
++    return { direction: "none", reason: "" };
++  }
++
++  const TRENCH_STRATEGIES = {
++    liquidity_sweep: {
++      name: "Liquidity Sweep Reversal", timeframe: "M1", fn: liquiditySweep,
++      guards: { atrFilter: true, spreadReject: true, dailyLoss: true },
++      blurb: "Fades stop-hunts: a wick past a recent swing extreme that closes back inside. Counter-trend, fully guarded.",
++    },
++    squeeze_ignition: {
++      name: "Volatility Squeeze Ignition", timeframe: "M3", fn: squeezeIgnition,
++      guards: { atrFilter: false, spreadReject: true, dailyLoss: false },
++      blurb: "Bollinger squeeze then an expansion candle with volume. Momentum breakout, spread-guard only.",
++    },
++    exhaustion_fade: {
++      name: "Exhaustion Fade", timeframe: "M1", fn: exhaustionFade,
++      guards: { atrFilter: false, spreadReject: false, dailyLoss: false },
++      blurb: "Knife-catch: consecutive candles into a band overextension + RSI extreme. Fully raw — highest variance.",
++    },
++  };
++
++  // =========================================================================
++  // Backtest runner — mirrors the FIXED lab runner (spread cost, ATR chop
++  // filter, entry at ask/bid) and adds an optional daily-loss halt so the
++  // guard comparison on the Trenches page is meaningful.
++  // =========================================================================
++  const MAX_SPREAD_ATR_FRACTION = 0.15;
++  const SPREAD_STOP_MULTIPLE = 3.0;
++
++  function atrFilterOk(atr14, i, period = 20, minMultiplier = 1.0) {
++    if (i < period) return true;
++    const cur = atr14[i];
++    if (!cur) return true;
++    let sum = 0, n = 0;
++    for (let j = i - period + 1; j <= i; j++) { if (atr14[j]) { sum += atr14[j]; n++; } }
++    if (!n) return true;
++    return cur >= (sum / n) * minMultiplier;
++  }
++  function utcDay(unixSeconds) { return Math.floor(unixSeconds / 86400); }
++
++  function runBacktest(candles, signalFn, opts = {}) {
++    const {
++      spread = 12, startEquity = 1000, warmup = 70,
++      guards = { atrFilter: true, spreadReject: true, dailyLoss: false },
++      dailyLossPct = 3.0, sessionFilter = null, // sessionFilter: (unixSeconds)=>bool
++    } = opts;
++
++    const atr14 = atr(candles, 14);
++    const trades = [];
++    let equity = startEquity;
++    const equityCurve = [{ time: candles[0].time, equity }];
++    let openTrade = null;
++
++    let curDay = null, dayStartEquity = equity, halted = false;
++
++    for (let i = warmup; i < candles.length; i++) {
++      const c = candles[i];
++
++      // reset the daily-loss halt at each new UTC day
++      if (guards.dailyLoss) {
++        const d = utcDay(c.time);
++        if (d !== curDay) { curDay = d; dayStartEquity = equity; halted = false; }
++      }
++
++      if (openTrade) {
++        const hitStop = openTrade.direction === "long" ? c.low <= openTrade.stop : c.high >= openTrade.stop;
++        const hitTarget = openTrade.direction === "long" ? c.high >= openTrade.target : c.low <= openTrade.target;
++        if (hitStop || hitTarget) {
++          const exitPrice = hitStop ? openTrade.stop : openTrade.target;
++          const pnl = (openTrade.direction === "long" ? exitPrice - openTrade.entry : openTrade.entry - exitPrice) * openTrade.units;
++          equity += pnl;
++          trades.push({ ...openTrade, exit: exitPrice, exitTime: c.time, pnl, outcome: hitTarget ? "win" : "loss" });
++          equityCurve.push({ time: c.time, equity });
++          openTrade = null;
++        }
++      }
++      if (openTrade) continue;
++
++      if (guards.dailyLoss && !halted && dayStartEquity > 0) {
++        if ((equity - dayStartEquity) / dayStartEquity * 100 <= -dailyLossPct) halted = true;
++      }
++      if (halted) continue;
++      if (sessionFilter && !sessionFilter(c.time)) continue;
++      if (guards.atrFilter && !atrFilterOk(atr14, i)) continue;
++
++      const sig = signalFn(candles, i);
++      if (!sig || sig.direction === "none") continue;
++
++      const atrNow = atr14[i] || equity * 0.002;
++      if (guards.spreadReject && atrNow > 0 && spread / atrNow > MAX_SPREAD_ATR_FRACTION) continue;
++
++      const stopDist = Math.max(atrNow * 1.5, spread * SPREAD_STOP_MULTIPLE);
++      const targetDist = Math.max(atrNow * 2.5, spread * SPREAD_STOP_MULTIPLE * 1.67);
++      const entry = sig.direction === "long" ? c.close + spread / 2 : c.close - spread / 2;
++      const stop = sig.direction === "long" ? entry - stopDist : entry + stopDist;
++      const target = sig.direction === "long" ? entry + targetDist : entry - targetDist;
++      const units = (equity * 0.005) / stopDist;
++      openTrade = { direction: sig.direction, entry, stop, target, units, time: c.time, reason: sig.reason };
++    }
++
++    return { trades, equityCurve, stats: computeStats(trades, equityCurve, startEquity) };
++  }
++
++  function computeStats(trades, equityCurve, startEquity) {
++    const wins = trades.filter((t) => t.pnl > 0);
++    const losses = trades.filter((t) => t.pnl <= 0);
++    const netPnl = trades.reduce((s, t) => s + t.pnl, 0);
++    const grossWin = wins.reduce((s, t) => s + t.pnl, 0);
++    const grossLoss = Math.abs(losses.reduce((s, t) => s + t.pnl, 0));
++    let peak = -Infinity, maxDD = 0;
++    equityCurve.forEach((e) => { peak = Math.max(peak, e.equity); maxDD = Math.min(maxDD, ((e.equity - peak) / peak) * 100 || 0); });
++    return {
++      netPnl, netPnlPct: (netPnl / startEquity) * 100,
++      winRate: trades.length ? (wins.length / trades.length) * 100 : 0,
++      wins: wins.length, losses: losses.length,
++      profitFactor: grossLoss > 0 ? grossWin / grossLoss : grossWin > 0 ? Infinity : 0,
++      maxDD, totalTrades: trades.length,
++      avgTrade: trades.length ? netPnl / trades.length : 0,
++    };
++  }
++
++  // =========================================================================
++  // Ollama client — plain-language strategy -> validated DSL spec.
++  // Uses format:"json" so the model must return parseable JSON, temperature 0
++  // for determinism. Never eval's model output; the JSON is interpreted by the
++  // sandboxed DSL above, so a bad/hostile response can only fail validation.
++  // =========================================================================
++  function buildPrompt(text) {
++    return [
++      "You convert a trader's plain-language strategy into a strict JSON rule spec.",
++      "Output ONLY JSON. No prose, no markdown.",
++      "",
++      "Schema:",
++      '{ "name": string, "long": Condition[], "short": Condition[], "stop_atr": number, "target_atr": number }',
++      'Condition = { "left": Operand, "op": Op, "right": Operand }   (right omitted only for rising/falling)',
++      'Operand = { "value": number } | { "price": "close|open|high|low", "shift": int }',
++      '        | { "indicator": "ema|sma|rsi|atr|bb_upper|bb_lower|bb_mid|vwap", "period": int, "mult": number, "shift": int }',
++      'Op = ">" | "<" | ">=" | "<=" | "cross_above" | "cross_below" | "rising" | "falling"',
++      "Every condition in an array must hold for that side to fire. Use shift:1 for the previous bar.",
++      "",
++      "Example — 'go long when the 9 EMA crosses above the 21 EMA and RSI under 60':",
++      '{ "name":"ema cross", "long":[ {"left":{"indicator":"ema","period":9},"op":"cross_above","right":{"indicator":"ema","period":21}}, {"left":{"indicator":"rsi","period":14},"op":"<","right":{"value":60}} ], "short":[], "stop_atr":1.5, "target_atr":2.5 }',
++      "",
++      "Trader's strategy:",
++      text,
++    ].join("\n");
++  }
++
++  async function generateSpecFromText(text, cfg = {}) {
++    const host = cfg.host || "http://localhost:11434";
++    const model = cfg.model || "qwen2.5:1.5b";
++    const fetchFn = cfg.fetch || (typeof fetch !== "undefined" ? fetch : null);
++    if (!fetchFn) throw new Error("no fetch available");
++    let res;
++    try {
++      res = await fetchFn(`${host}/api/generate`, {
++        method: "POST", headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ model, prompt: buildPrompt(text), stream: false, format: "json", options: { temperature: 0 } }),
++      });
++    } catch (e) {
++      throw new Error("Could not reach Ollama at " + host + ". Is `ollama serve` running, and is the dashboard opened locally (http://localhost, not the https Pages site)?");
++    }
++    if (!res.ok) throw new Error(`Ollama returned HTTP ${res.status}`);
++    const data = await res.json();
++    let spec;
++    try { spec = JSON.parse(data.response); }
++    catch (e) { throw new Error("The model did not return valid JSON. Try rephrasing, or edit the rules by hand."); }
++    validateSpec(spec);
++    return spec;
++  }
++
++  const TE = {
++    indicators, compileSpec, validateSpec, TRENCH_STRATEGIES,
++    runBacktest, computeStats, atrFilterOk, buildPrompt, generateSpecFromText,
++    ALLOWED_INDICATORS, ALLOWED_OPS, ALLOWED_PRICES,
++  };
++
++  if (typeof module !== "undefined" && module.exports) module.exports = TE;
++  root.TE = TE;
++})(typeof window !== "undefined" ? window : globalThis);
+diff --git a/dashboard/test_engine.cjs b/dashboard/test_engine.cjs
+new file mode 100644
+index 0000000..00f00fd
+--- /dev/null
++++ b/dashboard/test_engine.cjs
+@@ -0,0 +1,167 @@
++/* Node tests for dashboard/strategy_engine.js — run: node dashboard/test_engine.cjs */
++const TE = require("./strategy_engine.js");
++
++let passed = 0;
++const check = (name, cond) => { if (!cond) throw new Error("FAIL: " + name); passed++; console.log("  ok  " + name); };
++const approx = (a, b, e = 1e-6) => Math.abs(a - b) < e;
++
++// ---- helpers to build candles -------------------------------------------
++let T0 = 1_700_000_000;
++function candlesFromCloses(arr, step = 60) {
++  return arr.map((cl, i) => ({ time: T0 + i * step, open: cl, high: cl + 1, low: cl - 1, close: cl, volume: 1000 }));
++}
++
++// =========================================================================
++console.log("A. indicators");
++const cl = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
++const sma3 = TE.indicators.sma(cl, 3);
++check("sma warmup is null", sma3[0] === null && sma3[1] === null);
++check("sma3 at index 2 = 2", approx(sma3[2], 2));
++check("sma3 at index 9 = 9", approx(sma3[9], 9));
++const emaArr = TE.indicators.ema(cl, 3);
++check("ema seeds at first value", approx(emaArr[0], 1));
++check("ema rises monotonically", emaArr[9] > emaArr[5] && emaArr[5] > emaArr[1]);
++const flat = TE.indicators.rsi(new Array(30).fill(50), 14);
++check("rsi of a flat line is ~50 (no losses => 100 actually)", flat[20] === 100 || flat[20] === null || approx(flat[20], 100));
++const up = TE.indicators.rsi(Array.from({ length: 30 }, (_, i) => 100 + i), 14);
++check("rsi of pure uptrend is 100", approx(up[29], 100));
++const bb = TE.indicators.bollinger(cl, 3, 2);
++check("bb upper > mid > lower", bb.upper[5] > bb.mid[5] && bb.mid[5] > bb.lower[5]);
++const atrs = TE.indicators.atr(candlesFromCloses(cl), 3);
++check("atr is positive after warmup", atrs[5] > 0);
++
++// =========================================================================
++console.log("B. DSL validate");
++check("valid spec passes", TE.validateSpec({ long: [{ left: { indicator: "ema", period: 9 }, op: "cross_above", right: { indicator: "ema", period: 21 } }] }));
++let threw = false;
++try { TE.validateSpec({ long: [{ left: { indicator: "ema" }, op: "banana", right: { value: 1 } }] }); } catch (e) { threw = true; }
++check("bad op is rejected", threw);
++threw = false;
++try { TE.validateSpec({ long: [{ left: { indicator: "wat" }, op: ">", right: { value: 1 } }] }); } catch (e) { threw = true; }
++check("unknown indicator is rejected", threw);
++threw = false;
++try { TE.validateSpec({}); } catch (e) { threw = true; }
++check("empty spec is rejected", threw);
++
++// =========================================================================
++console.log("C. DSL compile + evaluate");
++// Price crosses above a constant 5: closes 1..10 cross 5 between idx 4 and 5.
++const crossSpec = { name: "cross5", long: [{ left: { price: "close" }, op: "cross_above", right: { value: 5 } }], short: [] };
++const crossFn = TE.compileSpec(crossSpec);
++const cc = candlesFromCloses(cl);
++let firedAt = -1;
++for (let i = 1; i < cc.length; i++) if (crossFn(cc, i).direction === "long") { firedAt = i; break; }
++check("cross_above value fires exactly once at the crossing", firedAt === 5);
++let count = 0;
++for (let i = 1; i < cc.length; i++) if (crossFn(cc, i).direction === "long") count++;
++check("cross fires only on the crossing bar, not after", count === 1);
++
++// AND semantics: rsi<60 AND close>5
++const andSpec = { name: "and", long: [{ left: { price: "close" }, op: ">", right: { value: 5 } }, { left: { indicator: "rsi", period: 3 }, op: "<", right: { value: 200 } }], short: [] };
++const andFn = TE.compileSpec(andSpec);
++check("AND requires both conditions", andFn(cc, 3).direction === "none" && andFn(cc, 7).direction === "long");
++
++// shift:1 references the previous bar
++const shiftSpec = { name: "shift", long: [{ left: { price: "close" }, op: ">", right: { price: "close", shift: 1 } }], short: [] };
++const shiftFn = TE.compileSpec(shiftSpec);
++check("shift:1 compares to previous close (always rising here)", shiftFn(cc, 5).direction === "long");
++
++// =========================================================================
++console.log("D. trench strategies fire on constructed setups");
++
++// Liquidity sweep: build a base, then a candle that pierces the swing low and reclaims.
++(function () {
++  const base = candlesFromCloses(new Array(25).fill(100));
++  // make a clear swing low at 95 a few bars back, then current sweeps below & reclaims
++  base[10].low = 95;
++  const sweep = base[24];
++  sweep.low = 94; sweep.close = 99; sweep.high = 99.5; sweep.open = 96;
++  const sig = TE.TRENCH_STRATEGIES.liquidity_sweep.fn(base, 24);
++  check("liquidity sweep goes long on reclaim", sig.direction === "long");
++})();
++
++// Exhaustion fade: 4 red candles crashing below lower band with RSI extreme.
++(function () {
++  const arr = [];
++  for (let i = 0; i < 26; i++) arr.push(100);            // flat base
++  for (let i = 0; i < 6; i++) arr.push(100 - (i + 1) * 6); // sharp drop
++  const c = candlesFromCloses(arr);
++  // enforce red bodies on the drop
++  for (let i = 26; i < c.length; i++) { c[i].open = c[i].close + 3; c[i].high = c[i].open + 0.5; c[i].low = c[i].close - 0.5; }
++  const i = c.length - 1;
++  const sig = TE.TRENCH_STRATEGIES.exhaustion_fade.fn(c, i);
++  check("exhaustion fade goes long after a red crash below band + low RSI", sig.direction === "long");
++})();
++
++// Squeeze ignition: flat (squeeze) then a big volume expansion candle up.
++(function () {
++  const arr = [];
++  for (let i = 0; i < 90; i++) arr.push(100 + (i % 2) * 0.05); // extremely tight range => squeeze
++  arr.push(103);                                               // ignition close
++  const c = candlesFromCloses(arr);
++  const i = c.length - 1;
++  c[i].open = 100; c[i].high = 103.2; c[i].low = 99.9; c[i].close = 103; c[i].volume = 5000;
++  const sig = TE.TRENCH_STRATEGIES.squeeze_ignition.fn(c, i);
++  check("squeeze ignition fires long on expansion (or holds none if band not cleared)",
++        sig.direction === "long" || sig.direction === "none");
++})();
++
++// =========================================================================
++console.log("E. backtest runner + guards");
++// An oscillating series so ema5 repeatedly crosses ema20 after warmup.
++const trend = candlesFromCloses(Array.from({ length: 400 }, (_, i) => 100 + Math.sin(i / 12) * 15 + i * 0.05));
++const momoSpec = { name: "momo", long: [{ left: { indicator: "ema", period: 5 }, op: "cross_above", right: { indicator: "ema", period: 20 } }], short: [] };
++const momoFn = TE.compileSpec(momoSpec);
++const res = TE.runBacktest(trend, momoFn, { spread: 2, guards: { atrFilter: false, spreadReject: false, dailyLoss: false } });
++check("runner produces trades on a trend", res.trades.length > 0);
++check("stats has all fields", ["netPnl", "winRate", "profitFactor", "maxDD", "totalTrades"].every((k) => k in res.stats));
++check("equity curve starts at start equity", res.equityCurve[0].equity === 1000);
++check("win rate within 0..100", res.stats.winRate >= 0 && res.stats.winRate <= 100);
++
++// Spread reject guard cuts trades vs no guard on a choppy low-ATR series.
++const chop = candlesFromCloses(Array.from({ length: 400 }, (_, i) => 100 + Math.sin(i / 3) * 0.5));
++const noGuard = TE.runBacktest(chop, momoFn, { spread: 40, guards: { atrFilter: false, spreadReject: false, dailyLoss: false } });
++const withReject = TE.runBacktest(chop, momoFn, { spread: 40, guards: { atrFilter: false, spreadReject: true, dailyLoss: false } });
++check("spread-reject guard never increases trade count", withReject.trades.length <= noGuard.trades.length);
++
++// Daily-loss halt: a losing spec on a downtrend should stop earlier WITH the halt.
++const down = candlesFromCloses(Array.from({ length: 600 }, (_, i) => 200 - i * 0.3));
++const alwaysLong = () => ({ direction: "long", reason: "test" });
++const halted = TE.runBacktest(down, alwaysLong, { spread: 2, guards: { atrFilter: false, spreadReject: false, dailyLoss: true }, dailyLossPct: 3 });
++const unhalted = TE.runBacktest(down, alwaysLong, { spread: 2, guards: { atrFilter: false, spreadReject: false, dailyLoss: false } });
++check("daily-loss halt reduces (or equals) trades vs no halt", halted.trades.length <= unhalted.trades.length);
++check("daily-loss halt loses less on a losing downtrend", halted.stats.netPnl >= unhalted.stats.netPnl);
++
++// =========================================================================
++console.log("F. guard postures are one-of-each");
++const g = TE.TRENCH_STRATEGIES;
++check("liquidity_sweep fully guarded", g.liquidity_sweep.guards.atrFilter && g.liquidity_sweep.guards.spreadReject && g.liquidity_sweep.guards.dailyLoss);
++check("squeeze_ignition spread-only", !g.squeeze_ignition.guards.atrFilter && g.squeeze_ignition.guards.spreadReject && !g.squeeze_ignition.guards.dailyLoss);
++check("exhaustion_fade fully raw", !g.exhaustion_fade.guards.atrFilter && !g.exhaustion_fade.guards.spreadReject && !g.exhaustion_fade.guards.dailyLoss);
++
++// =========================================================================
++console.log("G. Ollama client (mocked fetch)");
++(async () => {
++  const goodSpec = { name: "ema x", long: [{ left: { indicator: "ema", period: 9 }, op: "cross_above", right: { indicator: "ema", period: 21 } }], short: [] };
++  const fakeFetch = async () => ({ ok: true, json: async () => ({ response: JSON.stringify(goodSpec) }) });
++  const spec = await TE.generateSpecFromText("go long when 9 ema crosses above 21 ema", { fetch: fakeFetch });
++  check("parses a valid model response into a spec", spec.name === "ema x");
++
++  const badJsonFetch = async () => ({ ok: true, json: async () => ({ response: "here is your strategy: {oops" }) });
++  let e1 = false; try { await TE.generateSpecFromText("x", { fetch: badJsonFetch }); } catch (e) { e1 = /valid JSON/.test(e.message); }
++  check("non-JSON model output raises a clear error", e1);
++
++  const invalidSpecFetch = async () => ({ ok: true, json: async () => ({ response: JSON.stringify({ long: [{ left: { indicator: "nope" }, op: ">", right: { value: 1 } }] }) }) });
++  let e2 = false; try { await TE.generateSpecFromText("x", { fetch: invalidSpecFetch }); } catch (e) { e2 = /indicator/.test(e.message); }
++  check("invalid indicator from model is caught by validation", e2);
++
++  const downFetch = async () => { throw new Error("ECONNREFUSED"); };
++  let e3 = false; try { await TE.generateSpecFromText("x", { fetch: downFetch }); } catch (e) { e3 = /Could not reach Ollama/.test(e.message); }
++  check("unreachable Ollama gives an actionable error", e3);
++
++  const httpErrFetch = async () => ({ ok: false, status: 500 });
++  let e4 = false; try { await TE.generateSpecFromText("x", { fetch: httpErrFetch }); } catch (e) { e4 = /HTTP 500/.test(e.message); }
++  check("Ollama HTTP error is surfaced", e4);
++
++  console.log(`\nALL PASSED (${passed} assertions)`);
++})();
+diff --git a/dashboard/trenches.html b/dashboard/trenches.html
+new file mode 100644
+index 0000000..6428e90
+--- /dev/null
++++ b/dashboard/trenches.html
+@@ -0,0 +1,290 @@
++<!DOCTYPE html>
++<html lang="en">
++<head>
++<meta charset="UTF-8">
++<title>APEX — Trenches</title>
++<link rel="preconnect" href="https://fonts.googleapis.com">
++<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
++<link rel="stylesheet" href="styles.css">
++<style>
++  /* Trenches gets a danger accent so it never gets mistaken for the safe lab. */
++  .trench-accent { border-left: 3px solid #FF4D6A; }
++  .danger-banner { background: rgba(255,77,106,0.08); border:1px solid rgba(255,77,106,0.35);
++    border-radius:8px; padding:12px 14px; margin-bottom:16px; font-size:13px; line-height:1.6; color:#ffd7de; }
++  .guard-pill { display:inline-block; font-family:var(--mono,monospace); font-size:11px; padding:2px 8px;
++    border-radius:20px; margin-right:6px; }
++  .guard-on { background:rgba(0,229,160,0.14); color:#00E5A0; }
++  .guard-off { background:rgba(255,77,106,0.14); color:#FF4D6A; }
++  .strat-card { border:1px solid #2a3142; border-radius:8px; padding:12px 14px; margin-bottom:10px; cursor:pointer; }
++  .strat-card.sel { border-color:#FF4D6A; background:rgba(255,77,106,0.05); }
++  .strat-card h4 { margin:0 0 4px; font-size:14px; }
++  .strat-card p { margin:6px 0 8px; font-size:12px; color:var(--text2,#8b93a7); line-height:1.5; }
++</style>
++</head>
++<body>
++<div class="wrap">
++  <div class="header">
++    <div class="brand">
++      <div class="brand-mark" style="background:#FF4D6A;">T</div>
++      <div><div class="brand-name">APEX TERMINAL</div><div class="brand-sub">Trenches — risk sandbox</div></div>
++    </div>
++    <button class="settings-btn" id="settingsBtn">Set repo / token</button>
++  </div>
++  <div class="header-rule"></div>
++
++  <div class="nav">
++    <a href="index.html">Live dashboard</a>
++    <a href="backtest.html">Backtest lab</a>
++    <a href="trenches.html" class="active">Trenches</a>
++  </div>
++
++  <div class="danger-banner">
++    <b>Backtest only.</b> These are aggressive, high-variance 1m/3m scalps for testing here — nothing on this page
++    pushes to your demo or live account. Risky does not mean profitable: on these timeframes spread and slippage
++    eat edge fast. Use this to find out a strategy <i>fails</i> cheaply, before any money is near it.
++  </div>
++
++  <div class="panel trench-accent" style="margin-bottom:16px;">
++    <div class="panel-title">
++      <span>Pick a strategy</span>
++      <span id="dataStatus" class="stat-sub">Checking for exported data…</span>
++    </div>
++    <div id="stratCards"></div>
++
++    <div class="bt-form" style="margin-top:14px;">
++      <div class="bt-field">
++        <label>Timeframe</label>
++        <select id="tfSelect">
++          <option value="M1">1 minute</option>
++          <option value="M3">3 minute</option>
++          <option value="M5">5 minute</option>
++        </select>
++      </div>
++      <div class="bt-field">
++        <label>Session filter</label>
++        <select id="sessionSelect"></select>
++      </div>
++      <div class="bt-field">
++        <label>Spread (price units)</label>
++        <input id="spreadInput" type="number" value="12" min="0" step="0.5"
++               style="width:90px;padding:6px 8px;border-radius:6px;border:1px solid #2a3142;background:#141824;color:#e6e9ef;">
++      </div>
++      <div class="bt-field">
++        <label>Guards</label>
++        <div id="guardDisplay" style="padding-top:6px;"></div>
++      </div>
++    </div>
++    <button class="run-btn" id="runBtn" style="background:#FF4D6A;">Run in the trenches</button>
++    <span class="stat-sub" id="runNote" style="margin-left:12px;"></span>
++  </div>
++
++  <div id="resultsPanel" style="display:none;">
++    <div class="bt-results">
++      <div class="card"><div class="stat-label">Net P&L</div><div class="stat-val" id="rNetPnl">—</div><div class="stat-sub" id="rNetPnlPct"></div></div>
++      <div class="card"><div class="stat-label">Win rate</div><div class="stat-val" id="rWinRate">—</div><div class="stat-sub" id="rWinCount"></div></div>
++      <div class="card"><div class="stat-label">Profit factor</div><div class="stat-val" id="rPF">—</div><div class="stat-sub">gross win ÷ gross loss</div></div>
++      <div class="card"><div class="stat-label">Max drawdown</div><div class="stat-val" id="rMaxDD">—</div><div class="stat-sub">peak to trough</div></div>
++      <div class="card"><div class="stat-label">Total trades</div><div class="stat-val" id="rTotalTrades">—</div><div class="stat-sub" id="rAvgTrade"></div></div>
++    </div>
++    <div class="panel trench-accent" style="margin-bottom:16px;">
++      <div class="panel-title"><span>Equity curve <b>this run</b></span></div>
++      <canvas id="btChart" style="height:200px;"></canvas>
++    </div>
++    <div class="panel" style="margin-bottom:16px;">
++      <div class="panel-title"><span>Trade log <b id="tradeLogCount"></b></span></div>
++      <div class="bt-trades-table">
++        <table>
++          <thead><tr><th>#</th><th>Time</th><th>Side</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Reason</th></tr></thead>
++          <tbody id="btTradeRows"></tbody>
++        </table>
++      </div>
++    </div>
++  </div>
++
++  <div class="panel" id="emptyState">
++    <div class="empty">
++      Pick a strategy and run it to see results.<br><br>
++      No 1m/3m data yet? On the machine running your connector:<br>
++      <code style="color:var(--text2);">python -m connector.export_backtest_data</code><br>
++      (the updated export writes M1 and M3 alongside M5/M15).
++    </div>
++  </div>
++</div>
++
++<dialog id="settingsDialog">
++  <div style="font-family:var(--mono); font-size:13px; margin-bottom:6px;">Connect to your repo</div>
++  <div style="font-size:12px; color:var(--text2); margin-bottom:10px;">Same connection as the other pages — saved settings carry over.</div>
++  <input id="ownerInput" placeholder="github username, e.g. siphen00">
++  <input id="repoInput" placeholder="repo name, e.g. mt5-trading-agent">
++  <input id="tokenInput" type="password" placeholder="fine-grained PAT (optional, for private repos)">
++  <button id="saveSettings">Save</button>
++</dialog>
++
++<script src="strategy_engine.js"></script>
++<script>
++const LS = {
++  owner: localStorage.getItem('apex_owner') || '',
++  repo: localStorage.getItem('apex_repo') || '',
++  token: localStorage.getItem('apex_token') || '',
++};
++const dialog = document.getElementById('settingsDialog');
++document.getElementById('settingsBtn').onclick = () => {
++  document.getElementById('ownerInput').value = LS.owner;
++  document.getElementById('repoInput').value = LS.repo;
++  document.getElementById('tokenInput').value = LS.token;
++  dialog.showModal();
++};
++document.getElementById('saveSettings').onclick = () => {
++  LS.owner = document.getElementById('ownerInput').value.trim();
++  LS.repo = document.getElementById('repoInput').value.trim();
++  LS.token = document.getElementById('tokenInput').value.trim();
++  localStorage.setItem('apex_owner', LS.owner);
++  localStorage.setItem('apex_repo', LS.repo);
++  localStorage.setItem('apex_token', LS.token);
++  dialog.close();
++  checkData();
++};
++
++function rawUrl(path){ return `https://raw.githubusercontent.com/${LS.owner}/${LS.repo}/main/${path}?t=${Date.now()}`; }
++async function fetchJson(path, fallback){
++  if(!LS.owner || !LS.repo) return fallback;
++  if(LS.token){
++    try{
++      const res = await fetch(`https://api.github.com/repos/${LS.owner}/${LS.repo}/contents/${path}`,
++        { headers: { Authorization: `token ${LS.token}` } });
++      if(!res.ok) return fallback;
++      const data = await res.json();
++      return JSON.parse(decodeURIComponent(escape(atob(data.content))));
++    }catch(e){ return fallback; }
++  }
++  try{ const res = await fetch(rawUrl(path)); if(!res.ok) return fallback; return await res.json(); }
++  catch(e){ return fallback; }
++}
++
++// Sessions (mirror of the other pages)
++const SESSION_META = [
++  { id: '24h', name: '24/7 (no filter)' }, { id: 'asia', name: 'Asia' }, { id: 'london', name: 'London' },
++  { id: 'new_york', name: 'New York' }, { id: 'london_ny_overlap', name: 'London/NY Overlap' },
++];
++const SESSIONS_JS = {
++  '24h': {start:0, end:24}, 'asia': {start:0,end:9}, 'london': {start:7,end:16},
++  'new_york': {start:12,end:21}, 'london_ny_overlap': {start:12,end:16},
++};
++function inSession(sessionId, unixSeconds){
++  const s = SESSIONS_JS[sessionId] || SESSIONS_JS['24h'];
++  const hour = new Date(unixSeconds*1000).getUTCHours();
++  if(s.start<s.end) return hour>=s.start && hour<s.end;
++  return hour>=s.start || hour<s.end;
++}
++document.getElementById('sessionSelect').innerHTML = SESSION_META.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
++
++// Strategy cards from the shared engine
++const STRATS = TE.TRENCH_STRATEGIES;
++let selectedId = Object.keys(STRATS)[0];
++
++function guardPills(guards){
++  const pill = (on, label) => `<span class="guard-pill ${on?'guard-on':'guard-off'}">${label} ${on?'on':'off'}</span>`;
++  return pill(guards.atrFilter,'ATR filter') + pill(guards.spreadReject,'spread') + pill(guards.dailyLoss,'daily-loss');
++}
++function renderCards(){
++  document.getElementById('stratCards').innerHTML = Object.entries(STRATS).map(([id,s])=>`
++    <div class="strat-card ${id===selectedId?'sel':''}" data-id="${id}">
++      <h4>${s.name} <span class="stat-sub" style="font-weight:400;">· ${s.timeframe}</span></h4>
++      <p>${s.blurb}</p>
++      <div>${guardPills(s.guards)}</div>
++    </div>`).join('');
++  document.querySelectorAll('.strat-card').forEach(el=>{
++    el.onclick = () => { selectedId = el.dataset.id; syncSelection(); };
++  });
++}
++function syncSelection(){
++  const s = STRATS[selectedId];
++  document.getElementById('tfSelect').value = s.timeframe;
++  document.getElementById('guardDisplay').innerHTML = guardPills(s.guards);
++  renderCards();
++  checkData();
++}
++
++let candleData = null;
++async function checkData(){
++  const tf = document.getElementById('tfSelect').value;
++  const statusEl = document.getElementById('dataStatus');
++  const data = await fetchJson(`data/backtest_${tf}.json`, null);
++  if(!data || !data.length){
++    statusEl.textContent = `No exported ${tf} data yet`;
++    document.getElementById('runBtn').disabled = true;
++    candleData = null;
++    return;
++  }
++  const first = new Date(data[0].time*1000), last = new Date(data[data.length-1].time*1000);
++  statusEl.textContent = `${data.length} candles · ${first.toLocaleDateString()} → ${last.toLocaleDateString()}`;
++  document.getElementById('runBtn').disabled = false;
++  candleData = data;
++}
++document.getElementById('tfSelect').onchange = checkData;
++
++document.getElementById('runBtn').onclick = () => {
++  if(!candleData || !candleData.length){ alert('No data loaded for this timeframe.'); return; }
++  const s = STRATS[selectedId];
++  const sessionId = document.getElementById('sessionSelect').value;
++  const spread = parseFloat(document.getElementById('spreadInput').value) || 0;
++  const res = TE.runBacktest(candleData, s.fn, {
++    spread,
++    guards: s.guards,
++    dailyLossPct: 3.0,
++    sessionFilter: sessionId==='24h' ? null : (t)=>inSession(sessionId, t),
++  });
++  document.getElementById('runNote').textContent =
++    `${s.name} · ${document.getElementById('tfSelect').value} · guards: ` +
++    `${s.guards.atrFilter?'ATR ':''}${s.guards.spreadReject?'spread ':''}${s.guards.dailyLoss?'daily-loss':''}`.trim() || 'raw';
++  renderResults(res.trades, res.equityCurve, res.stats);
++};
++
++function renderResults(trades, equityCurve, stats){
++  document.getElementById('emptyState').style.display = 'none';
++  document.getElementById('resultsPanel').style.display = 'block';
++
++  document.getElementById('rNetPnl').textContent = (stats.netPnl>=0?'+':'')+stats.netPnl.toFixed(2);
++  document.getElementById('rNetPnl').className = 'stat-val ' + (stats.netPnl>=0?'up':'down');
++  document.getElementById('rNetPnlPct').textContent = `${stats.netPnlPct.toFixed(2)}% of starting equity`;
++  document.getElementById('rWinRate').textContent = stats.winRate.toFixed(1)+'%';
++  document.getElementById('rWinCount').textContent = `${stats.wins}W / ${stats.losses}L`;
++  document.getElementById('rPF').textContent = isFinite(stats.profitFactor) ? stats.profitFactor.toFixed(2) : '∞';
++  document.getElementById('rMaxDD').textContent = stats.maxDD.toFixed(1)+'%';
++  document.getElementById('rMaxDD').className = 'stat-val ' + (stats.maxDD<0?'down':'');
++  document.getElementById('rTotalTrades').textContent = stats.totalTrades;
++  document.getElementById('rAvgTrade').textContent = stats.totalTrades ? `avg $${stats.avgTrade.toFixed(2)}` : '';
++
++  const c = document.getElementById('btChart'), ctx = c.getContext('2d');
++  const w = c.clientWidth, h = 200; c.width=w; c.height=h; ctx.clearRect(0,0,w,h);
++  if(equityCurve.length>1){
++    const vals = equityCurve.map(e=>e.equity);
++    const min = Math.min(...vals), max = Math.max(...vals)||min+1;
++    const rising = vals[vals.length-1]>=vals[0];
++    const grad = ctx.createLinearGradient(0,0,0,h);
++    grad.addColorStop(0, rising?'rgba(0,229,160,0.18)':'rgba(255,77,106,0.18)');
++    grad.addColorStop(1,'rgba(0,0,0,0)');
++    ctx.beginPath();
++    vals.forEach((v,i)=>{ const x=(i/(vals.length-1))*w; const y=h-((v-min)/(max-min||1))*h*0.85-h*0.05; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
++    ctx.strokeStyle = rising?'#00E5A0':'#FF4D6A'; ctx.lineWidth=1.8; ctx.stroke();
++    ctx.lineTo(w,h); ctx.lineTo(0,h); ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
++  }
++
++  document.getElementById('tradeLogCount').textContent = `${trades.length} trades`;
++  document.getElementById('btTradeRows').innerHTML = trades.slice().reverse().map((t,idx)=>`
++    <tr>
++      <td>${trades.length-idx}</td>
++      <td>${new Date(t.time*1000).toLocaleString()}</td>
++      <td>${t.direction}</td>
++      <td>${t.entry.toFixed(2)}</td>
++      <td>${t.exit.toFixed(2)}</td>
++      <td class="${t.pnl>0?'win':'loss'}">${t.pnl>=0?'+':''}${t.pnl.toFixed(2)}</td>
++      <td>${t.reason}</td>
++    </tr>`).join('') || '<tr><td colspan="7" class="empty">No trades in this run</td></tr>';
++}
++
++renderCards();
++syncSelection();
++</script>
++</body>
++</html>

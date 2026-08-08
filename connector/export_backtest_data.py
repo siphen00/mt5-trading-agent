@@ -30,6 +30,12 @@ from connector.git_sync import commit_and_push
 # range of conditions without the export file getting unwieldy.
 CANDLE_COUNT = 5000
 
+# Timeframes to export for the backtest pages. Independent of config.TIMEFRAMES
+# (which is what the LIVE connector trades) — the Trenches page needs 1m/3m data
+# and the lab now offers those too. M1 at 5000 candles ≈ ~3.5 days of 24/7
+# crypto; plenty to test a scalp across varied conditions.
+EXPORT_TIMEFRAMES = ["M1", "M3", "M5", "M15"]
+
 
 def export_timeframe(tf: str):
     print(f"[export_backtest_data] Pulling {CANDLE_COUNT} {tf} candles for {config.SYMBOL}...")
@@ -50,11 +56,11 @@ def main():
         print("[export_backtest_data] Could not connect to MT5.")
         sys.exit(1)
 
-    for tf in config.TIMEFRAMES:
+    for tf in EXPORT_TIMEFRAMES:
         export_timeframe(tf)
 
     pushed = commit_and_push(
-        [f"data/backtest_{tf}.json" for tf in config.TIMEFRAMES],
+        [f"data/backtest_{tf}.json" for tf in EXPORT_TIMEFRAMES],
         f"Backtest data export {datetime.now(timezone.utc).isoformat()}",
     )
     print("[export_backtest_data] Synced to GitHub." if pushed else

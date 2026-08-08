@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>APEX — Trenches</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* Trenches gets a danger accent so it never gets mistaken for the safe lab. */
+  .trench-accent { border-left: 3px solid #FF4D6A; }
+  .danger-banner { background: rgba(255,77,106,0.08); border:1px solid rgba(255,77,106,0.35);
+    border-radius:8px; padding:12px 14px; margin-bottom:16px; font-size:13px; line-height:1.6; color:#ffd7de; }
+  .guard-pill { display:inline-block; font-family:var(--mono,monospace); font-size:11px; padding:2px 8px;
+    border-radius:20px; margin-right:6px; }
+  .guard-on { background:rgba(0,229,160,0.14); color:#00E5A0; }
+  .guard-off { background:rgba(255,77,106,0.14); color:#FF4D6A; }
+  .strat-card { border:1px solid #2a3142; border-radius:8px; padding:12px 14px; margin-bottom:10px; cursor:pointer; }
+  .strat-card.sel { border-color:#FF4D6A; background:rgba(255,77,106,0.05); }
+  .strat-card h4 { margin:0 0 4px; font-size:14px; }
+  .strat-card p { margin:6px 0 8px; font-size:12px; color:var(--text2,#8b93a7); line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="brand">
+      <div class="brand-mark" style="background:#FF4D6A;">T</div>
+      <div><div class="brand-name">APEX TERMINAL</div><div class="brand-sub">Trenches — risk sandbox</div></div>
+    </div>
+    <button class="settings-btn" id="settingsBtn">Set repo / token</button>
+  </div>
+  <div class="header-rule"></div>
+
+  <div class="nav">
+    <a href="index.html">Live dashboard</a>
+    <a href="backtest.html">Backtest lab</a>
+    <a href="trenches.html" class="active">Trenches</a>
+  </div>
+
+  <div class="danger-banner">
+    <b>Backtest only.</b> These are aggressive, high-variance 1m/3m scalps for testing here — nothing on this page
+    pushes to your demo or live account. Risky does not mean profitable: on these timeframes spread and slippage
+    eat edge fast. Use this to find out a strategy <i>fails</i> cheaply, before any money is near it.
+  </div>
+
+  <div class="panel trench-accent" style="margin-bottom:16px;">
+    <div class="panel-title">
+      <span>Pick a strategy</span>
+      <span id="dataStatus" class="stat-sub">Checking for exported data…</span>
+    </div>
+    <div id="stratCards"></div>
+
+    <div class="bt-form" style="margin-top:14px;">
+      <div class="bt-field">
+        <label>Timeframe</label>
+        <select id="tfSelect">
+          <option value="M1">1 minute</option>
+          <option value="M3">3 minute</option>
+          <option value="M5">5 minute</option>
+        </select>
+      </div>
+      <div class="bt-field">
+        <label>Session filter</label>
+        <select id="sessionSelect"></select>
+      </div>
+      <div class="bt-field">
+        <label>Spread (price units)</label>
+        <input id="spreadInput" type="number" value="12" min="0" step="0.5"
+               style="width:90px;padding:6px 8px;border-radius:6px;border:1px solid #2a3142;background:#141824;color:#e6e9ef;">
+      </div>
+      <div class="bt-field">
+        <label>Guards</label>
+        <div id="guardDisplay" style="padding-top:6px;"></div>
+      </div>
+    </div>
+    <button class="run-btn" id="runBtn" style="background:#FF4D6A;">Run in the trenches</button>
+    <span class="stat-sub" id="runNote" style="margin-left:12px;"></span>
+  </div>
+
+  <div id="resultsPanel" style="display:none;">
+    <div class="bt-results">
+      <div class="card"><div class="stat-label">Net P&L</div><div class="stat-val" id="rNetPnl">—</div><div class="stat-sub" id="rNetPnlPct"></div></div>
+      <div class="card"><div class="stat-label">Win rate</div><div class="stat-val" id="rWinRate">—</div><div class="stat-sub" id="rWinCount"></div></div>
+      <div class="card"><div class="stat-label">Profit factor</div><div class="stat-val" id="rPF">—</div><div class="stat-sub">gross win ÷ gross loss</div></div>
+      <div class="card"><div class="stat-label">Max drawdown</div><div class="stat-val" id="rMaxDD">—</div><div class="stat-sub">peak to trough</div></div>
+      <div class="card"><div class="stat-label">Total trades</div><div class="stat-val" id="rTotalTrades">—</div><div class="stat-sub" id="rAvgTrade"></div></div>
+    </div>
+    <div class="panel trench-accent" style="margin-bottom:16px;">
+      <div class="panel-title"><span>Equity curve <b>this run</b></span></div>
+      <canvas id="btChart" style="height:200px;"></canvas>
+    </div>
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-title"><span>Trade log <b id="tradeLogCount"></b></span></div>
+      <div class="bt-trades-table">
+        <table>
+          <thead><tr><th>#</th><th>Time</th><th>Side</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Reason</th></tr></thead>
+          <tbody id="btTradeRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="emptyState">
+    <div class="empty">
+      Pick a strategy and run it to see results.<br><br>
+      No 1m/3m data yet? On the machine running your connector:<br>
+      <code style="color:var(--text2);">python -m connector.export_backtest_data</code><br>
+      (the updated export writes M1 and M3 alongside M5/M15).
+    </div>
+  </div>
+</div>
+
+<dialog id="settingsDialog">
+  <div style="font-family:var(--mono); font-size:13px; margin-bottom:6px;">Connect to your repo</div>
+  <div style="font-size:12px; color:var(--text2); margin-bottom:10px;">Same connection as the other pages — saved settings carry over.</div>
+  <input id="ownerInput" placeholder="github username, e.g. siphen00">
+  <input id="repoInput" placeholder="repo name, e.g. mt5-trading-agent">
+  <input id="tokenInput" type="password" placeholder="fine-grained PAT (optional, for private repos)">
+  <button id="saveSettings">Save</button>
+</dialog>
+
+<script src="strategy_engine.js"></script>
+<script>
+const LS = {
+  owner: localStorage.getItem('apex_owner') || '',
+  repo: localStorage.getItem('apex_repo') || '',
+  token: localStorage.getItem('apex_token') || '',
+};
+const dialog = document.getElementById('settingsDialog');
+document.getElementById('settingsBtn').onclick = () => {
+  document.getElementById('ownerInput').value = LS.owner;
+  document.getElementById('repoInput').value = LS.repo;
+  document.getElementById('tokenInput').value = LS.token;
+  dialog.showModal();
+};
+document.getElementById('saveSettings').onclick = () => {
+  LS.owner = document.getElementById('ownerInput').value.trim();
+  LS.repo = document.getElementById('repoInput').value.trim();
+  LS.token = document.getElementById('tokenInput').value.trim();
+  localStorage.setItem('apex_owner', LS.owner);
+  localStorage.setItem('apex_repo', LS.repo);
+  localStorage.setItem('apex_token', LS.token);
+  dialog.close();
+  checkData();
+};
+
+function rawUrl(path){ return `https://raw.githubusercontent.com/${LS.owner}/${LS.repo}/main/${path}?t=${Date.now()}`; }
+async function fetchJson(path, fallback){
+  if(!LS.owner || !LS.repo) return fallback;
+  if(LS.token){
+    try{
+      const res = await fetch(`https://api.github.com/repos/${LS.owner}/${LS.repo}/contents/${path}`,
+        { headers: { Authorization: `token ${LS.token}` } });
+      if(!res.ok) return fallback;
+      const data = await res.json();
+      return JSON.parse(decodeURIComponent(escape(atob(data.content))));
+    }catch(e){ return fallback; }
+  }
+  try{ const res = await fetch(rawUrl(path)); if(!res.ok) return fallback; return await res.json(); }
+  catch(e){ return fallback; }
+}
+
+// Sessions (mirror of the other pages)
+const SESSION_META = [
+  { id: '24h', name: '24/7 (no filter)' }, { id: 'asia', name: 'Asia' }, { id: 'london', name: 'London' },
+  { id: 'new_york', name: 'New York' }, { id: 'london_ny_overlap', name: 'London/NY Overlap' },
+];
+const SESSIONS_JS = {
+  '24h': {start:0, end:24}, 'asia': {start:0,end:9}, 'london': {start:7,end:16},
+  'new_york': {start:12,end:21}, 'london_ny_overlap': {start:12,end:16},
+};
+function inSession(sessionId, unixSeconds){
+  const s = SESSIONS_JS[sessionId] || SESSIONS_JS['24h'];
+  const hour = new Date(unixSeconds*1000).getUTCHours();
+  if(s.start<s.end) return hour>=s.start && hour<s.end;
+  return hour>=s.start || hour<s.end;
+}
+document.getElementById('sessionSelect').innerHTML = SESSION_META.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+
+// Strategy cards from the shared engine
+const STRATS = TE.TRENCH_STRATEGIES;
+let selectedId = Object.keys(STRATS)[0];
+
+function guardPills(guards){
+  const pill = (on, label) => `<span class="guard-pill ${on?'guard-on':'guard-off'}">${label} ${on?'on':'off'}</span>`;
+  return pill(guards.atrFilter,'ATR filter') + pill(guards.spreadReject,'spread') + pill(guards.dailyLoss,'daily-loss');
+}
+function renderCards(){
+  document.getElementById('stratCards').innerHTML = Object.entries(STRATS).map(([id,s])=>`
+    <div class="strat-card ${id===selectedId?'sel':''}" data-id="${id}">
+      <h4>${s.name} <span class="stat-sub" style="font-weight:400;">· ${s.timeframe}</span></h4>
+      <p>${s.blurb}</p>
+      <div>${guardPills(s.guards)}</div>
+    </div>`).join('');
+  document.querySelectorAll('.strat-card').forEach(el=>{
+    el.onclick = () => { selectedId = el.dataset.id; syncSelection(); };
+  });
+}
+function syncSelection(){
+  const s = STRATS[selectedId];
+  document.getElementById('tfSelect').value = s.timeframe;
+  document.getElementById('guardDisplay').innerHTML = guardPills(s.guards);
+  renderCards();
+  checkData();
+}
+
+let candleData = null;
+async function checkData(){
+  const tf = document.getElementById('tfSelect').value;
+  const statusEl = document.getElementById('dataStatus');
+  const data = await fetchJson(`data/backtest_${tf}.json`, null);
+  if(!data || !data.length){
+    statusEl.textContent = `No exported ${tf} data yet`;
+    document.getElementById('runBtn').disabled = true;
+    candleData = null;
+    return;
+  }
+  const first = new Date(data[0].time*1000), last = new Date(data[data.length-1].time*1000);
+  statusEl.textContent = `${data.length} candles · ${first.toLocaleDateString()} → ${last.toLocaleDateString()}`;
+  document.getElementById('runBtn').disabled = false;
+  candleData = data;
+}
+document.getElementById('tfSelect').onchange = checkData;
+
+document.getElementById('runBtn').onclick = () => {
+  if(!candleData || !candleData.length){ alert('No data loaded for this timeframe.'); return; }
+  const s = STRATS[selectedId];
+  const sessionId = document.getElementById('sessionSelect').value;
+  const spread = parseFloat(document.getElementById('spreadInput').value) || 0;
+  const res = TE.runBacktest(candleData, s.fn, {
+    spread,
+    guards: s.guards,
+    dailyLossPct: 3.0,
+    sessionFilter: sessionId==='24h' ? null : (t)=>inSession(sessionId, t),
+  });
+  document.getElementById('runNote').textContent =
+    `${s.name} · ${document.getElementById('tfSelect').value} · guards: ` +
+    `${s.guards.atrFilter?'ATR ':''}${s.guards.spreadReject?'spread ':''}${s.guards.dailyLoss?'daily-loss':''}`.trim() || 'raw';
+  renderResults(res.trades, res.equityCurve, res.stats);
+};
+
+function renderResults(trades, equityCurve, stats){
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('resultsPanel').style.display = 'block';
+
+  document.getElementById('rNetPnl').textContent = (stats.netPnl>=0?'+':'')+stats.netPnl.toFixed(2);
+  document.getElementById('rNetPnl').className = 'stat-val ' + (stats.netPnl>=0?'up':'down');
+  document.getElementById('rNetPnlPct').textContent = `${stats.netPnlPct.toFixed(2)}% of starting equity`;
+  document.getElementById('rWinRate').textContent = stats.winRate.toFixed(1)+'%';
+  document.getElementById('rWinCount').textContent = `${stats.wins}W / ${stats.losses}L`;
+  document.getElementById('rPF').textContent = isFinite(stats.profitFactor) ? stats.profitFactor.toFixed(2) : '∞';
+  document.getElementById('rMaxDD').textContent = stats.maxDD.toFixed(1)+'%';
+  document.getElementById('rMaxDD').className = 'stat-val ' + (stats.maxDD<0?'down':'');
+  document.getElementById('rTotalTrades').textContent = stats.totalTrades;
+  document.getElementById('rAvgTrade').textContent = stats.totalTrades ? `avg $${stats.avgTrade.toFixed(2)}` : '';
+
+  const c = document.getElementById('btChart'), ctx = c.getContext('2d');
+  const w = c.clientWidth, h = 200; c.width=w; c.height=h; ctx.clearRect(0,0,w,h);
+  if(equityCurve.length>1){
+    const vals = equityCurve.map(e=>e.equity);
+    const min = Math.min(...vals), max = Math.max(...vals)||min+1;
+    const rising = vals[vals.length-1]>=vals[0];
+    const grad = ctx.createLinearGradient(0,0,0,h);
+    grad.addColorStop(0, rising?'rgba(0,229,160,0.18)':'rgba(255,77,106,0.18)');
+    grad.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.beginPath();
+    vals.forEach((v,i)=>{ const x=(i/(vals.length-1))*w; const y=h-((v-min)/(max-min||1))*h*0.85-h*0.05; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+    ctx.strokeStyle = rising?'#00E5A0':'#FF4D6A'; ctx.lineWidth=1.8; ctx.stroke();
+    ctx.lineTo(w,h); ctx.lineTo(0,h); ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+  }
+
+  document.getElementById('tradeLogCount').textContent = `${trades.length} trades`;
+  document.getElementById('btTradeRows').innerHTML = trades.slice().reverse().map((t,idx)=>`
+    <tr>
+      <td>${trades.length-idx}</td>
+      <td>${new Date(t.time*1000).toLocaleString()}</td>
+      <td>${t.direction}</td>
+      <td>${t.entry.toFixed(2)}</td>
+      <td>${t.exit.toFixed(2)}</td>
+      <td class="${t.pnl>0?'win':'loss'}">${t.pnl>=0?'+':''}${t.pnl.toFixed(2)}</td>
+      <td>${t.reason}</td>
+    </tr>`).join('') || '<tr><td colspan="7" class="empty">No trades in this run</td></tr>';
+}
+
+renderCards();
+syncSelection();
+</script>
+</body>
+</html>
