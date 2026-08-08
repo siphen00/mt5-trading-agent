@@ -14,19 +14,19 @@
     },
     "reason": "no confluence",
     "atr_ok": true,
-    "bar_time": "2026-08-08T14:35:00+00:00",
+    "bar_time": "2026-08-08T14:40:00+00:00",
     "new_bar": true
   },
   "M15": {
-    "direction": "long",
+    "direction": "none",
     "votes": {
       "ema": "none",
-      "smc": "long"
+      "smc": "none"
     },
-    "reason": "SMC long (bos_bullish/ob_bullish_retest)",
+    "reason": "no confluence",
     "atr_ok": true,
-    "bar_time": "2026-08-08T14:15:00+00:00",
-    "new_bar": false
+    "bar_time": "2026-08-08T14:30:00+00:00",
+    "new_bar": true
   },
-  "updated_at": "2026-08-08T14:44:44.598878+00:00"
+  "updated_at": "2026-08-08T14:45:03.026002+00:00"
 }
