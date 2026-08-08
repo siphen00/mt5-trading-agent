@@ -21,13 +21,12 @@
     "direction": "long",
     "votes": {
       "ema": "none",
-      "smc": "long",
-      "ollama": "long"
+      "smc": "long"
     },
     "reason": "SMC long (bos_bullish/ob_bullish_retest)",
     "atr_ok": true,
     "bar_time": "2026-08-08T14:15:00+00:00",
-    "new_bar": true
+    "new_bar": false
   },
-  "updated_at": "2026-08-08T14:30:21.893633+00:00"
+  "updated_at": "2026-08-08T14:30:40.276058+00:00"
 }
