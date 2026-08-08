@@ -7,14 +7,15 @@
   "open_positions_bot": 0,
   "open_positions_manual": 0,
   "M5": {
-    "direction": "none",
+    "direction": "short",
     "votes": {
       "ema": "none",
-      "smc": "none"
+      "smc": "short",
+      "ollama": "none"
     },
-    "reason": "no confluence",
+    "reason": "SMC short (bos_bearish/ob_bearish_retest)",
     "atr_ok": true,
-    "bar_time": "2026-08-08T12:00:00+00:00",
+    "bar_time": "2026-08-08T12:05:00+00:00",
     "new_bar": true
   },
   "M15": {
@@ -28,5 +29,5 @@
     "bar_time": "2026-08-08T11:45:00+00:00",
     "new_bar": true
   },
-  "updated_at": "2026-08-08T12:09:57.176743+00:00"
+  "updated_at": "2026-08-08T12:10:36.993410+00:00"
 }
