@@ -14,13 +14,13 @@
     "atr_ok": false
   },
   "M15": {
-    "direction": "short",
+    "direction": "none",
     "votes": {
       "ema": "none",
-      "smc": "short"
+      "smc": "none"
     },
-    "reason": "SMC short (none/ob_bearish_retest)",
+    "reason": "no confluence",
     "atr_ok": false
   },
-  "updated_at": "2026-08-08T10:08:47.203663+00:00"
+  "updated_at": "2026-08-08T10:09:05.444702+00:00"
 }
