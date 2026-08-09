@@ -84,22 +84,24 @@
     </div>
     <p class="stat-sub" style="margin-bottom:10px; line-height:1.6;">
       Describe an entry in your own words, e.g. <i>"go long when the 9 EMA crosses above the 21 EMA and RSI is under 60;
-      exit at 2× ATR"</i>. Your local Ollama turns it into rules you can review, edit, and backtest — same engine as the lab.
+      exit at 2× ATR"</i>. It's turned into rules you can review, edit, and backtest — same engine as the lab.
+      Parsing happens <b>in your browser</b>, so it works right here on the online site with no setup.
     </p>
     <textarea id="nlText" rows="3" placeholder="Describe your strategy in plain English…"
       style="width:100%; box-sizing:border-box; padding:10px; border-radius:8px; border:1px solid #2a3142; background:#141824; color:#e6e9ef; font-family:var(--mono,monospace); font-size:13px;"></textarea>
     <div class="bt-form" style="margin-top:10px; align-items:flex-end;">
-      <div class="bt-field">
-        <label>Ollama host</label>
-        <input id="ollamaHost" value="http://localhost:11434"
-          style="width:190px;padding:6px 8px;border-radius:6px;border:1px solid #2a3142;background:#141824;color:#e6e9ef;">
-      </div>
       <button class="run-btn" id="genBtn">Generate rules</button>
+      <label class="bt-field" style="flex-direction:row; align-items:center; gap:6px; margin:0;">
+        <input type="checkbox" id="useOllama" style="width:auto;">
+        <span class="stat-sub">Use local Ollama instead (needs localhost)</span>
+      </label>
+      <input id="ollamaHost" value="http://localhost:11434" style="display:none;
+        width:180px;padding:6px 8px;border-radius:6px;border:1px solid #2a3142;background:#141824;color:#e6e9ef;">
       <span class="stat-sub" id="genNote" style="margin-left:4px;"></span>
     </div>
     <div id="mixedWarn" class="stat-sub" style="display:none; margin-top:8px; color:#ffd7de;"></div>
     <div id="specWrap" style="display:none; margin-top:12px;">
-      <label class="stat-sub">Generated rules (editable JSON — fix anything the model got wrong, then backtest)</label>
+      <label class="stat-sub">Generated rules (editable JSON — fix anything that's off, then backtest)</label>
       <textarea id="specJson" rows="10"
         style="width:100%; box-sizing:border-box; margin-top:6px; padding:10px; border-radius:8px; border:1px solid #2a3142; background:#0f1320; color:#8fe; font-family:var(--mono,monospace); font-size:12px;"></textarea>
       <div style="margin-top:10px;">
@@ -602,29 +604,38 @@ document.getElementById('runBtn').onclick = () => {
   const specWrap = document.getElementById('specWrap');
   const specJson = document.getElementById('specJson');
   const mixedWarn = document.getElementById('mixedWarn');
+  const useOllama = document.getElementById('useOllama');
+  const ollamaHost = document.getElementById('ollamaHost');
 
-  // Warn about the browser mixed-content block up front when on https (Pages).
-  if(location.protocol === 'https:'){
-    mixedWarn.style.display = 'block';
-    mixedWarn.innerHTML = 'Heads up: this page is on <b>https</b>, and browsers block https pages from calling ' +
-      '<b>http://localhost</b> (mixed content). To use Ollama generation, open the dashboard locally over ' +
-      '<code>http://localhost</code> (e.g. <code>python -m http.server</code> in the <code>dashboard/</code> folder), ' +
-      'and run Ollama with <code>OLLAMA_ORIGINS=*</code>. You can still paste/edit rules JSON below and backtest it.';
-  }
+  // Ollama is opt-in. Only then do we show the host field + the https warning.
+  useOllama.onchange = () => {
+    ollamaHost.style.display = useOllama.checked ? 'inline-block' : 'none';
+    mixedWarn.style.display = (useOllama.checked && location.protocol === 'https:') ? 'block' : 'none';
+    if(useOllama.checked && location.protocol === 'https:'){
+      mixedWarn.innerHTML = 'On the online (https) site, browsers block calls to <b>http://localhost</b>. ' +
+        'Leave this unchecked to parse in your browser (works here), or open the dashboard over ' +
+        '<code>http://localhost</code> with <code>OLLAMA_ORIGINS=*</code> to use Ollama.';
+    }
+  };
 
   genBtn.onclick = async () => {
     const text = document.getElementById('nlText').value.trim();
-    if(!text){ genNote.textContent = 'Describe a strategy first.'; return; }
-    const host = document.getElementById('ollamaHost').value.trim() || 'http://localhost:11434';
-    genBtn.disabled = true; genNote.className = 'stat-sub'; genNote.textContent = 'Asking Ollama…';
+    if(!text){ genNote.textContent = 'Describe a strategy first.'; genNote.className='stat-sub'; return; }
+    genBtn.disabled = true;
     try{
-      const spec = await TE.generateSpecFromText(text, { host });
+      let spec;
+      if(useOllama.checked){
+        genNote.textContent = 'Asking Ollama…'; genNote.className = 'stat-sub';
+        spec = await TE.generateSpecFromText(text, { host: ollamaHost.value.trim() || 'http://localhost:11434' });
+      }else{
+        genNote.textContent = 'Parsing…'; genNote.className = 'stat-sub';
+        spec = TE.parseTextToSpec(text);   // in-browser, no network
+      }
       specJson.value = JSON.stringify(spec, null, 2);
       specWrap.style.display = 'block';
       genNote.textContent = 'Rules generated — review and backtest below.'; genNote.className = 'stat-sub up';
     }catch(e){
       genNote.textContent = e.message; genNote.className = 'stat-sub down';
-      // Offer a hand-editable skeleton so the feature still works offline.
       if(specWrap.style.display === 'none'){
         specJson.value = JSON.stringify({
           name: "my strategy",

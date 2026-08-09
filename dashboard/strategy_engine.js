@@ -453,6 +453,93 @@
     ].join("\n");
   }
 
+  // =========================================================================
+  // In-browser natural-language parser — turns plain English into a DSL spec
+  // with NO network call. Works on the https Pages site (no Ollama, no
+  // localhost, no mixed-content block). Deterministic and limited by design;
+  // the output is shown as editable JSON so anything it misses can be hand-fixed.
+  // =========================================================================
+  function parseTextToSpec(text) {
+    if (!text || !text.trim()) throw new Error("Type a strategy first.");
+    const raw = text.toLowerCase().replace(/\s+/g, " ");
+    const spec = { name: "custom", long: [], short: [], stop_atr: 1.5, target_atr: 2.5 };
+
+    // stop / target in ATR multiples
+    let m;
+    if ((m = raw.match(/stop[^.,;]*?(\d+(?:\.\d+)?)\s*(?:x|times|\*)?\s*atr/))) spec.stop_atr = parseFloat(m[1]);
+    if ((m = raw.match(/(?:target|take[ -]?profit|tp|exit)[^.,;]*?(\d+(?:\.\d+)?)\s*(?:x|times|\*)?\s*atr/))) spec.target_atr = parseFloat(m[1]);
+
+    // Split into direction-tagged segments. Everything after a "long/buy" word
+    // belongs to the long side until a "short/sell" word flips it, and so on.
+    const dirRe = /\b(long|buy|bullish|short|sell|bearish)\b/g;
+    const marks = [];
+    let mm;
+    while ((mm = dirRe.exec(raw)) !== null) {
+      const side = /long|buy|bullish/.test(mm[1]) ? "long" : "short";
+      marks.push({ side, idx: mm.index });
+    }
+    const segments = [];
+    if (marks.length === 0) {
+      segments.push({ side: "long", text: raw }); // default: treat as a long entry
+    } else {
+      for (let i = 0; i < marks.length; i++) {
+        const start = marks[i].idx;
+        const end = i + 1 < marks.length ? marks[i + 1].idx : raw.length;
+        segments.push({ side: marks[i].side, text: raw.slice(start, end) });
+      }
+    }
+
+    const maToOperand = (period, kind) => ({ indicator: kind, period: parseInt(period, 10) });
+    const cmpOp = (word) => (/above|over|greater|>|higher/.test(word) ? ">" : "<");
+
+    for (const seg of segments) {
+      const s = seg.text;
+      const conds = [];
+
+      // 1) MA cross MA — "9 ema crosses above the 21 ema"
+      let re = /(\d+)\s*(ema|sma)\s*(?:crosses?|crossing|cross)\s*(above|below)\s*(?:the\s*)?(\d+)\s*(ema|sma)/g;
+      while ((m = re.exec(s)) !== null)
+        conds.push({ left: maToOperand(m[1], m[2]), op: /above/.test(m[3]) ? "cross_above" : "cross_below", right: maToOperand(m[4], m[5]) });
+
+      // 2) price crosses a MA/VWAP — "price crosses above the 20 ema"
+      re = /(?:price|close)\s*(?:crosses?|crossing|cross)\s*(above|below)\s*(?:the\s*)?(?:(\d+)\s*(ema|sma)|vwap)/g;
+      while ((m = re.exec(s)) !== null) {
+        const right = m[2] ? maToOperand(m[2], m[3]) : { indicator: "vwap", period: 50 };
+        conds.push({ left: { price: "close" }, op: /above/.test(m[1]) ? "cross_above" : "cross_below", right });
+      }
+
+      // 3) price above/below a MA/VWAP (no cross) — "price above vwap", "close under 50 ema"
+      re = /(?:price|close)\s*(?:is\s*)?(above|over|below|under)\s*(?:the\s*)?(?:(\d+)\s*(ema|sma)|vwap)/g;
+      while ((m = re.exec(s)) !== null) {
+        const right = m[2] ? maToOperand(m[2], m[3]) : { indicator: "vwap", period: 50 };
+        conds.push({ left: { price: "close" }, op: cmpOp(m[1]), right });
+      }
+
+      // 4) RSI threshold — "rsi under 30", "rsi is above 70"
+      re = /rsi\s*(?:is\s*)?(above|over|greater than|>|below|under|less than|<)\s*(\d+)/g;
+      while ((m = re.exec(s)) !== null)
+        conds.push({ left: { indicator: "rsi", period: 14 }, op: cmpOp(m[1]), right: { value: parseInt(m[2], 10) } });
+
+      // 5) Bollinger band — "close below the lower band", "above upper band"
+      re = /(above|over|below|under)\s*(?:the\s*)?(upper|lower)\s*(?:bollinger\s*)?band/g;
+      while ((m = re.exec(s)) !== null)
+        conds.push({ left: { price: "close" }, op: cmpOp(m[1]), right: { indicator: m[2] === "upper" ? "bb_upper" : "bb_lower", period: 20 } });
+
+      for (const c of conds) spec[seg.side].push(c);
+    }
+
+    if (spec.long.length === 0 && spec.short.length === 0) {
+      throw new Error(
+        "Couldn't parse any rules from that. Try phrasing like: " +
+        "\"go long when the 9 EMA crosses above the 21 EMA and RSI under 60\". " +
+        "Supported: EMA/SMA crosses, price vs EMA/SMA/VWAP, RSI thresholds, Bollinger bands, ATR stop/target. " +
+        "Or edit the JSON directly below."
+      );
+    }
+    validateSpec(spec);
+    return spec;
+  }
+
   async function generateSpecFromText(text, cfg = {}) {
     const host = cfg.host || "http://localhost:11434";
     const model = cfg.model || "qwen2.5:1.5b";
@@ -478,7 +565,7 @@
 
   const TE = {
     indicators, compileSpec, validateSpec, TRENCH_STRATEGIES,
-    runBacktest, computeStats, atrFilterOk, buildPrompt, generateSpecFromText,
+    runBacktest, computeStats, atrFilterOk, buildPrompt, generateSpecFromText, parseTextToSpec,
     ALLOWED_INDICATORS, ALLOWED_OPS, ALLOWED_PRICES,
   };
 
