@@ -1,0 +1,42 @@
+{
+  "bias": "bearish",
+  "confidence": 38,
+  "score": -3.0,
+  "rationale": "Bias is BEARISH (38% confidence). BTC at 63,909, -1.44% on the day. Supporting it: lower high (65,695 \u2192 65,356) and lower low (62,628 \u2192 62,192). Confidence is low, so this is a lean rather than a conviction call.",
+  "factors": [
+    {
+      "name": "Daily structure",
+      "bias": "bearish",
+      "detail": "lower high (65,695 \u2192 65,356) and lower low (62,628 \u2192 62,192)",
+      "weight": 3.0
+    },
+    {
+      "name": "4-hour structure",
+      "bias": "ranging",
+      "detail": "expanding range \u2014 higher high but also lower low",
+      "weight": 2.0
+    },
+    {
+      "name": "Moving averages",
+      "bias": "ranging",
+      "detail": "price 63,909 tangled in the moving averages (1 above, 2 below)",
+      "weight": 2.0
+    },
+    {
+      "name": "RSI",
+      "bias": "ranging",
+      "detail": "RSI 48 is neutral",
+      "weight": 1.0
+    }
+  ],
+  "levels": {
+    "price": 63909.45,
+    "resistance": 64248.73,
+    "support": 63700.86,
+    "sma20": 64249.92,
+    "sma50": 63325.55,
+    "sma200": 70000.33,
+    "day_change_pct": -1.44
+  },
+  "updated_at": "2026-08-11T16:42:40.871543+00:00"
+}
