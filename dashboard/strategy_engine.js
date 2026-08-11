@@ -232,101 +232,6 @@
   }
 
   // =========================================================================
-  // The three Trenches strategies. Each carries its guard posture so the
-  // Trenches page can run "one of each" for comparison.
-  // =========================================================================
-  function body(c) { return Math.abs(c.close - c.open); }
-  function isUp(c) { return c.close > c.open; }
-  function isDown(c) { return c.close < c.open; }
-
-  // 1) Liquidity Sweep Reversal — 1m. Fully guarded. Fades stop-hunts: price
-  //    wicks past a recent swing extreme then closes back inside → reversal.
-  function liquiditySweep(candles, i) {
-    const look = 20;
-    if (i < look + 2) return { direction: "none", reason: "" };
-    const win = candles.slice(i - look, i);           // prior window (excl. current)
-    const swingLow = Math.min(...win.map((c) => c.low));
-    const swingHigh = Math.max(...win.map((c) => c.high));
-    const c = candles[i];
-    const mid = (c.high + c.low) / 2;
-    // Long: pierced below the swing low but closed back above it, closing strong.
-    if (c.low < swingLow && c.close > swingLow && c.close > mid)
-      return { direction: "long", reason: `swept ${swingLow.toFixed(1)} low, reclaimed` };
-    if (c.high > swingHigh && c.close < swingHigh && c.close < mid)
-      return { direction: "short", reason: `swept ${swingHigh.toFixed(1)} high, rejected` };
-    return { direction: "none", reason: "" };
-  }
-
-  // 2) Volatility Squeeze Ignition — 3m. Spread-guard only. A Bollinger squeeze
-  //    (width in the bottom quintile of its recent range) followed by an
-  //    expansion candle (large range + strong body + volume spike) → trade the
-  //    breakout direction.
-  function squeezeIgnition(candles, i) {
-    const period = 20, lookback = 60;
-    if (i < lookback + period) return { direction: "none", reason: "" };
-    const cl = closes(candles);
-    const bb = bollinger(cl, period, 2);
-    const width = (idx) => (bb.upper[idx] != null ? (bb.upper[idx] - bb.lower[idx]) / bb.mid[idx] : null);
-    const w = width(i - 1);                            // squeeze measured on the PRIOR bar
-    if (w == null) return { direction: "none", reason: "" };
-    const recent = [];
-    for (let j = i - lookback; j < i; j++) { const x = width(j); if (x != null) recent.push(x); }
-    recent.sort((a, b) => a - b);
-    const quintile = recent[Math.floor(recent.length * 0.2)] ?? Infinity;
-    const squeezed = w <= quintile;
-
-    const a = atr(candles, 14)[i];
-    const c = candles[i];
-    const bigRange = a != null && (c.high - c.low) > a * 1.3;
-    const volAvg = sma(vols(candles), 20)[i];
-    const volSpike = volAvg != null && c.volume > volAvg * 1.4;
-    const strongBody = body(c) > (c.high - c.low) * 0.6;
-
-    if (squeezed && bigRange && volSpike && strongBody) {
-      if (c.close > bb.upper[i]) return { direction: "long", reason: "squeeze → upside ignition" };
-      if (c.close < bb.lower[i]) return { direction: "short", reason: "squeeze → downside ignition" };
-    }
-    return { direction: "none", reason: "" };
-  }
-
-  // 3) Exhaustion Fade — 1m. Fully raw (no guards). Knife-catch: N consecutive
-  //    same-colour candles into an overextension beyond the Bollinger band with
-  //    an RSI extreme → fade it. Highest variance of the three by design.
-  function exhaustionFade(candles, i) {
-    const run = 4;
-    if (i < 30) return { direction: "none", reason: "" };
-    const cl = closes(candles);
-    const bb = bollinger(cl, 20, 2.5);
-    const r = rsi(cl, 14)[i];
-    const c = candles[i];
-    let downStreak = 0, upStreak = 0;
-    for (let j = i; j > i - run; j--) { if (isDown(candles[j])) downStreak++; if (isUp(candles[j])) upStreak++; }
-    if (downStreak >= run && bb.lower[i] != null && c.close < bb.lower[i] && r != null && r < 25)
-      return { direction: "long", reason: `${run}+ red, below lower band, RSI ${r.toFixed(0)}` };
-    if (upStreak >= run && bb.upper[i] != null && c.close > bb.upper[i] && r != null && r > 75)
-      return { direction: "short", reason: `${run}+ green, above upper band, RSI ${r.toFixed(0)}` };
-    return { direction: "none", reason: "" };
-  }
-
-  const TRENCH_STRATEGIES = {
-    liquidity_sweep: {
-      name: "Liquidity Sweep Reversal", timeframe: "M1", fn: liquiditySweep,
-      guards: { atrFilter: true, spreadReject: true, dailyLoss: true },
-      blurb: "Fades stop-hunts: a wick past a recent swing extreme that closes back inside. Counter-trend, fully guarded.",
-    },
-    squeeze_ignition: {
-      name: "Volatility Squeeze Ignition", timeframe: "M3", fn: squeezeIgnition,
-      guards: { atrFilter: false, spreadReject: true, dailyLoss: false },
-      blurb: "Bollinger squeeze then an expansion candle with volume. Momentum breakout, spread-guard only.",
-    },
-    exhaustion_fade: {
-      name: "Exhaustion Fade", timeframe: "M1", fn: exhaustionFade,
-      guards: { atrFilter: false, spreadReject: false, dailyLoss: false },
-      blurb: "Knife-catch: consecutive candles into a band overextension + RSI extreme. Fully raw — highest variance.",
-    },
-  };
-
-  // =========================================================================
   // Backtest runner — mirrors the FIXED lab runner (spread cost, ATR chop
   // filter, entry at ask/bid) and adds an optional daily-loss halt so the
   // guard comparison on the Trenches page is meaningful.
@@ -453,93 +358,6 @@
     ].join("\n");
   }
 
-  // =========================================================================
-  // In-browser natural-language parser — turns plain English into a DSL spec
-  // with NO network call. Works on the https Pages site (no Ollama, no
-  // localhost, no mixed-content block). Deterministic and limited by design;
-  // the output is shown as editable JSON so anything it misses can be hand-fixed.
-  // =========================================================================
-  function parseTextToSpec(text) {
-    if (!text || !text.trim()) throw new Error("Type a strategy first.");
-    const raw = text.toLowerCase().replace(/\s+/g, " ");
-    const spec = { name: "custom", long: [], short: [], stop_atr: 1.5, target_atr: 2.5 };
-
-    // stop / target in ATR multiples
-    let m;
-    if ((m = raw.match(/stop[^.,;]*?(\d+(?:\.\d+)?)\s*(?:x|times|\*)?\s*atr/))) spec.stop_atr = parseFloat(m[1]);
-    if ((m = raw.match(/(?:target|take[ -]?profit|tp|exit)[^.,;]*?(\d+(?:\.\d+)?)\s*(?:x|times|\*)?\s*atr/))) spec.target_atr = parseFloat(m[1]);
-
-    // Split into direction-tagged segments. Everything after a "long/buy" word
-    // belongs to the long side until a "short/sell" word flips it, and so on.
-    const dirRe = /\b(long|buy|bullish|short|sell|bearish)\b/g;
-    const marks = [];
-    let mm;
-    while ((mm = dirRe.exec(raw)) !== null) {
-      const side = /long|buy|bullish/.test(mm[1]) ? "long" : "short";
-      marks.push({ side, idx: mm.index });
-    }
-    const segments = [];
-    if (marks.length === 0) {
-      segments.push({ side: "long", text: raw }); // default: treat as a long entry
-    } else {
-      for (let i = 0; i < marks.length; i++) {
-        const start = marks[i].idx;
-        const end = i + 1 < marks.length ? marks[i + 1].idx : raw.length;
-        segments.push({ side: marks[i].side, text: raw.slice(start, end) });
-      }
-    }
-
-    const maToOperand = (period, kind) => ({ indicator: kind, period: parseInt(period, 10) });
-    const cmpOp = (word) => (/above|over|greater|>|higher/.test(word) ? ">" : "<");
-
-    for (const seg of segments) {
-      const s = seg.text;
-      const conds = [];
-
-      // 1) MA cross MA — "9 ema crosses above the 21 ema"
-      let re = /(\d+)\s*(ema|sma)\s*(?:crosses?|crossing|cross)\s*(above|below)\s*(?:the\s*)?(\d+)\s*(ema|sma)/g;
-      while ((m = re.exec(s)) !== null)
-        conds.push({ left: maToOperand(m[1], m[2]), op: /above/.test(m[3]) ? "cross_above" : "cross_below", right: maToOperand(m[4], m[5]) });
-
-      // 2) price crosses a MA/VWAP — "price crosses above the 20 ema"
-      re = /(?:price|close)\s*(?:crosses?|crossing|cross)\s*(above|below)\s*(?:the\s*)?(?:(\d+)\s*(ema|sma)|vwap)/g;
-      while ((m = re.exec(s)) !== null) {
-        const right = m[2] ? maToOperand(m[2], m[3]) : { indicator: "vwap", period: 50 };
-        conds.push({ left: { price: "close" }, op: /above/.test(m[1]) ? "cross_above" : "cross_below", right });
-      }
-
-      // 3) price above/below a MA/VWAP (no cross) — "price above vwap", "close under 50 ema"
-      re = /(?:price|close)\s*(?:is\s*)?(above|over|below|under)\s*(?:the\s*)?(?:(\d+)\s*(ema|sma)|vwap)/g;
-      while ((m = re.exec(s)) !== null) {
-        const right = m[2] ? maToOperand(m[2], m[3]) : { indicator: "vwap", period: 50 };
-        conds.push({ left: { price: "close" }, op: cmpOp(m[1]), right });
-      }
-
-      // 4) RSI threshold — "rsi under 30", "rsi is above 70"
-      re = /rsi\s*(?:is\s*)?(above|over|greater than|>|below|under|less than|<)\s*(\d+)/g;
-      while ((m = re.exec(s)) !== null)
-        conds.push({ left: { indicator: "rsi", period: 14 }, op: cmpOp(m[1]), right: { value: parseInt(m[2], 10) } });
-
-      // 5) Bollinger band — "close below the lower band", "above upper band"
-      re = /(above|over|below|under)\s*(?:the\s*)?(upper|lower)\s*(?:bollinger\s*)?band/g;
-      while ((m = re.exec(s)) !== null)
-        conds.push({ left: { price: "close" }, op: cmpOp(m[1]), right: { indicator: m[2] === "upper" ? "bb_upper" : "bb_lower", period: 20 } });
-
-      for (const c of conds) spec[seg.side].push(c);
-    }
-
-    if (spec.long.length === 0 && spec.short.length === 0) {
-      throw new Error(
-        "Couldn't parse any rules from that. Try phrasing like: " +
-        "\"go long when the 9 EMA crosses above the 21 EMA and RSI under 60\". " +
-        "Supported: EMA/SMA crosses, price vs EMA/SMA/VWAP, RSI thresholds, Bollinger bands, ATR stop/target. " +
-        "Or edit the JSON directly below."
-      );
-    }
-    validateSpec(spec);
-    return spec;
-  }
-
   async function generateSpecFromText(text, cfg = {}) {
     const host = cfg.host || "http://localhost:11434";
     const model = cfg.model || "qwen2.5:1.5b";
@@ -563,9 +381,56 @@
     return spec;
   }
 
+  // Tolerant JSON extraction from an LLM reply (strips ``` fences / prose).
+  function extractJson(s) {
+    let t = String(s).replace(/```json/gi, "```").trim();
+    const fence = t.match(/```([\s\S]*?)```/);
+    if (fence) t = fence[1].trim();
+    const a = t.indexOf("{"), b = t.lastIndexOf("}");
+    if (a !== -1 && b !== -1 && b > a) t = t.slice(a, b + 1);
+    return JSON.parse(t);
+  }
+
+  // Free online LLM via OpenRouter (OpenAI-compatible). Key comes from the
+  // caller (stored in the browser's localStorage, never in the repo). Works
+  // from the https Pages site — no localhost, no mixed content.
+  async function generateSpecViaOpenRouter(text, cfg = {}) {
+    const apiKey = cfg.apiKey;
+    if (!apiKey) throw new Error("Add your OpenRouter API key first (free at openrouter.ai/keys).");
+    const model = cfg.model || "google/gemma-3-27b-it:free";
+    const fetchFn = cfg.fetch || (typeof fetch !== "undefined" ? fetch : null);
+    if (!fetchFn) throw new Error("no fetch available");
+    let res;
+    try {
+      res = await fetchFn("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + apiKey, "X-Title": "APEX Terminal" },
+        body: JSON.stringify({ model, temperature: 0, messages: [{ role: "user", content: buildPrompt(text) }] }),
+      });
+    } catch (e) {
+      throw new Error("Couldn't reach OpenRouter (network or CORS). " + e.message);
+    }
+    if (res.status === 401) throw new Error("OpenRouter rejected the key (401). Double-check it at openrouter.ai/keys.");
+    if (res.status === 429) throw new Error("OpenRouter rate limit hit (429). Wait a minute, or top up $10 for a higher limit.");
+    if (!res.ok) {
+      let detail = "";
+      try { detail = (await res.json())?.error?.message || ""; } catch (_) {}
+      throw new Error(`OpenRouter error HTTP ${res.status}${detail ? ": " + detail : ""}. The free model may have rotated out — try another :free model from openrouter.ai/models.`);
+    }
+    const data = await res.json();
+    const content = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    if (!content) throw new Error("Empty response from the model — try a different :free model.");
+    let spec;
+    try { spec = extractJson(content); }
+    catch (e) { throw new Error("The model didn't return valid JSON. Try another model, or edit the rules by hand below."); }
+    validateSpec(spec);
+    return spec;
+  }
+
   const TE = {
-    indicators, compileSpec, validateSpec, TRENCH_STRATEGIES,
-    runBacktest, computeStats, atrFilterOk, buildPrompt, generateSpecFromText, parseTextToSpec,
+    indicators, compileSpec, validateSpec,
+    runBacktest, computeStats, atrFilterOk, buildPrompt, generateSpecFromText,
+    extractJson,
     ALLOWED_INDICATORS, ALLOWED_OPS, ALLOWED_PRICES,
   };
 

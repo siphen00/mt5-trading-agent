@@ -21,7 +21,6 @@
   <div class="nav">
     <a href="index.html">Live dashboard</a>
     <a href="backtest.html" class="active">Backtest lab</a>
-    <a href="trenches.html">Trenches</a>
   </div>
 
   <div class="panel accent-amber" style="margin-bottom:16px;">
@@ -90,16 +89,47 @@
     <textarea id="nlText" rows="3" placeholder="Describe your strategy in plain English…"
       style="width:100%; box-sizing:border-box; padding:10px; border-radius:8px; border:1px solid #2a3142; background:#141824; color:#e6e9ef; font-family:var(--mono,monospace); font-size:13px;"></textarea>
     <div class="bt-form" style="margin-top:10px; align-items:flex-end;">
+      <div class="bt-field">
+        <label>Ollama host</label>
+        <input id="ollamaHost" value="http://localhost:11434"
+          style="width:190px;padding:6px 8px;border-radius:6px;border:1px solid #2a3142;background:#141824;color:#e6e9ef;">
+      </div>
       <button class="run-btn" id="genBtn">Generate rules</button>
-      <label class="bt-field" style="flex-direction:row; align-items:center; gap:6px; margin:0;">
-        <input type="checkbox" id="useOllama" style="width:auto;">
-        <span class="stat-sub">Use local Ollama instead (needs localhost)</span>
-      </label>
-      <input id="ollamaHost" value="http://localhost:11434" style="display:none;
-        width:180px;padding:6px 8px;border-radius:6px;border:1px solid #2a3142;background:#141824;color:#e6e9ef;">
       <span class="stat-sub" id="genNote" style="margin-left:4px;"></span>
     </div>
     <div id="mixedWarn" class="stat-sub" style="display:none; margin-top:8px; color:#ffd7de;"></div>
+
+    <div class="bt-form" style="margin-top:14px; padding-top:14px; border-top:1px solid #2a3142; align-items:flex-end;">
+      <div class="bt-field">
+        <label>Test on timeframe</label>
+        <select id="cusTimeframe">
+          <option value="M1">1 minute</option>
+          <option value="M3">3 minute</option>
+          <option value="M5" selected>5 minute</option>
+          <option value="M15">15 minute</option>
+        </select>
+      </div>
+      <div class="bt-field">
+        <label>Session</label>
+        <select id="cusSession"></select>
+      </div>
+      <div class="bt-field">
+        <label>Spread (price units)</label>
+        <input id="cusSpread" type="number" value="12" min="0" step="0.5"
+               style="width:90px;padding:6px 8px;border-radius:6px;border:1px solid #2a3142;background:#141824;color:#e6e9ef;">
+      </div>
+      <div class="bt-field">
+        <label>ATR chop filter</label>
+        <select id="cusAtrFilter">
+          <option value="on">On — match live</option>
+          <option value="off">Off</option>
+        </select>
+      </div>
+      <div class="bt-field">
+        <label>Data</label>
+        <span class="stat-sub" id="cusDataStatus" style="padding-top:8px;">Checking…</span>
+      </div>
+    </div>
     <div id="specWrap" style="display:none; margin-top:12px;">
       <label class="stat-sub">Generated rules (editable JSON — fix anything that's off, then backtest)</label>
       <textarea id="specJson" rows="10"
@@ -604,33 +634,23 @@ document.getElementById('runBtn').onclick = () => {
   const specWrap = document.getElementById('specWrap');
   const specJson = document.getElementById('specJson');
   const mixedWarn = document.getElementById('mixedWarn');
-  const useOllama = document.getElementById('useOllama');
   const ollamaHost = document.getElementById('ollamaHost');
 
-  // Ollama is opt-in. Only then do we show the host field + the https warning.
-  useOllama.onchange = () => {
-    ollamaHost.style.display = useOllama.checked ? 'inline-block' : 'none';
-    mixedWarn.style.display = (useOllama.checked && location.protocol === 'https:') ? 'block' : 'none';
-    if(useOllama.checked && location.protocol === 'https:'){
-      mixedWarn.innerHTML = 'On the online (https) site, browsers block calls to <b>http://localhost</b>. ' +
-        'Leave this unchecked to parse in your browser (works here), or open the dashboard over ' +
-        '<code>http://localhost</code> with <code>OLLAMA_ORIGINS=*</code> to use Ollama.';
-    }
-  };
+  // Warn if opened on https (Pages site) — Ollama needs localhost.
+  if(location.protocol === 'https:'){
+    mixedWarn.style.display = 'block';
+    mixedWarn.innerHTML = 'This feature needs local Ollama (<b>http://localhost:11434</b>). ' +
+      'Open the dashboard locally: <code>cd dashboard && python -m http.server 8080</code>, ' +
+      'then visit <code>http://localhost:8080/backtest.html</code>.';
+  }
 
   genBtn.onclick = async () => {
     const text = document.getElementById('nlText').value.trim();
     if(!text){ genNote.textContent = 'Describe a strategy first.'; genNote.className='stat-sub'; return; }
     genBtn.disabled = true;
+    genNote.textContent = 'Asking Ollama…'; genNote.className = 'stat-sub';
     try{
-      let spec;
-      if(useOllama.checked){
-        genNote.textContent = 'Asking Ollama…'; genNote.className = 'stat-sub';
-        spec = await TE.generateSpecFromText(text, { host: ollamaHost.value.trim() || 'http://localhost:11434' });
-      }else{
-        genNote.textContent = 'Parsing…'; genNote.className = 'stat-sub';
-        spec = TE.parseTextToSpec(text);   // in-browser, no network
-      }
+      const spec = await TE.generateSpecFromText(text, { host: ollamaHost.value.trim() || 'http://localhost:11434' });
       specJson.value = JSON.stringify(spec, null, 2);
       specWrap.style.display = 'block';
       genNote.textContent = 'Rules generated — review and backtest below.'; genNote.className = 'stat-sub up';
@@ -648,9 +668,35 @@ document.getElementById('runBtn').onclick = () => {
     }finally{ genBtn.disabled = false; }
   };
 
+  // --- Customise section has its OWN data, independent of the lab above ---
+  document.getElementById('cusSession').innerHTML =
+    SESSION_META.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+
+  let cusCandles = null;
+  async function loadCusData(){
+    const tf = document.getElementById('cusTimeframe').value;
+    const el = document.getElementById('cusDataStatus');
+    el.textContent = 'Loading…'; el.className = 'stat-sub';
+    const data = await fetchJson(`data/backtest_${tf}.json`, null);
+    if(!data || !data.length){
+      cusCandles = null;
+      el.textContent = `No ${tf} data — run export_backtest_data`; el.className = 'stat-sub down';
+      return;
+    }
+    cusCandles = data;
+    const first = new Date(data[0].time*1000), last = new Date(data[data.length-1].time*1000);
+    el.textContent = `${data.length} candles · ${first.toLocaleDateString()} → ${last.toLocaleDateString()}`;
+    el.className = 'stat-sub up';
+  }
+  document.getElementById('cusTimeframe').onchange = loadCusData;
+  loadCusData();
+
   document.getElementById('runCustomBtn').onclick = () => {
     const customNote = document.getElementById('customNote');
-    if(!candleData || !candleData.length){ customNote.textContent = 'No data loaded — pick a timeframe with exported data above.'; customNote.className='stat-sub down'; return; }
+    if(!cusCandles || !cusCandles.length){
+      customNote.textContent = 'No data for that timeframe — run `python -m connector.export_backtest_data`.';
+      customNote.className='stat-sub down'; return;
+    }
     let spec;
     try{ spec = JSON.parse(specJson.value); }
     catch(e){ customNote.textContent = 'Rules are not valid JSON.'; customNote.className='stat-sub down'; return; }
@@ -658,21 +704,21 @@ document.getElementById('runBtn').onclick = () => {
     try{ signalFn = TE.compileSpec(spec); }
     catch(e){ customNote.textContent = 'Invalid rules: ' + e.message; customNote.className='stat-sub down'; return; }
 
-    const spread = parseFloat(document.getElementById('btSpread').value) || 0;
-    const useAtrFilter = document.getElementById('btAtrFilter').value === 'on';
-    const sessionId = document.getElementById('btSession').value;
-    const res = TE.runBacktest(candleData, signalFn, {
+    const spread = parseFloat(document.getElementById('cusSpread').value) || 0;
+    const useAtrFilter = document.getElementById('cusAtrFilter').value === 'on';
+    const sessionId = document.getElementById('cusSession').value;
+    const res = TE.runBacktest(cusCandles, signalFn, {
       spread,
       guards: { atrFilter: useAtrFilter, spreadReject: true, dailyLoss: false },
       sessionFilter: sessionId==='24h' ? null : (t)=>inSession(sessionId, t),
     });
-    customNote.textContent = `${res.stats.totalTrades} trades · net ${res.stats.netPnl>=0?'+':''}${res.stats.netPnl.toFixed(2)}`;
+    const tf = document.getElementById('cusTimeframe').value;
+    customNote.textContent = `${tf} · ${res.stats.totalTrades} trades · net ${res.stats.netPnl>=0?'+':''}${res.stats.netPnl.toFixed(2)}`;
     customNote.className = 'stat-sub ' + (res.stats.netPnl>=0?'up':'down');
     renderResults(res.trades, res.equityCurve);
-    // Custom rules can't be pushed to the Python connector — make that explicit.
     const pushBtn = document.getElementById('pushBtn');
     pushBtn.disabled = true; pushBtn.style.opacity = 0.5;
-    document.getElementById('pushNote').textContent = 'Custom browser rules can\u2019t be pushed to the live connector.';
+    document.getElementById('pushNote').textContent = 'Custom browser rules can\u2019t be pushed to the live connector yet.';
     document.getElementById('pushNote').className = 'stat-sub';
   };
 })();

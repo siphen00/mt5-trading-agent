@@ -28,7 +28,7 @@ from connector.git_sync import commit_and_push
 # How much history to pull per timeframe. 5000 M5 candles ≈ ~17 days of
 # 24/7 crypto trading; 5000 M15 candles ≈ ~52 days. Enough to see a real
 # range of conditions without the export file getting unwieldy.
-CANDLE_COUNT = 5000
+CANDLE_COUNT = 10000   # 10k bars: ~7 days of M1, ~34 days of M5 on 24/7 crypto
 
 # Timeframes to export for the backtest pages. Independent of config.TIMEFRAMES
 # (which is what the LIVE connector trades) — the Trenches page needs 1m/3m data
