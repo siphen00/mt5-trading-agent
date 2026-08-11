@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-11T16:44:43.346646+00:00",
+  "updated_at": "2026-08-11T16:49:53.658160+00:00",
   "items": [
     {
       "title": "Riot Platforms surges 20% in pre-market trading on $9.1 billion Anthropic deal",
@@ -70,21 +70,6 @@
       "categories": [
         "war",
         "crypto"
-      ],
-      "score": 9,
-      "impact": "high"
-    },
-    {
-      "title": "Trump extends limited waiver of shipping law to keep oil flowing in U.S. amid Iran war",
-      "url": "https://www.cnbc.com/2026/08/10/trump-iran-oil-jones-act-shipping.html",
-      "source": "CNBC World",
-      "published": "2026-08-10T21:59:18+00:00",
-      "published_ts": 1786399158,
-      "summary": "The Jones Act waiver extension comes after the Trump administration's latest signs of a deal to reopen the Strait of Hormuz failed to materialize.",
-      "categories": [
-        "war",
-        "macro_data",
-        "markets"
       ],
       "score": 9,
       "impact": "high"
@@ -549,6 +534,19 @@
       "published": "2026-08-11T10:06:39+00:00",
       "published_ts": 1786442799,
       "summary": "The U.K.\u2019s Crypto and Digital Assets All-Party Parliamentary Group asked banks to explain their approach to providing banking services to crypto and digital asset businesses.",
+      "categories": [
+        "crypto"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
+      "title": "Bitcoin\u2019s BIP-110 fork is 300 blocks behind BTC and six years from fixing itself",
+      "url": "https://www.coindesk.com/tech/2026/08/11/bitcoin-s-bip-110-fork-is-300-blocks-behind-btc-and-six-years-from-fixing-itself",
+      "source": "CoinDesk",
+      "published": "2026-08-11T05:26:37+00:00",
+      "published_ts": 1786425997,
+      "summary": "The breakaway chain has produced two blocks since splitting off on Saturday. Bitcoin has produced more than 300 in the same stretch.",
       "categories": [
         "crypto"
       ],
