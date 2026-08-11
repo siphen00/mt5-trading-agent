@@ -123,3 +123,47 @@
     background:var(--amber-dim); color:var(--amber); border:1px solid rgba(255,182,39,0.4);}
   .bt-results{display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin:16px 0;}
   .bt-trades-table{max-height:320px; overflow-y:auto;}
+
+/* ============ Daily bias + News sections ============ */
+.bias-head { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:12px; }
+.bias-badge { font-family:var(--mono,monospace); font-size:20px; font-weight:600; letter-spacing:1px;
+  padding:8px 16px; border-radius:8px; }
+.bias-bullish { background:rgba(0,229,160,.12); color:#00E5A0; border:1px solid rgba(0,229,160,.35); }
+.bias-bearish { background:rgba(255,77,106,.12); color:#FF4D6A; border:1px solid rgba(255,77,106,.35); }
+.bias-ranging { background:rgba(255,176,32,.12); color:#FFB020; border:1px solid rgba(255,176,32,.35); }
+.conf-wrap { flex:1; min-width:160px; }
+.conf-bar { height:6px; border-radius:4px; background:#1c2130; overflow:hidden; margin-top:6px; }
+.conf-fill { height:100%; border-radius:4px; transition:width .5s ease; }
+.bias-rationale { font-size:13.5px; line-height:1.7; color:var(--text1,#e6e9ef); margin-bottom:14px; }
+.factor-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:8px; }
+.factor { border:1px solid #232a3a; border-radius:8px; padding:10px 12px; background:#12161f; }
+.factor-name { font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--text2,#8b93a7); }
+.factor-bias { font-family:var(--mono,monospace); font-size:13px; font-weight:600; margin:3px 0 4px; }
+.factor-detail { font-size:11.5px; color:var(--text2,#8b93a7); line-height:1.5; }
+.level-row { display:flex; gap:18px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px solid #232a3a; }
+.level-item { font-size:12px; color:var(--text2,#8b93a7); }
+.level-item b { color:var(--text1,#e6e9ef); font-family:var(--mono,monospace); }
+
+.news-filter { background:#141824; border:1px solid #2a3142; color:var(--text2,#8b93a7);
+  border-radius:6px; padding:4px 10px; font-size:11px; cursor:pointer; font-family:inherit; }
+.news-filter:hover { border-color:#3a4356; color:var(--text1,#e6e9ef); }
+.news-filter.active { background:rgba(255,176,32,.12); border-color:rgba(255,176,32,.45); color:#FFB020; }
+.news-list { max-height:440px; overflow-y:auto; }
+.news-item { display:flex; gap:12px; padding:11px 0; border-bottom:1px solid #1c2130; }
+.news-item:last-child { border-bottom:none; }
+.impact-dot { width:8px; height:8px; border-radius:50%; margin-top:6px; flex-shrink:0; }
+.impact-high { background:#FF4D6A; box-shadow:0 0 8px rgba(255,77,106,.6); }
+.impact-medium { background:#FFB020; }
+.impact-low { background:#3a4356; }
+.news-main { flex:1; min-width:0; }
+.news-title { font-size:13px; line-height:1.5; color:var(--text1,#e6e9ef); text-decoration:none; display:block; }
+.news-title:hover { color:#6C8CFF; }
+.news-meta { font-size:11px; color:var(--text2,#8b93a7); margin-top:4px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.news-tag { font-family:var(--mono,monospace); font-size:10px; padding:1px 6px; border-radius:10px;
+  background:#1c2130; color:var(--text2,#8b93a7); }
+.cal-item { display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid #1c2130; }
+.cal-time { font-family:var(--mono,monospace); font-size:11px; color:var(--text2,#8b93a7); width:92px; flex-shrink:0; }
+.cal-cur { font-family:var(--mono,monospace); font-size:11px; font-weight:600; width:38px; flex-shrink:0; }
+.cal-title { flex:1; font-size:12.5px; }
+.cal-vals { font-family:var(--mono,monospace); font-size:11px; color:var(--text2,#8b93a7); }
+.cal-upcoming { color:#FFB020; }

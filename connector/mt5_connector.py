@@ -42,6 +42,10 @@ TIMEFRAME_MAP = {
     "M3": getattr(mt5, "TIMEFRAME_M3", None) if mt5 else None,
     "M5": getattr(mt5, "TIMEFRAME_M5", None) if mt5 else None,
     "M15": getattr(mt5, "TIMEFRAME_M15", None) if mt5 else None,
+    # Higher timeframes: used by the daily-bias agent, not by live trading.
+    "H1": getattr(mt5, "TIMEFRAME_H1", None) if mt5 else None,
+    "H4": getattr(mt5, "TIMEFRAME_H4", None) if mt5 else None,
+    "D1": getattr(mt5, "TIMEFRAME_D1", None) if mt5 else None,
 }
 
 

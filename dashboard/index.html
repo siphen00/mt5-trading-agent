@@ -43,6 +43,38 @@
     <div class="card"><div class="stat-label">Max drawdown</div><div class="stat-val" id="maxDD">—</div><div class="stat-sub">since start</div></div>
   </div>
 
+  <!-- ===================== DAILY BIAS ===================== -->
+  <div class="panel" id="biasPanel" style="margin-bottom:16px; border-left:3px solid #6C8CFF;">
+    <div class="panel-title">
+      <span>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M21 7v5h-5"/></svg>
+        Daily bias <b id="biasUpdated">—</b>
+      </span>
+      <span class="stat-sub">D1 + H4 structure · MA · RSI</span>
+    </div>
+    <div id="biasBody">
+      <div class="empty">Waiting for the bias agent — run <code>python -m agents.run</code></div>
+    </div>
+  </div>
+
+  <!-- ===================== NEWS ===================== -->
+  <div class="panel" id="newsPanel" style="margin-bottom:16px; border-left:3px solid #FFB020;">
+    <div class="panel-title">
+      <span>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h13v16H4zM17 8h3v10a2 2 0 0 1-2 2M7 8h7M7 12h7M7 16h4"/></svg>
+        News <b id="newsUpdated">—</b>
+      </span>
+      <div style="display:flex; gap:6px; align-items:center;">
+        <button class="news-filter active" data-filter="all">All</button>
+        <button class="news-filter" data-filter="high">High impact</button>
+        <button class="news-filter" data-filter="calendar">Calendar</button>
+      </div>
+    </div>
+    <div id="newsBody">
+      <div class="empty">Waiting for the news agent — run <code>python -m agents.run</code></div>
+    </div>
+  </div>
+
   <div class="panel accent-green" style="margin-bottom:16px;">
     <div class="panel-title">
       <span>
@@ -593,6 +625,141 @@ initExecChart();
 loadAll();
 loadExecChart();
 loadStrategyConfig();
+// ============================================================
+// Daily bias + News sections
+// ============================================================
+function timeAgo(ts){
+  if(!ts) return '';
+  const s = Math.floor(Date.now()/1000 - ts);
+  if(s < 60) return 'just now';
+  if(s < 3600) return `${Math.floor(s/60)}m ago`;
+  if(s < 86400) return `${Math.floor(s/3600)}h ago`;
+  return `${Math.floor(s/86400)}d ago`;
+}
+function esc(s){
+  return String(s||'').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function loadDailyBias(){
+  const body = document.getElementById('biasBody');
+  const data = await fetchJson('data/daily_bias.json', null);
+  if(!data){
+    body.innerHTML = '<div class="empty">No bias yet — run <code>python -m agents.run</code> on the connector machine</div>';
+    return;
+  }
+  document.getElementById('biasUpdated').textContent = data.updated_at
+    ? timeAgo(Math.floor(new Date(data.updated_at).getTime()/1000)) : '';
+
+  const cls = `bias-${data.bias}`;
+  const colour = data.bias==='bullish' ? '#00E5A0' : data.bias==='bearish' ? '#FF4D6A' : '#FFB020';
+  const L = data.levels || {};
+  const lvl = (label, v, extra='') => v==null ? '' :
+    `<div class="level-item">${label} <b>${Number(v).toLocaleString(undefined,{maximumFractionDigits:2})}</b>${extra}</div>`;
+
+  body.innerHTML = `
+    <div class="bias-head">
+      <div class="bias-badge ${cls}">${esc(data.bias).toUpperCase()}</div>
+      <div class="conf-wrap">
+        <div class="stat-sub">Confidence ${data.confidence}%</div>
+        <div class="conf-bar"><div class="conf-fill" style="width:${data.confidence}%; background:${colour};"></div></div>
+      </div>
+    </div>
+    <div class="bias-rationale">${esc(data.rationale)}</div>
+    <div class="factor-grid">
+      ${(data.factors||[]).map(f=>`
+        <div class="factor">
+          <div class="factor-name">${esc(f.name)}</div>
+          <div class="factor-bias" style="color:${f.bias==='bullish'?'#00E5A0':f.bias==='bearish'?'#FF4D6A':'#FFB020'}">
+            ${esc(f.bias)}
+          </div>
+          <div class="factor-detail">${esc(f.detail)}</div>
+        </div>`).join('')}
+    </div>
+    <div class="level-row">
+      ${lvl('Price', L.price, L.day_change_pct!=null
+          ? ` <span class="${L.day_change_pct>=0?'up':'down'}">(${L.day_change_pct>=0?'+':''}${L.day_change_pct}%)</span>` : '')}
+      ${lvl('Resistance', L.resistance)}
+      ${lvl('Support', L.support)}
+      ${lvl('SMA20', L.sma20)}
+      ${lvl('SMA50', L.sma50)}
+      ${lvl('SMA200', L.sma200)}
+    </div>`;
+}
+
+let newsData = null;
+let newsFilter = 'all';
+
+async function loadNews(){
+  const body = document.getElementById('newsBody');
+  const data = await fetchJson('data/news.json', null);
+  if(!data){
+    body.innerHTML = '<div class="empty">No news yet — run <code>python -m agents.run</code></div>';
+    return;
+  }
+  newsData = data;
+  document.getElementById('newsUpdated').textContent = data.updated_at
+    ? timeAgo(Math.floor(new Date(data.updated_at).getTime()/1000)) : '';
+  renderNews();
+}
+
+function renderNews(){
+  const body = document.getElementById('newsBody');
+  if(!newsData) return;
+
+  if(newsFilter === 'calendar'){
+    const cal = newsData.calendar || [];
+    body.innerHTML = cal.length ? `<div class="news-list">${cal.map(c=>`
+      <div class="cal-item">
+        <div class="cal-time ${c.upcoming?'cal-upcoming':''}">
+          ${new Date(c.date_ts*1000).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}
+        </div>
+        <div class="cal-cur">${esc(c.country)}</div>
+        <div class="impact-dot impact-${esc(c.impact)}"></div>
+        <div class="cal-title">${esc(c.title)}</div>
+        <div class="cal-vals">${c.forecast?`f/c ${esc(c.forecast)}`:''} ${c.previous?`· prev ${esc(c.previous)}`:''}</div>
+      </div>`).join('')}</div>`
+      : '<div class="empty">No high-impact events in the next 48 hours</div>';
+    return;
+  }
+
+  let items = newsData.items || [];
+  if(newsFilter === 'high') items = items.filter(i => i.impact === 'high');
+
+  body.innerHTML = items.length ? `<div class="news-list">${items.map(i=>`
+    <div class="news-item">
+      <div class="impact-dot impact-${esc(i.impact)}"></div>
+      <div class="news-main">
+        <a class="news-title" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer">${esc(i.title)}</a>
+        <div class="news-meta">
+          <span>${esc(i.source)}</span>
+          ${i.published_ts?`<span>· ${timeAgo(i.published_ts)}</span>`:''}
+          ${(i.categories||[]).slice(0,3).map(c=>`<span class="news-tag">${esc(c)}</span>`).join('')}
+        </div>
+      </div>
+    </div>`).join('')}</div>`
+    : '<div class="empty">Nothing matching that filter right now</div>';
+
+  if((newsData.errors||[]).length){
+    body.innerHTML += `<div class="stat-sub" style="margin-top:10px; color:#FFB020;">
+      ${newsData.errors.length} feed issue(s): ${esc(newsData.errors.join('; ')).slice(0,200)}</div>`;
+  }
+}
+
+document.querySelectorAll('.news-filter').forEach(btn=>{
+  btn.onclick = () => {
+    document.querySelectorAll('.news-filter').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    newsFilter = btn.dataset.filter;
+    renderNews();
+  };
+});
+
+loadDailyBias();
+loadNews();
+setInterval(loadNews, 120000);       // news every 2 min
+setInterval(loadDailyBias, 300000);  // bias every 5 min
+
 setInterval(loadAll, 30000); // refresh every 30s
 setInterval(loadExecChart, 30000);
 setInterval(loadStrategyConfig, 30000);
