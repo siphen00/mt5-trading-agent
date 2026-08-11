@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-11T16:49:53.658160+00:00",
+  "updated_at": "2026-08-11T16:55:01.207880+00:00",
   "items": [
     {
       "title": "Riot Platforms surges 20% in pre-market trading on $9.1 billion Anthropic deal",
@@ -273,20 +273,6 @@
       "impact": "medium"
     },
     {
-      "title": "Palestine weekly: Netanyahu hedges on Gaza roadmap",
-      "url": "https://www.aljazeera.com/news/2026/8/11/palestine-weekly-netanyahu-hedges-on-gaza-roadmap?traffic_source=rss",
-      "source": "Al Jazeera",
-      "published": "2026-08-11T11:28:05+00:00",
-      "published_ts": 1786447685,
-      "summary": "Attacks in Gaza slowed sharply this week even as Netanyahu publicly rejected Trump&#039;s 15-point peace plan.",
-      "categories": [
-        "war",
-        "geopolitical"
-      ],
-      "score": 5,
-      "impact": "medium"
-    },
-    {
       "title": "FlightAware sues Kalshi over bets on flight cancellations",
       "url": "https://www.coindesk.com/policy/2026/08/11/kalshi-faces-new-lawsuit-flightaware-accuses-it-of-using-its-data-for-flight-cancellation-betting",
       "source": "CoinDesk",
@@ -547,6 +533,19 @@
       "published": "2026-08-11T05:26:37+00:00",
       "published_ts": 1786425997,
       "summary": "The breakaway chain has produced two blocks since splitting off on Saturday. Bitcoin has produced more than 300 in the same stretch.",
+      "categories": [
+        "crypto"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
+      "title": "U.S. SEC sets meeting to propose Reg Crypto to support certain digital assets offerings",
+      "url": "https://www.coindesk.com/policy/2026/08/11/u-s-sec-sets-meeting-to-propose-reg-crypto-to-support-certain-digital-assets-offerings",
+      "source": "CoinDesk",
+      "published": "2026-08-11T04:07:48+00:00",
+      "published_ts": 1786421268,
+      "summary": "The Securities and Exchange Commission will vote this week to start its first major crypto rulemaking process.",
       "categories": [
         "crypto"
       ],
