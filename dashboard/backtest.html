@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <title>APEX — Backtest Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -83,8 +84,8 @@
     </div>
     <p class="stat-sub" style="margin-bottom:10px; line-height:1.6;">
       Describe an entry in your own words, e.g. <i>"go long when the 9 EMA crosses above the 21 EMA and RSI is under 60;
-      exit at 2× ATR"</i>. It's turned into rules you can review, edit, and backtest — same engine as the lab.
-      Parsing happens <b>in your browser</b>, so it works right here on the online site with no setup.
+      exit at 2× ATR"</i>. Your local Ollama turns it into rules you can review, edit, and backtest — same engine as the lab.
+      Needs Ollama running and this page opened over <code>http://localhost</code>.
     </p>
     <textarea id="nlText" rows="3" placeholder="Describe your strategy in plain English…"
       style="width:100%; box-sizing:border-box; padding:10px; border-radius:8px; border:1px solid #2a3142; background:#141824; color:#e6e9ef; font-family:var(--mono,monospace); font-size:13px;"></textarea>

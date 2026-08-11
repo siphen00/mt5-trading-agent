@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <title>APEX — BTC Trading Terminal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -246,8 +247,16 @@ let execChart = null, execSeries = null;
 
 function initExecChart(){
   const el = document.getElementById('exec_chart');
+  if(!el) return;
+  // The chart library is loaded from a CDN. If that request fails, the throw
+  // used to abort the rest of this script — taking the news and bias sections
+  // down with it. Fail soft instead: the chart degrades, everything else lives.
+  if(typeof LightweightCharts === 'undefined'){
+    el.innerHTML = '<div class="empty">Chart library unavailable — check your connection</div>';
+    return;
+  }
   execChart = LightweightCharts.createChart(el, {
-    layout: { background: { color: 'transparent' }, textColor: '#8A93A6', fontFamily: 'IBM Plex Mono, monospace' },
+    layout: { background: { color: 'transparent' }, textColor: '#8E97AD', fontFamily: 'JetBrains Mono, monospace' },
     grid: { vertLines: { color: 'rgba(255,255,255,0.04)' }, horzLines: { color: 'rgba(255,255,255,0.04)' } },
     timeScale: { timeVisible: true, secondsVisible: false, borderColor: 'rgba(255,255,255,0.07)' },
     rightPriceScale: { borderColor: 'rgba(255,255,255,0.07)' },
@@ -734,7 +743,7 @@ function renderNews(){
         <div class="news-meta">
           <span>${esc(i.source)}</span>
           ${i.published_ts?`<span>· ${timeAgo(i.published_ts)}</span>`:''}
-          ${(i.categories||[]).slice(0,3).map(c=>`<span class="news-tag">${esc(c)}</span>`).join('')}
+          ${(i.categories||[]).slice(0,3).map(c=>`<span class="news-tag">${esc(String(c).replace(/_/g,' '))}</span>`).join('')}
         </div>
       </div>
     </div>`).join('')}</div>`
@@ -763,6 +772,25 @@ setInterval(loadDailyBias, 300000);  // bias every 5 min
 setInterval(loadAll, 30000); // refresh every 30s
 setInterval(loadExecChart, 30000);
 setInterval(loadStrategyConfig, 30000);
+
+// ============================================================
+// Ambient mood — the background atmosphere follows the day's P&L.
+// Watches the existing #todayPnl element rather than hooking into any
+// data-loading code, so it can't interfere with trading logic.
+// ============================================================
+(function(){
+  const el = document.getElementById('todayPnl');
+  if(!el) return;
+  const sync = () => {
+    const t = (el.textContent || '').trim();
+    if(!t || t === '—'){ delete document.body.dataset.mood; return; }
+    if(el.classList.contains('up')   || t.startsWith('+')) document.body.dataset.mood = 'up';
+    else if(el.classList.contains('down') || t.startsWith('-')) document.body.dataset.mood = 'down';
+    else delete document.body.dataset.mood;
+  };
+  new MutationObserver(sync).observe(el, {childList:true, characterData:true, subtree:true, attributes:true, attributeFilter:['class']});
+  sync();
+})();
 </script>
 </body>
 </html>
