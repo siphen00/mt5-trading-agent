@@ -1,171 +1,142 @@
 {
-  "updated_at": "2026-08-11T17:00:09.930120+00:00",
+  "updated_at": "2026-08-12T15:50:27.058551+00:00",
   "items": [
     {
-      "title": "Riot Platforms surges 20% in pre-market trading on $9.1 billion Anthropic deal",
-      "url": "https://www.coindesk.com/business/2026/08/11/riot-platforms-surges-20-in-pre-market-trading-on-usd9-1-billion-anthropic-deal",
+      "title": "Live updates: AI stocks surge on Q2 beats, bitcoin falls below $64,000 as inflation hits estimates",
+      "url": "https://www.coindesk.com/tech/2026/08/12/live-updates-bitcoin-at-usd63-600-as-japan-s-metaplanet-moves-3-881-btc-between-wallets",
       "source": "CoinDesk",
-      "published": "2026-08-11T09:37:36+00:00",
-      "published_ts": 1786441056,
-      "summary": "The bitcoin miner\u2019s 20-year agreement highlights an industry-wide shift toward AI infrastructure revenue.",
+      "published": "2026-08-12T07:04:53+00:00",
+      "published_ts": 1786518293,
+      "summary": "Blockchain data shows the Japanese treasury firm moved the bitcoin between wallets it controls, not to an exchange, so the transfer isn't a sale despite its $1.4 billion paper loss.",
       "categories": [
-        "war",
+        "macro_data",
         "crypto",
         "risk"
       ],
-      "score": 12,
+      "score": 11,
       "impact": "high"
     },
     {
-      "title": "\u2018Only job I know\u2019: Philippine sailors return to sea despite wartime risks",
-      "url": "https://www.aljazeera.com/features/2026/8/11/only-job-i-know-philippine-sailors-return-to-sea-despite-wartime-risks?traffic_source=rss",
-      "source": "Al Jazeera",
-      "published": "2026-08-11T14:06:09+00:00",
-      "published_ts": 1786457169,
-      "summary": "Despite risks in the Strait of Hormuz and Black Sea, seafarers from the Philippines are still competing for jobs.",
-      "categories": [
-        "war",
-        "macro_data",
-        "geopolitical"
-      ],
-      "score": 9,
-      "impact": "high"
-    },
-    {
-      "title": "Philippines sailors say they will work despite wartime risks",
-      "url": "https://www.aljazeera.com/video/newsfeed/2026/8/11/philippines-sailors-say-they-will-work-despite-wartime-risks-2?traffic_source=rss",
-      "source": "Al Jazeera",
-      "published": "2026-08-11T12:40:11+00:00",
-      "published_ts": 1786452011,
-      "summary": "Philippines sailors say they will work despite wartime risks",
-      "categories": [
-        "war",
-        "macro_data",
-        "geopolitical"
-      ],
-      "score": 9,
-      "impact": "high"
-    },
-    {
-      "title": "Software stocks break away from bitcoin: What the rare divergence means for crypto",
-      "url": "https://www.coindesk.com/markets/2026/08/11/software-stocks-break-away-from-bitcoin-what-the-rare-divergence-means-for-crypto",
-      "source": "CoinDesk",
-      "published": "2026-08-11T10:31:26+00:00",
-      "published_ts": 1786444286,
-      "summary": "IGV\u2019s rebound is reshaping a relationship it held with bitcoin for years, but history suggests bitcoin could still catch up.",
-      "categories": [
-        "war",
-        "crypto"
-      ],
-      "score": 9,
-      "impact": "high"
-    },
-    {
-      "title": "BTCPay offers $190,000 bounty after bitcoin payment servers drained in exploit",
-      "url": "https://www.coindesk.com/markets/2026/08/11/btcpay-offers-usd190-000-bounty-after-bitcoin-payment-servers-drained-in-exploit",
-      "source": "CoinDesk",
-      "published": "2026-08-11T06:19:07+00:00",
-      "published_ts": 1786429147,
-      "summary": "The project said it will pay 10% of recovered funds, up to 3 BTC, after attackers stole LND credentials and drained merchant Lightning wallets last week.",
-      "categories": [
-        "war",
-        "crypto"
-      ],
-      "score": 9,
-      "impact": "high"
-    },
-    {
-      "title": "Bitwise's Rasmussen: Circle is mispriced as stablecoins head toward trillions",
-      "url": "https://www.coindesk.com/coindesk-news/2026/08/10/bitwise-s-rasmussen-circle-is-mispriced-as-stablecoins-head-toward-trillions",
-      "source": "CoinDesk",
-      "published": "2026-08-10T20:20:06+00:00",
-      "published_ts": 1786393206,
-      "summary": "Bitwise's Ryan Rasmussen says investors are underestimating Circle as stablecoins expand and the company builds out its payments infrastructure.",
-      "categories": [
-        "war",
-        "crypto"
-      ],
-      "score": 9,
-      "impact": "high"
-    },
-    {
-      "title": "\u2018New level of danger\u2019: Drone incidents scare Europe amid Russia-Ukraine war",
-      "url": "https://www.aljazeera.com/news/2026/8/11/new-level-of-danger-drone-incidents-scare-europe-amid-russia-ukraine-war?traffic_source=rss",
-      "source": "Al Jazeera",
-      "published": "2026-08-11T11:30:48+00:00",
-      "published_ts": 1786447848,
-      "summary": "After a drone crashes in Germany, fears of suspected Russian operations rise across Europe.",
-      "categories": [
-        "war",
-        "risk",
-        "geopolitical"
-      ],
-      "score": 8,
-      "impact": "high"
-    },
-    {
-      "title": "Bitcoin stuck below $65,000 as Hormuz hopes evaporate, XRP close to dropping below $1",
-      "url": "https://www.coindesk.com/markets/2026/08/11/bitcoin-stuck-below-usd65-000-as-the-strait-of-hormuz-stalemate-and-strategy-s-selling-squeeze-the-market",
-      "source": "CoinDesk",
-      "published": "2026-08-11T10:48:08+00:00",
-      "published_ts": 1786445288,
-      "summary": "The Strait of Hormuz relief trade unraveled after Trump demanded 50 years of Iranian compensation, pushing oil back to $89 and leaving crypto and equities unchanged ahead of a pivotal CPI report.",
-      "categories": [
-        "macro_data",
-        "crypto"
-      ],
-      "score": 8,
-      "impact": "high"
-    },
-    {
-      "title": "XRP, ether lead crypto losses as traders eye $70,000 bitcoin next",
-      "url": "https://www.coindesk.com/markets/2026/08/11/xrp-ether-lead-crypto-losses-as-traders-eye-usd70-000-bitcoin-next",
-      "source": "CoinDesk",
-      "published": "2026-08-11T04:50:23+00:00",
-      "published_ts": 1786423823,
-      "summary": "Bitcoin failed to hold $65,000 for a fourth day as an oil rally revived inflation worries before Wednesday's U.S. price data.",
-      "categories": [
-        "macro_data",
-        "crypto"
-      ],
-      "score": 8,
-      "impact": "high"
-    },
-    {
-      "title": "Russia using North Korean missiles to strike Ukraine, Zelensky says",
-      "url": "https://www.bbc.co.uk/news/articles/c151dpzwnvxo?at_medium=RSS&at_campaign=rss",
-      "source": "BBC World",
-      "published": "2026-08-11T16:19:44+00:00",
-      "published_ts": 1786465184,
-      "summary": "Ukraine's president says strikes in Zaporizhzhia - which killed seven people - involved ballistic missiles from Russia's ally.",
-      "categories": [
-        "war",
-        "geopolitical"
-      ],
-      "score": 5,
-      "impact": "medium"
-    },
-    {
-      "title": "Houthis reportedly kill four in first deadly attack since start of Iran war",
-      "url": "https://www.bbc.co.uk/news/articles/ckg9wpmzmlno?at_medium=RSS&at_campaign=rss",
-      "source": "BBC World",
-      "published": "2026-08-11T15:41:13+00:00",
-      "published_ts": 1786462873,
-      "summary": "The attack was reportedly carried out by Iranian proxy on a small cargo ship, as tensions in region over the US-Iran conflict remain high.",
-      "categories": [
-        "war",
-        "geopolitical"
-      ],
-      "score": 5,
-      "impact": "medium"
-    },
-    {
-      "title": "Ukraine war sparked race for countries to build spy satellites, space-tech CEO says",
-      "url": "https://www.cnbc.com/2026/08/11/iceye-satellite-fleets-defense-europe.html",
+      "title": "India\u2019s inflation accelerates to 4.45% in July, raising hopes of a rate hike later this year",
+      "url": "https://www.cnbc.com/2026/08/12/india-inflation-july-rbi-rate-oil-prices.html",
       "source": "CNBC World",
-      "published": "2026-08-11T15:09:49+00:00",
-      "published_ts": 1786460989,
-      "summary": "Governments are ramping up satellite capabilities as space intelligence becomes increasingly critical to modern warfare.",
+      "published": "2026-08-12T14:09:27+00:00",
+      "published_ts": 1786543767,
+      "summary": "India's inflation rises for the ninth month in a row, raising the odds in favor of a rate hike later this year.",
+      "categories": [
+        "central_bank",
+        "macro_data",
+        "markets"
+      ],
+      "score": 9,
+      "impact": "high"
+    },
+    {
+      "title": "Bank of England to test stablecoin, digital currency use in cross-border finance",
+      "url": "https://www.coindesk.com/business/2026/08/12/bank-of-england-to-test-stablecoin-digital-currency-use-in-cross-border-finance",
+      "source": "CoinDesk",
+      "published": "2026-08-12T10:17:05+00:00",
+      "published_ts": 1786529825,
+      "summary": "The BOE-led Digital Pound Lab will test trade-finance interoperability, in which exporters receive stablecoins while importers settle in a potential digital pound.",
+      "categories": [
+        "central_bank",
+        "crypto"
+      ],
+      "score": 9,
+      "impact": "high"
+    },
+    {
+      "title": "US says helicopter fired missiles to disable ship breaking Iran blockade",
+      "url": "https://www.bbc.co.uk/news/articles/cvg8lyyyjedo?at_medium=RSS&at_campaign=rss",
+      "source": "BBC World",
+      "published": "2026-08-11T21:14:56+00:00",
+      "published_ts": 1786482896,
+      "summary": "US Central Command says its helicopter hit the engine room of a Panama-flagged cargo vessel in the Gulf of Oman.",
+      "categories": [
+        "war",
+        "sanctions",
+        "geopolitical"
+      ],
+      "score": 9,
+      "impact": "high"
+    },
+    {
+      "title": "U.S. CPI inflation slows to 3.4% as expected, bitcoin holds near $64,000",
+      "url": "https://www.coindesk.com/markets/2026/08/12/u-s-cpi-inflation-edges-lower-to-3-4-as-expected",
+      "source": "CoinDesk",
+      "published": "2026-08-12T12:44:39+00:00",
+      "published_ts": 1786538679,
+      "summary": "Both headline and core inflation matched economists\u2019 expectations, while bitcoin held near $64,000 and Treasury yields declined.",
+      "categories": [
+        "macro_data",
+        "crypto"
+      ],
+      "score": 8,
+      "impact": "high"
+    },
+    {
+      "title": "Bitcoin holds near $64,000 as U.S. inflation data looms, Harmony exploit rattles altcoins",
+      "url": "https://www.coindesk.com/markets/2026/08/12/bitcoin-holds-near-usd64-000-as-u-s-inflation-data-looms-harmony-exploit-rattles-altcoins",
+      "source": "CoinDesk",
+      "published": "2026-08-12T10:30:10+00:00",
+      "published_ts": 1786530610,
+      "summary": "Markets are quiet ahead of the July inflation print, with bitcoin little changed, oil near $90 and Harmony nursing a fresh exploit.",
+      "categories": [
+        "macro_data",
+        "crypto"
+      ],
+      "score": 8,
+      "impact": "high"
+    },
+    {
+      "title": "Here's what bitcoin and ether traders are doing ahead of the binary U.S. CPI print",
+      "url": "https://www.coindesk.com/business/2026/08/12/here-s-what-bitcoin-and-ether-traders-are-doing-ahead-of-the-binary-u-s-cpi-print",
+      "source": "CoinDesk",
+      "published": "2026-08-12T05:26:55+00:00",
+      "published_ts": 1786512415,
+      "summary": "Bitcoin and ether are stuck in a tight range ahead of the CPI. Here\u2019s how savvy traders are positioning for the pivotal release.",
+      "categories": [
+        "macro_data",
+        "crypto"
+      ],
+      "score": 8,
+      "impact": "high"
+    },
+    {
+      "title": "Bitcoin stuck as ETF inflows offset selling, but inflation data could spark a move",
+      "url": "https://www.coindesk.com/markets/2026/08/11/bitcoin-stuck-as-etf-inflows-offset-selling-but-inflation-data-could-spark-a-move",
+      "source": "CoinDesk",
+      "published": "2026-08-11T21:38:13+00:00",
+      "published_ts": 1786484293,
+      "summary": "Weeks of sideways trading have crushed volatility, leaving Wednesday\u2019s inflation report as the next potential catalyst, analysts said.",
+      "categories": [
+        "macro_data",
+        "crypto"
+      ],
+      "score": 8,
+      "impact": "high"
+    },
+    {
+      "title": "CoreWeave surges 16% on $2.58 billion revenue quarter as AI infrastructure demand eclipses crypto",
+      "url": "https://www.coindesk.com/markets/2026/08/12/coreweave-surges-16-on-usd2-58-billion-revenue-quarter-as-ai-infrastructure-demand-eclipses-crypto",
+      "source": "CoinDesk",
+      "published": "2026-08-12T09:41:52+00:00",
+      "published_ts": 1786527712,
+      "summary": "Booming AI demand sends CRWV up 16% and lifts IREN and CIFR as investors favor computing infrastructure over crypto.",
+      "categories": [
+        "crypto",
+        "risk"
+      ],
+      "score": 7,
+      "impact": "medium"
+    },
+    {
+      "title": "Houthi attack kills six in Red Sea; Trump slams Iran as hopes for Hormuz Strait deal dim",
+      "url": "https://www.cnbc.com/2026/08/12/us-iran-war-trump-hormuz-houthi-attack-blockade-.html",
+      "source": "CNBC World",
+      "published": "2026-08-12T15:27:38+00:00",
+      "published_ts": 1786548458,
+      "summary": "After the incidents in Bab el-Mandeb and the Gulf of Oman, President Donald Trump on Truth Social wrote of the Strait of Hormuz, \"I THINK WE WILL KEEP IT!\"",
       "categories": [
         "war",
         "markets"
@@ -174,26 +145,12 @@
       "impact": "medium"
     },
     {
-      "title": "Ousted Syrian dictator Bashar al-Assad sentenced to death in absentia",
-      "url": "https://www.bbc.co.uk/news/articles/ce34dkpnyg7o?at_medium=RSS&at_campaign=rss",
-      "source": "BBC World",
-      "published": "2026-08-11T14:50:10+00:00",
-      "published_ts": 1786459810,
-      "summary": "The ex-president is convicted of committing war crimes and crimes against humanity during the country's civil war.",
-      "categories": [
-        "war",
-        "geopolitical"
-      ],
-      "score": 5,
-      "impact": "medium"
-    },
-    {
-      "title": "War on Iran: Mojtaba Khamenei is in \u2018perfect health\u2019, Iran says",
-      "url": "https://www.aljazeera.com/video/newsfeed/2026/8/11/war-on-iran-mojtaba-khamenei-is-in-perfect-health-iran-says?traffic_source=rss",
+      "title": "As Strait of Hormuz transit drops, Trump again says US has \u2018control\u2019",
+      "url": "https://www.aljazeera.com/news/2026/8/12/as-strait-of-hormuz-transit-drops-trump-again-says-us-has-control?traffic_source=rss",
       "source": "Al Jazeera",
-      "published": "2026-08-11T14:30:23+00:00",
-      "published_ts": 1786458623,
-      "summary": "President Masoud Pezeshkian says Supreme Leader Mojtaba Khamenei is in \u2018perfect health\u2019.",
+      "published": "2026-08-12T15:07:41+00:00",
+      "published_ts": 1786547261,
+      "summary": "Just eight vessels crossed strait on Tuesday, down from 130 to 140 prior to the war as peace talks stall.",
       "categories": [
         "war",
         "geopolitical"
@@ -202,12 +159,12 @@
       "impact": "medium"
     },
     {
-      "title": "What are Saudi Arabia, Turkiye and Pakistan\u2019s joint military capabilities?",
-      "url": "https://www.aljazeera.com/news/2026/8/11/what-are-saudi-arabia-turkiye-and-pakistans-joint-military-capabilities?traffic_source=rss",
+      "title": "\u2018Burn in hell\u2019: Israeli settlers spread hate through graffiti, attacks",
+      "url": "https://www.aljazeera.com/features/2026/8/12/burn-in-hell-israeli-settlers-spread-hate-through-graffiti-attacks?traffic_source=rss",
       "source": "Al Jazeera",
-      "published": "2026-08-11T13:47:50+00:00",
-      "published_ts": 1786456070,
-      "summary": "The Mecca defence pact combines a top oil exporter, NATO&#039;s second-largest army and the only Muslim nuclear arsenal.",
+      "published": "2026-08-12T13:58:02+00:00",
+      "published_ts": 1786543082,
+      "summary": "Racist settler graffiti on West Bank homes and schools reveals a brazen ideological drive for Palestinian displacement.",
       "categories": [
         "war",
         "geopolitical"
@@ -216,12 +173,12 @@
       "impact": "medium"
     },
     {
-      "title": "Under Fire: Lebanon\u2019s first responders | Al Jazeera Originals",
-      "url": "https://www.aljazeera.com/video/al-jazeera-documentaries/2026/8/11/aje-onl-or_lbn_paramedics-110826?traffic_source=rss",
+      "title": "Why has North Korea fired a missile ahead of US-South Korea drills?",
+      "url": "https://www.aljazeera.com/news/2026/8/12/why-has-north-korea-fired-a-missile-ahead-of-us-south-korea-drills?traffic_source=rss",
       "source": "Al Jazeera",
-      "published": "2026-08-11T13:46:44+00:00",
-      "published_ts": 1786456004,
-      "summary": "First responders in Lebanon risk their lives to save others even as Israeli attacks intensify around them.",
+      "published": "2026-08-12T13:10:14+00:00",
+      "published_ts": 1786540214,
+      "summary": "Pyongyang has repeatedly condemned US\u2013South Korea military drills, claiming they are a &#039;rehearsal for invasion&#039;.",
       "categories": [
         "war",
         "geopolitical"
@@ -230,26 +187,12 @@
       "impact": "medium"
     },
     {
-      "title": "What\u2019s behind Iran\u2019s new military appointments and what do they indicate?",
-      "url": "https://www.aljazeera.com/news/2026/8/11/whats-behind-irans-new-military-appointments-and-what-do-they-indicate?traffic_source=rss",
-      "source": "Al Jazeera",
-      "published": "2026-08-11T13:28:53+00:00",
-      "published_ts": 1786454933,
-      "summary": "Observers say the nominations empower the hardline old guard, prioritise loyalty over military innovation.",
-      "categories": [
-        "war",
-        "geopolitical"
-      ],
-      "score": 5,
-      "impact": "medium"
-    },
-    {
-      "title": "Zelenskyy warns Putin is preparing for escalation by bringing in North Korean military equipment",
-      "url": "https://www.cnbc.com/2026/08/11/ukraine-war-zelenskyy-russia-putin-north-korea.html",
+      "title": "'Tougher times ahead': Don't expect blowout returns to continue, CEO of $2.3 trillion fund warns after record first half",
+      "url": "https://www.cnbc.com/2026/08/12/norway-sovereign-wealth-tangen-nbim.html",
       "source": "CNBC World",
-      "published": "2026-08-11T12:55:25+00:00",
-      "published_ts": 1786452925,
-      "summary": "His comments come shortly after deadly Russian attacks on cities across Ukraine overnight.",
+      "published": "2026-08-12T12:23:06+00:00",
+      "published_ts": 1786537386,
+      "summary": "Norway's sovereign wealth fund, the largest of its kind, is an investor in around 1.5% of the world's listed companies.",
       "categories": [
         "war",
         "markets"
@@ -258,30 +201,127 @@
       "impact": "medium"
     },
     {
-      "title": "Iran, US set new conditions during Hormuz talks: What does this mean?",
-      "url": "https://www.aljazeera.com/news/2026/8/11/iran-us-set-new-conditions-during-hormuz-talks-what-does-this-mean?traffic_source=rss",
-      "source": "Al Jazeera",
-      "published": "2026-08-11T12:27:15+00:00",
-      "published_ts": 1786451235,
-      "summary": "Oil prices surge as talks stall over competing demands, hampering prospects for reopening crucial strait.",
+      "title": "Scorching heat is straining Europe's nuclear power supplies \u2014 and prompting drastic measures",
+      "url": "https://www.cnbc.com/2026/08/12/europe-heat-drought-nuclear-power.html",
+      "source": "CNBC World",
+      "published": "2026-08-12T11:55:43+00:00",
+      "published_ts": 1786535743,
+      "summary": "Heat and drought are curbing nuclear output across Europe, with Romania facing a possible reactor shutdown and France reducing generation.",
       "categories": [
-        "risk",
-        "energy",
+        "war",
+        "markets"
+      ],
+      "score": 5,
+      "impact": "medium"
+    },
+    {
+      "title": "FlightAware drops Kalshi lawsuit over a market niche that data shows it never took off",
+      "url": "https://www.coindesk.com/policy/2026/08/12/flightaware-drops-kalshi-lawsuit-over-a-market-niche-that-data-shows-it-never-took-off",
+      "source": "CoinDesk",
+      "published": "2026-08-12T11:44:10+00:00",
+      "published_ts": 1786535050,
+      "summary": "The flight-tracking company voluntarily dismissed, without prejudice and without sharing a motive for its decision. However, the flight cancellation market never took off with Kalshi users.",
+      "categories": [
+        "war",
+        "crypto"
+      ],
+      "score": 5,
+      "impact": "medium"
+    },
+    {
+      "title": "Putin warns of tit-for-tat seizures of European vessels",
+      "url": "https://www.aljazeera.com/news/2026/8/12/putin-warns-of-tit-for-tat-seizures-of-european-vessels?traffic_source=rss",
+      "source": "Al Jazeera",
+      "published": "2026-08-12T11:11:26+00:00",
+      "published_ts": 1786533086,
+      "summary": "If European states seize vessels with Russian cargo, Moscow will respond in kind &#039;wherever necessary&#039;, says Putin.",
+      "categories": [
+        "war",
         "geopolitical"
       ],
       "score": 5,
       "impact": "medium"
     },
     {
-      "title": "FlightAware sues Kalshi over bets on flight cancellations",
-      "url": "https://www.coindesk.com/policy/2026/08/11/kalshi-faces-new-lawsuit-flightaware-accuses-it-of-using-its-data-for-flight-cancellation-betting",
+      "title": "\u2018The hardest mission of my life\u2019: A rescuer\u2019s loss in the Lebanon War",
+      "url": "https://www.aljazeera.com/video/al-jazeera-originals/2026/8/12/aje-onl-or_leb_paramedics_teaser-120826?traffic_source=rss",
+      "source": "Al Jazeera",
+      "published": "2026-08-12T10:02:16+00:00",
+      "published_ts": 1786528936,
+      "summary": "A Lebanon rescuer\u2019s work is shaped by the daughter he lost in an Israeli attack on his station.",
+      "categories": [
+        "war",
+        "geopolitical"
+      ],
+      "score": 5,
+      "impact": "medium"
+    },
+    {
+      "title": "Fidelity moves to add staking, quarterly payouts to near $900 million ether ETF",
+      "url": "https://www.coindesk.com/business/2026/08/12/fidelity-moves-to-add-staking-quarterly-payouts-to-near-usd900-million-ether-etf",
       "source": "CoinDesk",
-      "published": "2026-08-11T10:34:17+00:00",
-      "published_ts": 1786444457,
-      "summary": "The flight-tracking company alleges Kalshi used its data and trademark without permission to settle contracts on canceled flights.",
+      "published": "2026-08-12T09:30:20+00:00",
+      "published_ts": 1786527020,
+      "summary": "The fund would keep 85% of gross staking rewards, with the remaining 15% going to service providers.",
       "categories": [
         "war",
         "crypto"
+      ],
+      "score": 5,
+      "impact": "medium"
+    },
+    {
+      "title": "Wildberries under fire: Why is Ukraine targeting a Russian retail giant?",
+      "url": "https://www.aljazeera.com/news/2026/8/12/ukraines-strikes-on-russias-wildberries-arent-about-the-front-line?traffic_source=rss",
+      "source": "Al Jazeera",
+      "published": "2026-08-12T08:19:05+00:00",
+      "published_ts": 1786522745,
+      "summary": "The company akin to Amazon has come under heavy attacks in Russia as Kyiv tries to bring the sense of war home.",
+      "categories": [
+        "war",
+        "geopolitical"
+      ],
+      "score": 5,
+      "impact": "medium"
+    },
+    {
+      "title": "Harmony\u2019s ONE dives 40% after an attack appears to mint tokens equal to quarter of supply",
+      "url": "https://www.coindesk.com/markets/2026/08/12/harmony-s-one-falls-26-after-attacker-allegedly-mints-4-billion-tokens",
+      "source": "CoinDesk",
+      "published": "2026-08-12T05:18:40+00:00",
+      "published_ts": 1786511920,
+      "summary": "Harmony said in Asian morning hours it is working with exchanges to freeze funds and preparing a software fix.",
+      "categories": [
+        "war",
+        "crypto"
+      ],
+      "score": 5,
+      "impact": "medium"
+    },
+    {
+      "title": "XRP bridge drained for $200,000 after software mistook fake deposits for real ones",
+      "url": "https://www.coindesk.com/tech/2026/08/12/xrp-bridge-drained-for-usd200-000-after-software-mistook-fake-deposits-for-real-ones",
+      "source": "CoinDesk",
+      "published": "2026-08-12T04:33:25+00:00",
+      "published_ts": 1786509205,
+      "summary": "An attacker created unbacked XRP on another blockchain, then exchanged it for real XRP held in reserve. The bridge has been halted and its operator has filed a complaint with the FBI.",
+      "categories": [
+        "war",
+        "crypto"
+      ],
+      "score": 5,
+      "impact": "medium"
+    },
+    {
+      "title": "Decoys to hide presidents are common - but elaborate Trump ruse was different level",
+      "url": "https://www.bbc.co.uk/news/articles/c9d84874dzjo?at_medium=RSS&at_campaign=rss",
+      "source": "BBC World",
+      "published": "2026-08-11T20:39:42+00:00",
+      "published_ts": 1786480782,
+      "summary": "Deceptions of varying complexity are often used to thwart potential threats, former Secret Service agents say.",
+      "categories": [
+        "war",
+        "geopolitical"
       ],
       "score": 5,
       "impact": "medium"
@@ -301,55 +341,12 @@
       "impact": "medium"
     },
     {
-      "title": "Libyan authorities battle big blaze at major oil refinery",
-      "url": "https://www.bbc.co.uk/news/articles/cp308z9pl30o?at_medium=RSS&at_campaign=rss",
-      "source": "BBC World",
-      "published": "2026-08-11T08:28:24+00:00",
-      "published_ts": 1786436904,
-      "summary": "Monday's drone strike on the Zawiya refinery was the third such incident in two days.",
-      "categories": [
-        "war",
-        "geopolitical"
-      ],
-      "score": 5,
-      "impact": "medium"
-    },
-    {
-      "title": "CNBC Daily Open: Markets caught between oil jitters and AI optimism",
-      "url": "https://www.cnbc.com/2026/08/11/cnbc-daily-open-oil-markets-us-iran-deal.html",
+      "title": "AI\u2019s costly build-out complicates the Fed\u2019s inflation fight",
+      "url": "https://www.cnbc.com/2026/08/12/ais-costly-buildout-complicates-the-feds-inflation-fight.html",
       "source": "CNBC World",
-      "published": "2026-08-11T01:19:11+00:00",
-      "published_ts": 1786411151,
-      "summary": "The world watches oil prices surge past $82 per barrel and the U.S. Strategic Petroleum Reserve dip to its lowest level since 1983.",
-      "categories": [
-        "risk",
-        "energy",
-        "markets"
-      ],
-      "score": 5,
-      "impact": "medium"
-    },
-    {
-      "title": "Watch: Tide of rubbish blankets Philippines river",
-      "url": "https://www.bbc.co.uk/news/videos/c5y3vzvnnkro?at_medium=RSS&at_campaign=rss",
-      "source": "BBC World",
-      "published": "2026-08-11T16:10:55+00:00",
-      "published_ts": 1786464655,
-      "summary": "Workers in Manila waded through the river, collecting waste that washed in during days of heavy rain.",
-      "categories": [
-        "macro_data",
-        "geopolitical"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "Treasury yields are little changed as investors await inflation data",
-      "url": "https://www.cnbc.com/2026/08/11/treasury-yields-up-as-oil-prices-jump-investors-await-inflation-data-.html",
-      "source": "CNBC World",
-      "published": "2026-08-11T15:55:06+00:00",
-      "published_ts": 1786463706,
-      "summary": "U.S. Treasury yields edged higher Tuesday as investors await July's inflation data print amid ongoing Iran tensions.",
+      "published": "2026-08-12T15:23:12+00:00",
+      "published_ts": 1786548192,
+      "summary": "Tech leaders say AI will drive down costs. But slow corporate adoption and the data center build-out create inflation pressures that complicate the Fed\u2019s job.",
       "categories": [
         "macro_data",
         "markets"
@@ -358,12 +355,26 @@
       "impact": "medium"
     },
     {
-      "title": "If crypto goes back to the congressional drawing board, 3 Democrat women loom large",
-      "url": "https://www.coindesk.com/news-analysis/2026/08/11/if-crypto-goes-back-to-the-congressional-drawing-board-3-democrat-women-loom-large",
+      "title": "US consumer inflation slows in July as energy prices briefly retreat",
+      "url": "https://www.aljazeera.com/economy/2026/8/12/us-consumer-inflation-slows-in-july-as-energy-prices-briefly-retreat?traffic_source=rss",
+      "source": "Al Jazeera",
+      "published": "2026-08-12T15:08:31+00:00",
+      "published_ts": 1786547311,
+      "summary": "Energy prices declined 1.5 percent in July but remain 14.7 percent higher compared with a year ago.",
+      "categories": [
+        "macro_data",
+        "geopolitical"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
+      "title": "Miden bets on privacy stablecoins with introduction of USDCx",
+      "url": "https://www.coindesk.com/tech/2026/08/12/miden-bets-on-privacy-stablecoins-with-introduction-of-usdcx",
       "source": "CoinDesk",
-      "published": "2026-08-11T14:40:15+00:00",
-      "published_ts": 1786459215,
-      "summary": "The Democrats who may get a bigger say in future crypto legislative efforts are familiar figures, and they generally look at digital assets with distrust.",
+      "published": "2026-08-12T15:00:00+00:00",
+      "published_ts": 1786546800,
+      "summary": "USDCx will let users transact without publicly exposing balances, counterparties or transaction histories, while allowing selective disclosure for compliance.",
       "categories": [
         "crypto"
       ],
@@ -371,12 +382,12 @@
       "impact": "medium"
     },
     {
-      "title": "Crypto-friendly bank Erebor in talks to raise $1.5 billion at $9.5 billion valuation: FT",
-      "url": "https://www.coindesk.com/business/2026/08/11/crypto-friendly-bank-erebor-in-talks-to-raise-usd1-5-billion-at-usd9-5-billion-valuation-ft",
+      "title": "Crypto Long & Short:",
+      "url": "https://www.coindesk.com/coindesk-indices/2026/08/12/crypto-long-and-short",
       "source": "CoinDesk",
-      "published": "2026-08-11T14:39:12+00:00",
-      "published_ts": 1786459152,
-      "summary": "Total deposits grew from $1.1 billion in March to $4.6 billion by July, driven by clients in crypto, AI and defense.",
+      "published": "2026-08-12T14:51:12+00:00",
+      "published_ts": 1786546272,
+      "summary": "In this week's Crypto Long & Short, LMAX Group's Jenna Wright argues that markets break down not from too little capital but from capital stuck in the wrong place, trapped by settlement cycles while risk reprices by the minute. She makes the case that stablecoins and tokenization are quietly becoming the plumbing that lets money move as fast as the risk it supports.",
       "categories": [
         "crypto"
       ],
@@ -384,12 +395,40 @@
       "impact": "medium"
     },
     {
-      "title": "Pok\u00e9mon cards are becoming multibillion dollar market. Crypto wants to fix how they trade",
-      "url": "https://www.coindesk.com/business/2026/08/11/pokemon-cards-are-becoming-multibillion-dollar-market-crypto-wants-to-fix-how-they-trade",
+      "title": "US inflation eases as food and fuel costs cool",
+      "url": "https://www.bbc.co.uk/news/articles/c0qv2nn1gpeo?at_medium=RSS&at_campaign=rss",
+      "source": "BBC World",
+      "published": "2026-08-12T14:09:48+00:00",
+      "published_ts": 1786543788,
+      "summary": "Annual US inflation dipped to 3.4% in July, with food costs slowing and housing keeping prices slightly higher.",
+      "categories": [
+        "macro_data",
+        "geopolitical"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
+      "title": "An inflation report Wednesday should be a big deal for the Fed. Here's what to expect",
+      "url": "https://www.cnbc.com/2026/08/11/an-inflation-report-wednesday-should-be-a-big-deal-for-the-fed-heres-what-to-expect.html",
+      "source": "CNBC Economy",
+      "published": "2026-08-12T14:04:06+00:00",
+      "published_ts": 1786543446,
+      "summary": "The consumer price index is expected to show only a modest increase for July.",
+      "categories": [
+        "macro_data",
+        "macro"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
+      "title": "Standard Chartered-led Anchorpoint launches Hong Kong dollar stablecoin",
+      "url": "https://www.coindesk.com/business/2026/08/12/standard-chartered-led-anchorpoint-launches-hong-kong-dollar-stablecoin",
       "source": "CoinDesk",
-      "published": "2026-08-11T13:06:07+00:00",
-      "published_ts": 1786453567,
-      "summary": "Collectors are spending millions on trading cards, while blockchain startups are turning physical Pok\u00e9mon cards into digital assets. The harder task is creating enough liquidity to compete with established marketplaces.",
+      "published": "2026-08-12T13:13:49+00:00",
+      "published_ts": 1786540429,
+      "summary": "HashKey Exchange and OSL Group are now authorized distributors, enabling institutional and professional investors to mint and redeem HKDAP tokens.",
       "categories": [
         "crypto"
       ],
@@ -397,12 +436,26 @@
       "impact": "medium"
     },
     {
-      "title": "MoneyGram expands on Solana with global crypto-to-cash service",
-      "url": "https://www.coindesk.com/business/2026/08/10/moneygram-expands-on-solana-with-global-crypto-to-cash-service",
+      "title": "Egyptian student livestreams his kidnapping",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/8/12/egyptian-student-livestreams-his-kidnapping?traffic_source=rss",
+      "source": "Al Jazeera",
+      "published": "2026-08-12T12:36:01+00:00",
+      "published_ts": 1786538161,
+      "summary": "Egyptian student livestreams his kidnapping",
+      "categories": [
+        "macro_data",
+        "geopolitical"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
+      "title": "Russia moves to restrict retail crypto trading to bitcoin, ether and USDT",
+      "url": "https://www.coindesk.com/policy/2026/08/12/russia-moves-to-restrict-retail-crypto-trading-to-bitcoin-ether-and-usdt",
       "source": "CoinDesk",
-      "published": "2026-08-11T12:02:22+00:00",
-      "published_ts": 1786449742,
-      "summary": "Wallets and apps on Solana can now tap MoneyGram's global network to move between digital assets and local currencies.",
+      "published": "2026-08-12T11:19:32+00:00",
+      "published_ts": 1786533572,
+      "summary": "Non-qualified investors face a 300,000-ruble (approx. $3,600) annual purchase limit per intermediary, while qualified investors have no cap.",
       "categories": [
         "crypto"
       ],
@@ -410,12 +463,26 @@
       "impact": "medium"
     },
     {
-      "title": "Australian watchdog suspends Cryptolink, forcing 96 ATMs offline",
-      "url": "https://www.coindesk.com/policy/2026/08/11/australian-watchdog-suspends-cryptolink-forcing-96-atms-offline",
+      "title": "XRP trading could get spicy after CPI report as futures bets hit highest since October",
+      "url": "https://www.coindesk.com/daybook-us/2026/08/12/xrp-trading-could-get-spicy-after-cpi-report-as-futures-bets-hit-highest-since-october",
       "source": "CoinDesk",
-      "published": "2026-08-11T11:45:47+00:00",
-      "published_ts": 1786448747,
-      "summary": "The regulator cited missing transaction reports and the company\u2019s failure to respond to an information request.",
+      "published": "2026-08-12T11:15:00+00:00",
+      "published_ts": 1786533300,
+      "summary": "Your day-ahead look for Aug. 12, 2026",
+      "categories": [
+        "macro_data",
+        "crypto"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
+      "title": "One overlooked group has added $1.78 billion of selling pressure to bitcoin market",
+      "url": "https://www.coindesk.com/markets/2026/08/12/one-overlooked-group-has-added-usd1-78-billion-of-selling-pressure-to-bitcoin-market",
+      "source": "CoinDesk",
+      "published": "2026-08-12T08:53:23+00:00",
+      "published_ts": 1786524803,
+      "summary": "Public miners are an underappreciated source of supply hitting the market right at the margin.",
       "categories": [
         "crypto"
       ],
@@ -423,12 +490,12 @@
       "impact": "medium"
     },
     {
-      "title": "Ravencoin, a blockchain built from Bitcoin\u2019s code, could roll back four days of transactions",
-      "url": "https://www.coindesk.com/tech/2026/08/11/ravencoin-could-roll-back-four-days-of-transactions-after-critical-block-flaw",
+      "title": "Crypto.com rolls out tokenized stock derivatives as crypto exchanges push into equities",
+      "url": "https://www.coindesk.com/business/2026/08/12/crypto-com-rolls-out-tokenized-stock-derivatives-as-crypto-exchanges-push-into-equities",
       "source": "CoinDesk",
-      "published": "2026-08-11T11:24:56+00:00",
-      "published_ts": 1786447496,
-      "summary": "Two mining pools controlling most of Ravencoin\u2019s hashpower are building a replacement chain from before Friday\u2019s first invalid block, putting deposits, withdrawals and payments made since then at risk of reversal.",
+      "published": "2026-08-12T06:00:00+00:00",
+      "published_ts": 1786514400,
+      "summary": "The exchange is joining a tokenized stock market that has grown 600% in a year, though its products offer price exposure rather than share ownership.",
       "categories": [
         "crypto"
       ],
@@ -436,12 +503,26 @@
       "impact": "medium"
     },
     {
-      "title": "Coinbase picks Abu Dhabi for its global tokenized asset push",
-      "url": "https://www.coindesk.com/business/2026/08/11/coinbase-picks-abu-dhabi-for-its-global-tokenized-asset-push",
+      "title": "Google\u2019s new AI boss inherits a race to catch OpenAI and Anthropic",
+      "url": "https://www.cnbc.com/2026/08/12/google-deepmind-koray-kavukcuoglu.html",
+      "source": "CNBC World",
+      "published": "2026-08-12T05:00:01+00:00",
+      "published_ts": 1786510801,
+      "summary": "Koray Kavukcuoglu is taking charge of Google DeepMind as it tries to keep Gemini competitive with OpenAI and Anthropic.",
+      "categories": [
+        "macro_data",
+        "markets"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
+      "title": "Dogecoin and BNB lead majors higher as bitcoin slips near $63,700",
+      "url": "https://www.coindesk.com/markets/2026/08/12/dogecoin-and-bnb-lead-majors-higher-as-bitcoin-slips-near-usd63-700",
       "source": "CoinDesk",
-      "published": "2026-08-11T11:23:25+00:00",
-      "published_ts": 1786447405,
-      "summary": "The crypto exchange said it secured regulatory approval to offer tokenized securities from Abu Dhabi as the emirate deepens its push into onchain finance.",
+      "published": "2026-08-12T04:53:46+00:00",
+      "published_ts": 1786510426,
+      "summary": "DOGE gained almost 3% to 7 cents and BNB 2% to $614, while bitcoin was the only major in the red on both the day and the week.",
       "categories": [
         "crypto"
       ],
@@ -449,103 +530,26 @@
       "impact": "medium"
     },
     {
-      "title": "When safe assets compete with risk. Lessons from the 1960s\u201390s for bitcoin and stocks.",
-      "url": "https://www.coindesk.com/daybook-us/2026/08/11/when-safe-assets-compete-with-risk-lessons-from-the-1960s-90s-for-bitcoin-and-stocks",
+      "title": "Brazil's largest lender Ita\u00fa is stepping deeper into the tokenization",
+      "url": "https://www.coindesk.com/business/2026/08/11/brazil-s-largest-lender-itau-is-stepping-deeper-into-the-tokenization",
       "source": "CoinDesk",
-      "published": "2026-08-11T11:13:55+00:00",
-      "published_ts": 1786446835,
-      "summary": "Your day-ahead look for Aug. 11 2026",
+      "published": "2026-08-11T19:06:23+00:00",
+      "published_ts": 1786475183,
+      "summary": "Ita\u00fa Unibanco said it teamed up with tokenization specialist OpenAssets to test tokenized bonds and funds in a pilot run by Brazil's financial watchdog ANBIMA.",
       "categories": [
+        "macro_data",
         "crypto"
       ],
       "score": 4,
       "impact": "medium"
     },
     {
-      "title": "Bitcoin-backed lending is entering its institutional era: Two Prime",
-      "url": "https://www.coindesk.com/markets/2026/08/11/bitcoin-backed-lending-is-entering-its-institutional-era-two-prime",
+      "title": "EToro reports second quarter crypto loss even as total profit beats estimates",
+      "url": "https://www.coindesk.com/business/2026/08/11/digital-broker-etoro-reports-q2-crypto-revenue-dropped-120-compared-to-2025",
       "source": "CoinDesk",
-      "published": "2026-08-11T11:04:28+00:00",
-      "published_ts": 1786446268,
-      "summary": "Public companies are increasingly borrowing against their bitcoin holdings to fund acquisitions and capital spending without selling the asset.",
-      "categories": [
-        "crypto"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "Live updates: Bitcoin falls to $63,500; Anthropic to watermark Claude's AI content after EU regulations",
-      "url": "https://www.coindesk.com/tech/2026/08/11/live-updates-bitcoin-slips-as-corporate-btc-enthusiasm-moves-to-ai",
-      "source": "CoinDesk",
-      "published": "2026-08-11T10:34:52+00:00",
-      "published_ts": 1786444492,
-      "summary": "FxPro\u2019s Alex Kuptsikevich said companies that helped give bitcoin institutional cover are now chasing AI data centers, putting BTC\u2019s flat 50-day moving average in focus.",
-      "categories": [
-        "crypto"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "Luke Dashjr removed as Bitcoin BIP editor after controversial BIP-110 fork stalls",
-      "url": "https://www.coindesk.com/tech/2026/08/11/luke-dashjr-removed-as-bitcoin-bip-editor-after-controversial-bip-110-fork-stalls",
-      "source": "CoinDesk",
-      "published": "2026-08-11T10:28:19+00:00",
-      "published_ts": 1786444099,
-      "summary": "Dashjr said he is taking a sabbatical from his role as chair and chief technology officer of mining pool Ocean.",
-      "categories": [
-        "crypto"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "Nvidia\u2019s $500 billion AI infrastructure push leaves crypto compute further behind",
-      "url": "https://www.coindesk.com/tech/2026/08/11/nvidia-wants-to-turn-its-ai-chips-into-an-investable-asset-class",
-      "source": "CoinDesk",
-      "published": "2026-08-11T10:10:36+00:00",
-      "published_ts": 1786443036,
-      "summary": "Nvidia has signed memorandums of understanding with six major Wall Street firms to establish \"AI compute\" as a bankable infrastructure asset.",
-      "categories": [
-        "crypto"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "UK lawmakers question lenders over lack of banking for the country\u2019s crypto firms",
-      "url": "https://www.coindesk.com/policy/2026/08/11/uk-lawmakers-question-lenders-over-lack-of-banking-for-the-country-s-crypto-firms",
-      "source": "CoinDesk",
-      "published": "2026-08-11T10:06:39+00:00",
-      "published_ts": 1786442799,
-      "summary": "The U.K.\u2019s Crypto and Digital Assets All-Party Parliamentary Group asked banks to explain their approach to providing banking services to crypto and digital asset businesses.",
-      "categories": [
-        "crypto"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "Bitcoin\u2019s BIP-110 fork is 300 blocks behind BTC and six years from fixing itself",
-      "url": "https://www.coindesk.com/tech/2026/08/11/bitcoin-s-bip-110-fork-is-300-blocks-behind-btc-and-six-years-from-fixing-itself",
-      "source": "CoinDesk",
-      "published": "2026-08-11T05:26:37+00:00",
-      "published_ts": 1786425997,
-      "summary": "The breakaway chain has produced two blocks since splitting off on Saturday. Bitcoin has produced more than 300 in the same stretch.",
-      "categories": [
-        "crypto"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "U.S. SEC sets meeting to propose Reg Crypto to support certain digital assets offerings",
-      "url": "https://www.coindesk.com/policy/2026/08/11/u-s-sec-sets-meeting-to-propose-reg-crypto-to-support-certain-digital-assets-offerings",
-      "source": "CoinDesk",
-      "published": "2026-08-11T04:07:48+00:00",
-      "published_ts": 1786421268,
-      "summary": "The Securities and Exchange Commission will vote this week to start its first major crypto rulemaking process.",
+      "published": "2026-08-11T17:12:11+00:00",
+      "published_ts": 1786468331,
+      "summary": "The trading platform\u2019s gross crypto revenue fell to $1.35 billion in the second quarter. It also agreed to buy U.S. brokerage TradeZero for up to $231 million.",
       "categories": [
         "crypto"
       ],
@@ -562,7 +566,7 @@
       "date_ts": 1786537800,
       "forecast": "0.2%",
       "previous": "0.0%",
-      "upcoming": true
+      "upcoming": false
     },
     {
       "title": "Core CPI y/y",
@@ -572,7 +576,7 @@
       "date_ts": 1786537800,
       "forecast": "2.5%",
       "previous": "2.6%",
-      "upcoming": true
+      "upcoming": false
     },
     {
       "title": "CPI m/m",
@@ -582,7 +586,7 @@
       "date_ts": 1786537800,
       "forecast": "0.1%",
       "previous": "-0.4%",
-      "upcoming": true
+      "upcoming": false
     },
     {
       "title": "CPI y/y",
@@ -592,7 +596,7 @@
       "date_ts": 1786537800,
       "forecast": "3.4%",
       "previous": "3.5%",
-      "upcoming": true
+      "upcoming": false
     },
     {
       "title": "Inflation Expectations q/q",
@@ -610,7 +614,7 @@
       "impact": "high",
       "date": "2026-08-13T06:00:00+00:00",
       "date_ts": 1786600800,
-      "forecast": "-0.1%",
+      "forecast": "0.0%",
       "previous": "0.1%",
       "upcoming": true
     },
@@ -650,8 +654,58 @@
       "impact": "medium",
       "date": "2026-08-13T12:30:00+00:00",
       "date_ts": 1786624200,
-      "forecast": "203K",
+      "forecast": "202K",
       "previous": "199K",
+      "upcoming": true
+    },
+    {
+      "title": "RBA Gov Bullock Speaks",
+      "country": "AUD",
+      "impact": "medium",
+      "date": "2026-08-13T23:30:00+00:00",
+      "date_ts": 1786663800,
+      "forecast": "",
+      "previous": "",
+      "upcoming": true
+    },
+    {
+      "title": "Core Retail Sales m/m",
+      "country": "USD",
+      "impact": "medium",
+      "date": "2026-08-14T12:30:00+00:00",
+      "date_ts": 1786710600,
+      "forecast": "0.2%",
+      "previous": "-0.2%",
+      "upcoming": true
+    },
+    {
+      "title": "Retail Sales m/m",
+      "country": "USD",
+      "impact": "medium",
+      "date": "2026-08-14T12:30:00+00:00",
+      "date_ts": 1786710600,
+      "forecast": "0.1%",
+      "previous": "0.2%",
+      "upcoming": true
+    },
+    {
+      "title": "Prelim UoM Consumer Sentiment",
+      "country": "USD",
+      "impact": "medium",
+      "date": "2026-08-14T14:00:00+00:00",
+      "date_ts": 1786716000,
+      "forecast": "54.7",
+      "previous": "54.4",
+      "upcoming": true
+    },
+    {
+      "title": "Prelim UoM Inflation Expectations",
+      "country": "USD",
+      "impact": "medium",
+      "date": "2026-08-14T14:00:00+00:00",
+      "date_ts": 1786716000,
+      "forecast": "",
+      "previous": "4.2%",
       "upcoming": true
     }
   ],

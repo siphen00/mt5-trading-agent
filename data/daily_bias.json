@@ -1,42 +1,42 @@
 {
-  "bias": "bearish",
-  "confidence": 38,
-  "score": -3.0,
-  "rationale": "Bias is BEARISH (38% confidence). BTC at 63,909, -1.44% on the day. Supporting it: lower high (65,695 \u2192 65,356) and lower low (62,628 \u2192 62,192). Confidence is low, so this is a lean rather than a conviction call.",
+  "bias": "ranging",
+  "confidence": 25,
+  "score": -2.0,
+  "rationale": "Bias is RANGING (25% confidence) \u2014 signals conflict. BTC at 63,533, -0.59% on the day. Cutting against it: 4-hour structure is bearish \u2014 lower high (65,438 \u2192 64,434) and lower low (63,732 \u2192 63,161). With structure and confluence disagreeing, treat breakouts sceptically and expect mean reversion until one side resolves.",
   "factors": [
     {
       "name": "Daily structure",
-      "bias": "bearish",
-      "detail": "lower high (65,695 \u2192 65,356) and lower low (62,628 \u2192 62,192)",
+      "bias": "ranging",
+      "detail": "expanding range \u2014 higher high but also lower low",
       "weight": 3.0
     },
     {
       "name": "4-hour structure",
-      "bias": "ranging",
-      "detail": "expanding range \u2014 higher high but also lower low",
+      "bias": "bearish",
+      "detail": "lower high (65,438 \u2192 64,434) and lower low (63,732 \u2192 63,161)",
       "weight": 2.0
     },
     {
       "name": "Moving averages",
       "bias": "ranging",
-      "detail": "price 63,909 tangled in the moving averages (1 above, 2 below)",
+      "detail": "price 63,533 tangled in the moving averages (1 above, 2 below)",
       "weight": 2.0
     },
     {
       "name": "RSI",
       "bias": "ranging",
-      "detail": "RSI 48 is neutral",
+      "detail": "RSI 46 is neutral",
       "weight": 1.0
     }
   ],
   "levels": {
-    "price": 63909.45,
+    "price": 63533.03,
     "resistance": 64248.73,
-    "support": 63700.86,
-    "sma20": 64249.92,
-    "sma50": 63325.55,
-    "sma200": 70000.33,
-    "day_change_pct": -1.44
+    "support": 63012.04,
+    "sma20": 64122.76,
+    "sma50": 63317.27,
+    "sma200": 69870.58,
+    "day_change_pct": -0.59
   },
-  "updated_at": "2026-08-11T16:44:44.035089+00:00"
+  "updated_at": "2026-08-12T15:50:28.905438+00:00"
 }
