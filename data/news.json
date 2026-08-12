@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-12T15:55:31.353216+00:00",
+  "updated_at": "2026-08-12T16:00:39.840860+00:00",
   "items": [
     {
       "title": "Live updates: AI stocks surge on Q2 beats, bitcoin falls below $64,000 as inflation hits estimates",
@@ -128,6 +128,34 @@
         "risk"
       ],
       "score": 7,
+      "impact": "medium"
+    },
+    {
+      "title": "Is Russia\u2019s economy cracking despite the Iran war windfall?",
+      "url": "https://www.aljazeera.com/video/counting-the-cost/2026/8/12/is-russias-economy-cracking-despite-the-iran-war-windfall?traffic_source=rss",
+      "source": "Al Jazeera",
+      "published": "2026-08-12T15:36:33+00:00",
+      "published_ts": 1786548993,
+      "summary": "A widening deficit and Ukrainian strikes are testing Russia&#039;s economy, even as war in the Middle East lifts oil revenue.",
+      "categories": [
+        "war",
+        "geopolitical"
+      ],
+      "score": 5,
+      "impact": "medium"
+    },
+    {
+      "title": "Iran remains defiant as it vows to fight US until demands met",
+      "url": "https://www.aljazeera.com/news/2026/8/12/iran-remains-defiant-as-it-vows-to-fight-us-until-demands-met?traffic_source=rss",
+      "source": "Al Jazeera",
+      "published": "2026-08-12T15:29:20+00:00",
+      "published_ts": 1786548560,
+      "summary": "IRGC advisers say Iran has replaced more missiles and drones than it used, and cite falling US munition stocks.",
+      "categories": [
+        "war",
+        "geopolitical"
+      ],
+      "score": 5,
       "impact": "medium"
     },
     {
@@ -266,20 +294,6 @@
       "categories": [
         "war",
         "crypto"
-      ],
-      "score": 5,
-      "impact": "medium"
-    },
-    {
-      "title": "Wildberries under fire: Why is Ukraine targeting a Russian retail giant?",
-      "url": "https://www.aljazeera.com/news/2026/8/12/ukraines-strikes-on-russias-wildberries-arent-about-the-front-line?traffic_source=rss",
-      "source": "Al Jazeera",
-      "published": "2026-08-12T08:19:05+00:00",
-      "published_ts": 1786522745,
-      "summary": "The company akin to Amazon has come under heavy attacks in Russia as Kyiv tries to bring the sense of war home.",
-      "categories": [
-        "war",
-        "geopolitical"
       ],
       "score": 5,
       "impact": "medium"
@@ -538,19 +552,6 @@
       "summary": "Ita\u00fa Unibanco said it teamed up with tokenization specialist OpenAssets to test tokenized bonds and funds in a pilot run by Brazil's financial watchdog ANBIMA.",
       "categories": [
         "macro_data",
-        "crypto"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "EToro reports second quarter crypto loss even as total profit beats estimates",
-      "url": "https://www.coindesk.com/business/2026/08/11/digital-broker-etoro-reports-q2-crypto-revenue-dropped-120-compared-to-2025",
-      "source": "CoinDesk",
-      "published": "2026-08-11T17:12:11+00:00",
-      "published_ts": 1786468331,
-      "summary": "The trading platform\u2019s gross crypto revenue fell to $1.35 billion in the second quarter. It also agreed to buy U.S. brokerage TradeZero for up to $231 million.",
-      "categories": [
         "crypto"
       ],
       "score": 4,
