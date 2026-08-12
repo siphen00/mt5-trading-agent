@@ -1,7 +1,7 @@
 {
   "active_strategy": "ema_smc",
   "active_session": "london",
-  "session_active": true,
+  "session_active": false,
   "daily_loss_pct": -0.0,
   "daily_loss_halted": false,
   "open_positions_bot": 0,
@@ -14,7 +14,7 @@
     },
     "reason": "no confluence",
     "atr_ok": false,
-    "bar_time": "2026-08-12T15:50:00+00:00",
+    "bar_time": "2026-08-12T15:55:00+00:00",
     "new_bar": true
   },
   "M15": {
@@ -25,8 +25,8 @@
     },
     "reason": "no confluence",
     "atr_ok": true,
-    "bar_time": "2026-08-12T15:30:00+00:00",
+    "bar_time": "2026-08-12T15:45:00+00:00",
     "new_bar": true
   },
-  "updated_at": "2026-08-12T15:59:45.500690+00:00"
+  "updated_at": "2026-08-12T16:00:03.963657+00:00"
 }
