@@ -10,25 +10,23 @@
     "direction": "long",
     "votes": {
       "ema": "none",
-      "smc": "long",
-      "ollama": "none"
+      "smc": "long"
     },
     "reason": "SMC long (bos_bullish/none)",
     "atr_ok": true,
     "bar_time": "2026-08-24T10:55:00+00:00",
-    "new_bar": true
+    "new_bar": false
   },
   "M15": {
     "direction": "long",
     "votes": {
       "ema": "long",
-      "smc": "long",
-      "ollama": "long"
+      "smc": "long"
     },
     "reason": "EMA long, SMC long (bos_bullish/ob_bullish_retest)",
     "atr_ok": true,
     "bar_time": "2026-08-24T10:45:00+00:00",
-    "new_bar": true
+    "new_bar": false
   },
-  "updated_at": "2026-08-18T14:30:25.600274+00:00"
+  "updated_at": "2026-08-18T14:30:46.004315+00:00"
 }
