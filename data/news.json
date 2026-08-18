@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-18T14:50:09.345968+00:00",
+  "updated_at": "2026-08-18T14:55:19.311781+00:00",
   "items": [
     {
       "title": "Live updates: Bitcoin tepidly on the rise as stocks slip",
@@ -329,20 +329,6 @@
       "impact": "medium"
     },
     {
-      "title": "Trump says US to reduce military drills with South Korea after it stayed out of Iran war",
-      "url": "https://www.bbc.co.uk/news/articles/cx2lll7zvn0o?at_medium=RSS&at_campaign=rss",
-      "source": "BBC World",
-      "published": "2026-08-17T18:39:39+00:00",
-      "published_ts": 1786991979,
-      "summary": "Trump cites his \"very good relationship\" with North Korea's leader in deciding to downsize the exercises.",
-      "categories": [
-        "war",
-        "geopolitical"
-      ],
-      "score": 5,
-      "impact": "medium"
-    },
-    {
       "title": "Russia's prominent anti-war politician jailed for 11 years",
       "url": "https://www.bbc.co.uk/news/articles/cj4kjnle2neo?at_medium=RSS&at_campaign=rss",
       "source": "BBC World",
@@ -552,6 +538,20 @@
       "summary": "BTC outperformed Wall Street on Monday, breaking its recent pattern of lagging behind U.S. stocks.",
       "categories": [
         "crypto"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
+      "title": "Videos show deadly school shooting in Philippines",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/8/18/videos-show-deadly-school-shooting-in-philippines?traffic_source=rss",
+      "source": "Al Jazeera",
+      "published": "2026-08-18T09:31:56+00:00",
+      "published_ts": 1787045516,
+      "summary": "A ninth-grade student opened fire at a high school in Zamboanga, Philippines, killing a fellow student and himself.",
+      "categories": [
+        "macro_data",
+        "geopolitical"
       ],
       "score": 4,
       "impact": "medium"
