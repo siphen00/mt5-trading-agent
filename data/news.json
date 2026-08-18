@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-18T14:55:19.311781+00:00",
+  "updated_at": "2026-08-18T15:00:29.295708+00:00",
   "items": [
     {
       "title": "Live updates: Bitcoin tepidly on the rise as stocks slip",
@@ -116,6 +116,20 @@
         "markets"
       ],
       "score": 7,
+      "impact": "medium"
+    },
+    {
+      "title": "Why is Russia threatening UK with \u2018consequences\u2019 over Ukraine drones?",
+      "url": "https://www.aljazeera.com/news/2026/8/18/why-is-russia-threatening-uk-with-consequences-over-ukraine-drones?traffic_source=rss",
+      "source": "Al Jazeera",
+      "published": "2026-08-18T14:49:56+00:00",
+      "published_ts": 1787064596,
+      "summary": "Russia is suffering attacks inside its own territory as long-range drones strike its strategic assets.",
+      "categories": [
+        "war",
+        "geopolitical"
+      ],
+      "score": 5,
       "impact": "medium"
     },
     {
@@ -538,20 +552,6 @@
       "summary": "BTC outperformed Wall Street on Monday, breaking its recent pattern of lagging behind U.S. stocks.",
       "categories": [
         "crypto"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "Videos show deadly school shooting in Philippines",
-      "url": "https://www.aljazeera.com/video/newsfeed/2026/8/18/videos-show-deadly-school-shooting-in-philippines?traffic_source=rss",
-      "source": "Al Jazeera",
-      "published": "2026-08-18T09:31:56+00:00",
-      "published_ts": 1787045516,
-      "summary": "A ninth-grade student opened fire at a high school in Zamboanga, Philippines, killing a fellow student and himself.",
-      "categories": [
-        "macro_data",
-        "geopolitical"
       ],
       "score": 4,
       "impact": "medium"
