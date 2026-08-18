@@ -9,12 +9,12 @@
   "M5": {
     "direction": "short",
     "votes": {
-      "ema": "short",
-      "smc": "none"
+      "ema": "none",
+      "smc": "short"
     },
-    "reason": "EMA short",
+    "reason": "SMC short (bos_bearish/ob_bearish_retest)",
     "atr_ok": false,
-    "bar_time": "2026-08-24T09:10:00+00:00",
+    "bar_time": "2026-08-24T09:15:00+00:00",
     "new_bar": true
   },
   "M15": {
@@ -28,5 +28,5 @@
     "bar_time": "2026-08-24T09:00:00+00:00",
     "new_bar": true
   },
-  "updated_at": "2026-08-18T12:49:51.753442+00:00"
+  "updated_at": "2026-08-18T12:50:10.322620+00:00"
 }
