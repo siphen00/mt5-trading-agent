@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-18T13:02:05.754043+00:00",
+  "updated_at": "2026-08-18T13:07:14.330689+00:00",
   "items": [
     {
       "title": "Live updates: Bitcoin holds $64,000 as surging yields and rising oil drain risk appetite",
@@ -89,11 +89,11 @@
       "impact": "high"
     },
     {
-      "title": "'Worrisome': AI is driving a looming market correction, central bank economists warn",
+      "title": "'Worrisome': AI is driving a looming market correction, European central bank economists warn",
       "url": "https://www.cnbc.com/2026/08/18/ai-tech-rally-correction-economists.html",
       "source": "CNBC World",
-      "published": "2026-08-18T12:07:05+00:00",
-      "published_ts": 1787054825,
+      "published": "2026-08-18T13:04:04+00:00",
+      "published_ts": 1787058244,
       "summary": "History suggests valuations will tumble even if they are a fair reflection of the transformative power of AI, according to a European Central Bank analysis.",
       "categories": [
         "war",
@@ -427,6 +427,20 @@
       "impact": "medium"
     },
     {
+      "title": "30-year Treasury yield tops 5.33%, new 19-year high on inflation, spending concerns",
+      "url": "https://www.cnbc.com/2026/08/18/treasury-yields-.html",
+      "source": "CNBC World",
+      "published": "2026-08-18T13:06:35+00:00",
+      "published_ts": 1787058395,
+      "summary": "Tuesday saw yields on U.S. 30-year Treasury yields add over 1 basis point to trade at around 5.322%, hovering just below its highest level since 2002.",
+      "categories": [
+        "macro_data",
+        "markets"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
       "title": "Cash App's crypto support expands beyond bitcoin and USDC via MoonPay",
       "url": "https://www.coindesk.com/business/2026/08/18/cash-app-s-crypto-support-expands-beyond-bitcoin-and-usdc-via-moonpay",
       "source": "CoinDesk",
@@ -435,20 +449,6 @@
       "summary": "Eligible Cash App users will be able to use their balances to purchase digital assets offered by MoonPay, which include ether, solana and stablecoin USDT.",
       "categories": [
         "crypto"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "30-year Treasury yield tops 5.33%, new 19-year high on inflation, spending concerns",
-      "url": "https://www.cnbc.com/2026/08/18/treasury-yields-.html",
-      "source": "CNBC World",
-      "published": "2026-08-18T12:39:04+00:00",
-      "published_ts": 1787056744,
-      "summary": "Tuesday saw yields on U.S. 30-year Treasury yields add over 1 basis point to trade at around 5.322%, hovering just below its highest level since 2002.",
-      "categories": [
-        "macro_data",
-        "markets"
       ],
       "score": 4,
       "impact": "medium"
