@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-18T14:39:46.134185+00:00",
+  "updated_at": "2026-08-18T14:44:58.296023+00:00",
   "items": [
     {
       "title": "Live updates: Bitcoin tepidly on the rise as stocks slip",
@@ -88,6 +88,20 @@
       ],
       "score": 8,
       "impact": "high"
+    },
+    {
+      "title": "Global bond yields surge as debt fears test bitcoin\u2019s hedge narrative",
+      "url": "https://www.coindesk.com/markets/2026/08/18/global-bond-yields-surge-as-debt-fears-test-bitcoin-s-hedge-narrative",
+      "source": "CoinDesk",
+      "published": "2026-08-18T14:40:41+00:00",
+      "published_ts": 1787064041,
+      "summary": "Long-term borrowing costs are reaching multi-decade highs as U.S. debt approaches $40 trillion and AI hyperscalers accelerate bond issuance.",
+      "categories": [
+        "crypto",
+        "risk"
+      ],
+      "score": 7,
+      "impact": "medium"
     },
     {
       "title": "CNBC Daily Open: Higher oil, higher yields, lower volatility",
@@ -399,6 +413,33 @@
       "impact": "medium"
     },
     {
+      "title": "30-year Treasury yield tops 5.33%, new 19-year high on inflation, spending concerns",
+      "url": "https://www.cnbc.com/2026/08/18/treasury-yields-.html",
+      "source": "CNBC World",
+      "published": "2026-08-18T14:42:13+00:00",
+      "published_ts": 1787064133,
+      "summary": "Long-dated fixed income hit their highest level in almost two decades amid a worsening U.S. fiscal situation and persistently higher inflation.",
+      "categories": [
+        "macro_data",
+        "markets"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
+      "title": "Bitcoin miners\u2019 AI pivot pays off, but mining could revive with one twist",
+      "url": "https://www.coindesk.com/business/2026/08/18/bitcoin-miners-ai-pivot-pays-off-but-mining-could-revive-with-one-twist",
+      "source": "CoinDesk",
+      "published": "2026-08-18T14:41:31+00:00",
+      "published_ts": 1787064091,
+      "summary": "Miners with AI and high-performance computing contracts have commanded higher valuations as declining bitcoin prices and hashprice squeeze pure-play operators.",
+      "categories": [
+        "crypto"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
       "title": "Japan's Metaplanet launching U.S. bitcoin treasury company through $135 million nanocap deal",
       "url": "https://www.coindesk.com/business/2026/08/18/japan-s-metaplanet-launching-u-s-bitcoin-treasury-company-through-usd135-million-nanocap-deal",
       "source": "CoinDesk",
@@ -407,20 +448,6 @@
       "summary": "The deal involves Metaplanet contributing 2,100 bitcoin and $2.5 million in cash, valuing the initial investment at $134.6 million.",
       "categories": [
         "crypto"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "30-year Treasury yield tops 5.33%, new 19-year high on inflation, spending concerns",
-      "url": "https://www.cnbc.com/2026/08/18/treasury-yields-.html",
-      "source": "CNBC World",
-      "published": "2026-08-18T14:11:51+00:00",
-      "published_ts": 1787062311,
-      "summary": "Tuesday saw yields on U.S. 30-year Treasury yields add over 1 basis point to trade at around 5.322%, hovering just below its highest level since 2002.",
-      "categories": [
-        "macro_data",
-        "markets"
       ],
       "score": 4,
       "impact": "medium"
@@ -523,33 +550,6 @@
       "published": "2026-08-18T10:01:23+00:00",
       "published_ts": 1787047283,
       "summary": "BTC outperformed Wall Street on Monday, breaking its recent pattern of lagging behind U.S. stocks.",
-      "categories": [
-        "crypto"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "Videos show deadly school shooting in Philippines",
-      "url": "https://www.aljazeera.com/video/newsfeed/2026/8/18/videos-show-deadly-school-shooting-in-philippines?traffic_source=rss",
-      "source": "Al Jazeera",
-      "published": "2026-08-18T09:31:56+00:00",
-      "published_ts": 1787045516,
-      "summary": "A ninth-grade student opened fire at a high school in Zamboanga, Philippines, killing a fellow student and himself.",
-      "categories": [
-        "macro_data",
-        "geopolitical"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "The bitcoin price level where leveraged bulls could get whacked",
-      "url": "https://www.coindesk.com/markets/2026/08/18/the-bitcoin-price-level-where-leveraged-bulls-could-get-whacked",
-      "source": "CoinDesk",
-      "published": "2026-08-18T05:55:43+00:00",
-      "published_ts": 1787032543,
-      "summary": "Bulls are stacking longs, liquidity is thinning and one key level could trigger large liquidations.",
       "categories": [
         "crypto"
       ],
