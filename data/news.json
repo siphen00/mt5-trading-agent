@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-18T13:53:35.111077+00:00",
+  "updated_at": "2026-08-18T13:58:39.783909+00:00",
   "items": [
     {
       "title": "Live updates: Bitcoin holds $64,000 as surging yields and rising oil drain risk appetite",
@@ -203,12 +203,12 @@
       "impact": "medium"
     },
     {
-      "title": "Syria, US say Israel attacked airbase in Idlib",
+      "title": "Syria, US say Israel attacks airbase in Idlib",
       "url": "https://www.aljazeera.com/news/2026/8/18/eight-air-strikes-hit-airbase-in-syrias-idlib?traffic_source=rss",
       "source": "Al Jazeera",
       "published": "2026-08-18T10:11:53+00:00",
       "published_ts": 1787047913,
-      "summary": "Eight air strikes hit the Abu al-Duhur military base in Idlib&#039;s eastern countryside early on Tuesday.",
+      "summary": "Eight air strikes hit the Abu al-Duhur military base in Idlib&#039;s eastern countryside.",
       "categories": [
         "war",
         "geopolitical"
