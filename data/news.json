@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-18T13:32:56.878488+00:00",
+  "updated_at": "2026-08-18T13:38:05.222997+00:00",
   "items": [
     {
       "title": "Live updates: Bitcoin holds $64,000 as surging yields and rising oil drain risk appetite",
@@ -413,6 +413,19 @@
       "impact": "medium"
     },
     {
+      "title": "Citi plans to launch bitcoin custody for institutional clients later this year",
+      "url": "https://www.coindesk.com/markets/2026/08/18/citi-plans-to-launch-bitcoin-custody-for-institutional-clients-later-this-year",
+      "source": "CoinDesk",
+      "published": "2026-08-18T13:25:13+00:00",
+      "published_ts": 1787059513,
+      "summary": "The Wall Street bank plans to let clients hold bitcoin alongside traditional assets through its new Custody+ platform.",
+      "categories": [
+        "crypto"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
       "title": "Crypto\u2019s easy-money era is ending in a wave of failures",
       "url": "https://www.coindesk.com/business/2026/08/13/crypto-s-easy-money-era-is-ending-in-a-wave-of-failures",
       "source": "CoinDesk",
@@ -538,19 +551,6 @@
       "published": "2026-08-18T05:34:32+00:00",
       "published_ts": 1787031272,
       "summary": "Jeonbuk Bank will use Ripple\u2019s 24/7 cross-border payment service for business remittances, but it is unknown whether the flows will use XRP or Ripple\u2019s RLUSD stablecoin.",
-      "categories": [
-        "crypto"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "Monad, an Ethereum rival, offered early investors up to $60 million to cash out. Almost all said no",
-      "url": "https://www.coindesk.com/markets/2026/08/18/monad-an-ethereum-rival-offered-early-investors-up-to-usd60-million-to-cash-out-almost-all-said-no",
-      "source": "CoinDesk",
-      "published": "2026-08-18T05:18:18+00:00",
-      "published_ts": 1787030298,
-      "summary": "The program came three months before investor unlocks begin, with MON trading below its public-sale price and most of the token supply still outside circulation.",
       "categories": [
         "crypto"
       ],
