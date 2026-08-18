@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-18T12:56:57.465065+00:00",
+  "updated_at": "2026-08-18T13:02:05.754043+00:00",
   "items": [
     {
       "title": "Live updates: Bitcoin holds $64,000 as surging yields and rising oil drain risk appetite",
@@ -119,6 +119,20 @@
       "impact": "medium"
     },
     {
+      "title": "Bashar al-Assad\u2019s cousin Wassim sentenced to death in Syria",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/8/18/bashar-al-assads-cousin-wassim-sentenced-to-death-in-syria?traffic_source=rss",
+      "source": "Al Jazeera",
+      "published": "2026-08-18T12:41:33+00:00",
+      "published_ts": 1787056893,
+      "summary": "A Syrian court has sentenced Wassim al-Assad, cousin of Bashar al-Assad, to death for murder, torture and war crimes.",
+      "categories": [
+        "war",
+        "geopolitical"
+      ],
+      "score": 5,
+      "impact": "medium"
+    },
+    {
       "title": "UK 'supports Ukraine 100%', Burnham says, after Russia's drone warning",
       "url": "https://www.bbc.co.uk/news/articles/cy5dz0kkn0wo?at_medium=RSS&at_campaign=rss",
       "source": "BBC World",
@@ -223,20 +237,6 @@
       "published": "2026-08-18T08:08:39+00:00",
       "published_ts": 1787040519,
       "summary": "Islamophobia, anti-Semitism, Trump&#039;s politics and Israel&#039;s war on Gaza figure prominently in the elections.",
-      "categories": [
-        "war",
-        "geopolitical"
-      ],
-      "score": 5,
-      "impact": "medium"
-    },
-    {
-      "title": "Top Russian economist ousted after warning of growing costs of Ukraine war",
-      "url": "https://www.aljazeera.com/news/2026/8/18/top-russian-economist-ousted-after-warning-of-growing-costs-of-ukraine-war?traffic_source=rss",
-      "source": "Al Jazeera",
-      "published": "2026-08-18T08:05:42+00:00",
-      "published_ts": 1787040342,
-      "summary": "Andrey Klepach, top economist at Russia&#039;s state development bank VEB, had warned Russia was lagging behind rivals.",
       "categories": [
         "war",
         "geopolitical"
@@ -427,6 +427,19 @@
       "impact": "medium"
     },
     {
+      "title": "Cash App's crypto support expands beyond bitcoin and USDC via MoonPay",
+      "url": "https://www.coindesk.com/business/2026/08/18/cash-app-s-crypto-support-expands-beyond-bitcoin-and-usdc-via-moonpay",
+      "source": "CoinDesk",
+      "published": "2026-08-18T13:00:00+00:00",
+      "published_ts": 1787058000,
+      "summary": "Eligible Cash App users will be able to use their balances to purchase digital assets offered by MoonPay, which include ether, solana and stablecoin USDT.",
+      "categories": [
+        "crypto"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
       "title": "30-year Treasury yield tops 5.33%, new 19-year high on inflation, spending concerns",
       "url": "https://www.cnbc.com/2026/08/18/treasury-yields-.html",
       "source": "CNBC World",
@@ -539,19 +552,6 @@
       "published": "2026-08-18T05:18:18+00:00",
       "published_ts": 1787030298,
       "summary": "The program came three months before investor unlocks begin, with MON trading below its public-sale price and most of the token supply still outside circulation.",
-      "categories": [
-        "crypto"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "Bitcoin climbs above $64,000 while most majors slip",
-      "url": "https://www.coindesk.com/markets/2026/08/18/bitcoin-climbs-above-usd64-000-while-most-majors-slip",
-      "source": "CoinDesk",
-      "published": "2026-08-18T04:32:38+00:00",
-      "published_ts": 1787027558,
-      "summary": "Miners have cut their computing power by a fifth over three quarters to make room for AI, and Venice's token jumped 10% after the company said it crossed $100 million in annualised revenue.",
       "categories": [
         "crypto"
       ],
