@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-18T14:34:30.599613+00:00",
+  "updated_at": "2026-08-18T14:39:46.134185+00:00",
   "items": [
     {
       "title": "Live updates: Bitcoin tepidly on the rise as stocks slip",
@@ -70,20 +70,6 @@
         "war",
         "macro_data",
         "markets"
-      ],
-      "score": 9,
-      "impact": "high"
-    },
-    {
-      "title": "Israel\u2019s largest crypto broker Bits of Gold hit by data breach affecting 200,000 customers",
-      "url": "https://www.coindesk.com/tech/2026/08/17/israel-s-largest-crypto-broker-bits-of-gold-hit-by-data-breach-affecting-200-000-customers",
-      "source": "CoinDesk",
-      "published": "2026-08-17T11:59:23+00:00",
-      "published_ts": 1786967963,
-      "summary": "Funds and digital assets were not touched, but names, bank account details, and national ID numbers may have been exposed in what the company says was a wider global attack.",
-      "categories": [
-        "war",
-        "crypto"
       ],
       "score": 9,
       "impact": "high"
@@ -413,6 +399,19 @@
       "impact": "medium"
     },
     {
+      "title": "Japan's Metaplanet launching U.S. bitcoin treasury company through $135 million nanocap deal",
+      "url": "https://www.coindesk.com/business/2026/08/18/japan-s-metaplanet-launching-u-s-bitcoin-treasury-company-through-usd135-million-nanocap-deal",
+      "source": "CoinDesk",
+      "published": "2026-08-18T14:35:08+00:00",
+      "published_ts": 1787063708,
+      "summary": "The deal involves Metaplanet contributing 2,100 bitcoin and $2.5 million in cash, valuing the initial investment at $134.6 million.",
+      "categories": [
+        "crypto"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
       "title": "30-year Treasury yield tops 5.33%, new 19-year high on inflation, spending concerns",
       "url": "https://www.cnbc.com/2026/08/18/treasury-yields-.html",
       "source": "CNBC World",
@@ -422,6 +421,19 @@
       "categories": [
         "macro_data",
         "markets"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
+      "title": "HashKey taps Hong Kong's first regulated stablecoin to settle insurance and trade deals",
+      "url": "https://www.coindesk.com/business/2026/08/18/hashkey-taps-hong-kong-s-first-regulated-stablecoin-to-settle-insurance-and-trade-deals",
+      "source": "CoinDesk",
+      "published": "2026-08-18T14:03:27+00:00",
+      "published_ts": 1787061807,
+      "summary": "Following institutional trials, the HKD-pegged asset is being put to work to capture part of Hong Kong's $49 billion trade corridor with the United Arab Emirates",
+      "categories": [
+        "crypto"
       ],
       "score": 4,
       "impact": "medium"
@@ -538,19 +550,6 @@
       "published": "2026-08-18T05:55:43+00:00",
       "published_ts": 1787032543,
       "summary": "Bulls are stacking longs, liquidity is thinning and one key level could trigger large liquidations.",
-      "categories": [
-        "crypto"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "XRP sinks below $1 for first time since 2024 even as Korean bank adopts Ripple Payments",
-      "url": "https://www.coindesk.com/markets/2026/08/18/xrp-slips-below-usd1-even-as-korean-regional-bank-adopts-ripple-payments",
-      "source": "CoinDesk",
-      "published": "2026-08-18T05:34:32+00:00",
-      "published_ts": 1787031272,
-      "summary": "Jeonbuk Bank will use Ripple\u2019s 24/7 cross-border payment service for business remittances, but it is unknown whether the flows will use XRP or Ripple\u2019s RLUSD stablecoin.",
       "categories": [
         "crypto"
       ],
