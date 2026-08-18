@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-18T13:43:15.207658+00:00",
+  "updated_at": "2026-08-18T13:48:25.525937+00:00",
   "items": [
     {
       "title": "Live updates: Bitcoin holds $64,000 as surging yields and rising oil drain risk appetite",
@@ -116,20 +116,6 @@
         "markets"
       ],
       "score": 7,
-      "impact": "medium"
-    },
-    {
-      "title": "Trump's Oman bomb threat an attempt to get their 'attention,' says former ambassador",
-      "url": "https://www.cnbc.com/2026/08/18/us-iran-war-trump-hormuz-trump-ceasefire-expires-extension-.html",
-      "source": "CNBC World",
-      "published": "2026-08-18T13:21:17+00:00",
-      "published_ts": 1787059277,
-      "summary": "The attack caused damage to the engine room and resulted in a crew casualty, UKMTO said, adding that the remaining crew were being assisted by the Omani Coast Guard.",
-      "categories": [
-        "war",
-        "markets"
-      ],
-      "score": 5,
       "impact": "medium"
     },
     {
@@ -551,6 +537,19 @@
       "published": "2026-08-18T05:34:32+00:00",
       "published_ts": 1787031272,
       "summary": "Jeonbuk Bank will use Ripple\u2019s 24/7 cross-border payment service for business remittances, but it is unknown whether the flows will use XRP or Ripple\u2019s RLUSD stablecoin.",
+      "categories": [
+        "crypto"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
+      "title": "Monad, an Ethereum rival, offered early investors up to $60 million to cash out. Almost all said no",
+      "url": "https://www.coindesk.com/markets/2026/08/18/monad-an-ethereum-rival-offered-early-investors-up-to-usd60-million-to-cash-out-almost-all-said-no",
+      "source": "CoinDesk",
+      "published": "2026-08-18T05:18:18+00:00",
+      "published_ts": 1787030298,
+      "summary": "The program came three months before investor unlocks begin, with MON trading below its public-sale price and most of the token supply still outside circulation.",
       "categories": [
         "crypto"
       ],
