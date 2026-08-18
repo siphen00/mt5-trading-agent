@@ -10,13 +10,12 @@
     "direction": "short",
     "votes": {
       "ema": "none",
-      "smc": "short",
-      "ollama": "none"
+      "smc": "short"
     },
     "reason": "SMC short (bos_bearish/none)",
     "atr_ok": true,
     "bar_time": "2026-08-24T09:55:00+00:00",
-    "new_bar": true
+    "new_bar": false
   },
   "M15": {
     "direction": "short",
@@ -29,5 +28,5 @@
     "bar_time": "2026-08-24T09:45:00+00:00",
     "new_bar": true
   },
-  "updated_at": "2026-08-18T13:30:29.302175+00:00"
+  "updated_at": "2026-08-18T13:30:49.205730+00:00"
 }
