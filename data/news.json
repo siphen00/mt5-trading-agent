@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-18T13:12:25.259446+00:00",
+  "updated_at": "2026-08-18T13:17:35.635431+00:00",
   "items": [
     {
       "title": "Live updates: Bitcoin holds $64,000 as surging yields and rising oil drain risk appetite",
@@ -119,6 +119,20 @@
       "impact": "medium"
     },
     {
+      "title": "Trump's Oman bomb threat an attempt to get their 'attention,' says former ambassador",
+      "url": "https://www.cnbc.com/2026/08/18/us-iran-war-trump-hormuz-trump-ceasefire-expires-extension-.html",
+      "source": "CNBC World",
+      "published": "2026-08-18T13:13:34+00:00",
+      "published_ts": 1787058814,
+      "summary": "The attack caused damage to the engine room and resulted in a crew casualty, UKMTO said, adding that the remaining crew were being assisted by the Omani Coast Guard.",
+      "categories": [
+        "war",
+        "markets"
+      ],
+      "score": 5,
+      "impact": "medium"
+    },
+    {
       "title": "Bashar al-Assad\u2019s cousin Wassim sentenced to death in Syria",
       "url": "https://www.aljazeera.com/video/newsfeed/2026/8/18/bashar-al-assads-cousin-wassim-sentenced-to-death-in-syria?traffic_source=rss",
       "source": "Al Jazeera",
@@ -184,20 +198,6 @@
       "categories": [
         "war",
         "geopolitical"
-      ],
-      "score": 5,
-      "impact": "medium"
-    },
-    {
-      "title": "Trump's Oman bomb threat an attempt to get their 'attention,' says former ambassador",
-      "url": "https://www.cnbc.com/2026/08/18/us-iran-war-trump-hormuz-trump-ceasefire-expires-extension-.html",
-      "source": "CNBC World",
-      "published": "2026-08-18T10:23:09+00:00",
-      "published_ts": 1787048589,
-      "summary": "The attack caused damage to the engine room and resulted in a crew casualty, UKMTO said, adding that the remaining crew were being assisted by the Omani Coast Guard.",
-      "categories": [
-        "war",
-        "markets"
       ],
       "score": 5,
       "impact": "medium"
@@ -430,8 +430,8 @@
       "title": "30-year Treasury yield tops 5.33%, new 19-year high on inflation, spending concerns",
       "url": "https://www.cnbc.com/2026/08/18/treasury-yields-.html",
       "source": "CNBC World",
-      "published": "2026-08-18T13:07:20+00:00",
-      "published_ts": 1787058440,
+      "published": "2026-08-18T13:13:10+00:00",
+      "published_ts": 1787058790,
       "summary": "Tuesday saw yields on U.S. 30-year Treasury yields add over 1 basis point to trade at around 5.322%, hovering just below its highest level since 2002.",
       "categories": [
         "macro_data",
