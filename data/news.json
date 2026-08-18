@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-18T13:22:45.386872+00:00",
+  "updated_at": "2026-08-18T13:27:47.426271+00:00",
   "items": [
     {
       "title": "Live updates: Bitcoin holds $64,000 as surging yields and rising oil drain risk appetite",
@@ -133,6 +133,20 @@
       "impact": "medium"
     },
     {
+      "title": "Who is Wassim al-Assad, sentenced to death for Syria war atrocities?",
+      "url": "https://www.aljazeera.com/news/2026/8/18/who-is-wassim-al-assad-sentenced-to-death-for-syria-war-atrocities?traffic_source=rss",
+      "source": "Al Jazeera",
+      "published": "2026-08-18T13:06:20+00:00",
+      "published_ts": 1787058380,
+      "summary": "The latest sentence against Wassim al-Assad comes a week after ousted President Bashar al-Assad was sentenced to death",
+      "categories": [
+        "war",
+        "geopolitical"
+      ],
+      "score": 5,
+      "impact": "medium"
+    },
+    {
       "title": "Bashar al-Assad\u2019s cousin Wassim sentenced to death in Syria",
       "url": "https://www.aljazeera.com/video/newsfeed/2026/8/18/bashar-al-assads-cousin-wassim-sentenced-to-death-in-syria?traffic_source=rss",
       "source": "Al Jazeera",
@@ -203,40 +217,12 @@
       "impact": "medium"
     },
     {
-      "title": "Eight air strikes hit airbase in Syria\u2019s Idlib",
+      "title": "Syria, US say Israel attacked airbase in Idlib",
       "url": "https://www.aljazeera.com/news/2026/8/18/eight-air-strikes-hit-airbase-in-syrias-idlib?traffic_source=rss",
       "source": "Al Jazeera",
       "published": "2026-08-18T10:11:53+00:00",
       "published_ts": 1787047913,
-      "summary": "Syrian state TV quotes military source as saying Israeli forces carried out attack, causing damage and no casualties.",
-      "categories": [
-        "war",
-        "geopolitical"
-      ],
-      "score": 5,
-      "impact": "medium"
-    },
-    {
-      "title": "Syrian court sentences Wassim al-Assad to death for war crimes",
-      "url": "https://www.aljazeera.com/news/2026/8/18/syrian-court-sentences-wassim-al-assad-to?traffic_source=rss",
-      "source": "Al Jazeera",
-      "published": "2026-08-18T08:23:59+00:00",
-      "published_ts": 1787041439,
-      "summary": "Cousin of Bashar al-Assad and former regime figure found guilty of crimes including premeditated murder and torture.",
-      "categories": [
-        "war",
-        "geopolitical"
-      ],
-      "score": 5,
-      "impact": "medium"
-    },
-    {
-      "title": "What to watch in Tuesday\u2019s Florida primary elections",
-      "url": "https://www.aljazeera.com/news/2026/8/18/what-to-watch-in-tuesdays-florida-primary-elections?traffic_source=rss",
-      "source": "Al Jazeera",
-      "published": "2026-08-18T08:08:39+00:00",
-      "published_ts": 1787040519,
-      "summary": "Islamophobia, anti-Semitism, Trump&#039;s politics and Israel&#039;s war on Gaza figure prominently in the elections.",
+      "summary": "Eight air strikes hit the Abu al-Duhur military base in Idlib&#039;s eastern countryside early on Tuesday.",
       "categories": [
         "war",
         "geopolitical"
@@ -424,6 +410,19 @@
         "markets"
       ],
       "score": 5,
+      "impact": "medium"
+    },
+    {
+      "title": "Crypto\u2019s easy-money era is ending in a wave of failures",
+      "url": "https://www.coindesk.com/business/2026/08/13/crypto-s-easy-money-era-is-ending-in-a-wave-of-failures",
+      "source": "CoinDesk",
+      "published": "2026-08-18T13:22:40+00:00",
+      "published_ts": 1787059360,
+      "summary": "Inflated valuations and weak business models are driving crypto\u2019s shakeout, Global Settlement Network CEO Ryan Kirkley says.",
+      "categories": [
+        "crypto"
+      ],
+      "score": 4,
       "impact": "medium"
     },
     {
