@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-18T14:08:56.821276+00:00",
+  "updated_at": "2026-08-18T14:14:06.222905+00:00",
   "items": [
     {
       "title": "Live updates: Bitcoin holds $64,000 as surging yields and rising oil drain risk appetite",
@@ -116,6 +116,20 @@
         "markets"
       ],
       "score": 7,
+      "impact": "medium"
+    },
+    {
+      "title": "Yemeni government escalates attacks against Houthis: What\u2019s next?",
+      "url": "https://www.aljazeera.com/news/2026/8/18/yemeni-government-escalates-attacks-against-houthis-whats-next?traffic_source=rss",
+      "source": "Al Jazeera",
+      "published": "2026-08-18T13:51:33+00:00",
+      "published_ts": 1787061093,
+      "summary": "Fighting intensifies across Yemen as Houthis clash with internationally recognised government forces across many fronts.",
+      "categories": [
+        "war",
+        "geopolitical"
+      ],
+      "score": 5,
       "impact": "medium"
     },
     {
@@ -399,6 +413,20 @@
       "impact": "medium"
     },
     {
+      "title": "30-year Treasury yield tops 5.33%, new 19-year high on inflation, spending concerns",
+      "url": "https://www.cnbc.com/2026/08/18/treasury-yields-.html",
+      "source": "CNBC World",
+      "published": "2026-08-18T14:11:51+00:00",
+      "published_ts": 1787062311,
+      "summary": "Tuesday saw yields on U.S. 30-year Treasury yields add over 1 basis point to trade at around 5.322%, hovering just below its highest level since 2002.",
+      "categories": [
+        "macro_data",
+        "markets"
+      ],
+      "score": 4,
+      "impact": "medium"
+    },
+    {
       "title": "Citi plans to launch bitcoin custody for institutional clients later this year",
       "url": "https://www.coindesk.com/markets/2026/08/18/citi-plans-to-launch-bitcoin-custody-for-institutional-clients-later-this-year",
       "source": "CoinDesk",
@@ -420,20 +448,6 @@
       "summary": "Inflated valuations and weak business models are driving crypto\u2019s shakeout, Global Settlement Network CEO Ryan Kirkley says.",
       "categories": [
         "crypto"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "30-year Treasury yield tops 5.33%, new 19-year high on inflation, spending concerns",
-      "url": "https://www.cnbc.com/2026/08/18/treasury-yields-.html",
-      "source": "CNBC World",
-      "published": "2026-08-18T13:13:10+00:00",
-      "published_ts": 1787058790,
-      "summary": "Tuesday saw yields on U.S. 30-year Treasury yields add over 1 basis point to trade at around 5.322%, hovering just below its highest level since 2002.",
-      "categories": [
-        "macro_data",
-        "markets"
       ],
       "score": 4,
       "impact": "medium"
@@ -537,19 +551,6 @@
       "published": "2026-08-18T05:34:32+00:00",
       "published_ts": 1787031272,
       "summary": "Jeonbuk Bank will use Ripple\u2019s 24/7 cross-border payment service for business remittances, but it is unknown whether the flows will use XRP or Ripple\u2019s RLUSD stablecoin.",
-      "categories": [
-        "crypto"
-      ],
-      "score": 4,
-      "impact": "medium"
-    },
-    {
-      "title": "Monad, an Ethereum rival, offered early investors up to $60 million to cash out. Almost all said no",
-      "url": "https://www.coindesk.com/markets/2026/08/18/monad-an-ethereum-rival-offered-early-investors-up-to-usd60-million-to-cash-out-almost-all-said-no",
-      "source": "CoinDesk",
-      "published": "2026-08-18T05:18:18+00:00",
-      "published_ts": 1787030298,
-      "summary": "The program came three months before investor unlocks begin, with MON trading below its public-sale price and most of the token supply still outside circulation.",
       "categories": [
         "crypto"
       ],
