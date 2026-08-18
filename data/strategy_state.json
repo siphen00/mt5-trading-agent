@@ -14,7 +14,7 @@
     },
     "reason": "no confluence",
     "atr_ok": false,
-    "bar_time": "2026-08-18T12:45:00+00:00",
+    "bar_time": "2026-08-24T09:00:00+00:00",
     "new_bar": true
   },
   "M15": {
@@ -24,9 +24,9 @@
       "smc": "none"
     },
     "reason": "no confluence",
-    "atr_ok": true,
-    "bar_time": "2026-08-18T12:30:00+00:00",
+    "atr_ok": false,
+    "bar_time": "2026-08-24T08:45:00+00:00",
     "new_bar": true
   },
-  "updated_at": "2026-08-18T12:36:06.615924+00:00"
+  "updated_at": "2026-08-18T12:36:34.482957+00:00"
 }
