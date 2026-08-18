@@ -10,11 +10,12 @@
     "direction": "short",
     "votes": {
       "ema": "none",
-      "smc": "short"
+      "smc": "short",
+      "ollama": "none"
     },
-    "reason": "SMC short (bos_bearish/ob_bearish_retest)",
-    "atr_ok": false,
-    "bar_time": "2026-08-24T09:45:00+00:00",
+    "reason": "SMC short (bos_bearish/none)",
+    "atr_ok": true,
+    "bar_time": "2026-08-24T09:50:00+00:00",
     "new_bar": true
   },
   "M15": {
@@ -28,5 +29,5 @@
     "bar_time": "2026-08-24T09:30:00+00:00",
     "new_bar": true
   },
-  "updated_at": "2026-08-18T13:24:48.146701+00:00"
+  "updated_at": "2026-08-18T13:25:19.247005+00:00"
 }
