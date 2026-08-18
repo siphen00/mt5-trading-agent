@@ -7,15 +7,15 @@
   "open_positions_bot": 0,
   "open_positions_manual": 0,
   "M5": {
-    "direction": "long",
+    "direction": "none",
     "votes": {
       "ema": "none",
-      "smc": "long"
+      "smc": "none"
     },
-    "reason": "SMC long (bos_bullish/none)",
+    "reason": "no confluence",
     "atr_ok": true,
-    "bar_time": "2026-08-24T10:55:00+00:00",
-    "new_bar": false
+    "bar_time": "2026-08-24T11:00:00+00:00",
+    "new_bar": true
   },
   "M15": {
     "direction": "long",
@@ -28,5 +28,5 @@
     "bar_time": "2026-08-24T10:45:00+00:00",
     "new_bar": false
   },
-  "updated_at": "2026-08-18T14:34:46.211585+00:00"
+  "updated_at": "2026-08-18T14:35:07.065497+00:00"
 }
