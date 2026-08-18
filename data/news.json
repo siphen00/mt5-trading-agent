@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-18T12:36:21.301887+00:00",
+  "updated_at": "2026-08-18T12:41:32.271085+00:00",
   "items": [
     {
       "title": "Live updates: Bitcoin holds $64,000 as surging yields and rising oil drain risk appetite",
@@ -119,6 +119,20 @@
       "impact": "medium"
     },
     {
+      "title": "UK 'supports Ukraine 100%', Burnham says, after Russia's drone warning",
+      "url": "https://www.bbc.co.uk/news/articles/cy5dz0kkn0wo?at_medium=RSS&at_campaign=rss",
+      "source": "BBC World",
+      "published": "2026-08-18T12:36:11+00:00",
+      "published_ts": 1787056571,
+      "summary": "Russia accuses the UK of escalating the Ukraine war by supplying British-made drones as the prime minister vows to support Kyiv in its \"hour of need\".",
+      "categories": [
+        "war",
+        "geopolitical"
+      ],
+      "score": 5,
+      "impact": "medium"
+    },
+    {
       "title": "Russia says its economy is strong. It just fired a top economist who warned otherwise",
       "url": "https://www.cnbc.com/2026/08/18/ukraine-war-russia-economy-klepach.html",
       "source": "CNBC World",
@@ -128,20 +142,6 @@
       "categories": [
         "war",
         "markets"
-      ],
-      "score": 5,
-      "impact": "medium"
-    },
-    {
-      "title": "UK 'supports Ukraine 100%', Burnham says, after Russia's drone warning",
-      "url": "https://www.bbc.co.uk/news/articles/cy5dz0kkn0wo?at_medium=RSS&at_campaign=rss",
-      "source": "BBC World",
-      "published": "2026-08-18T11:41:23+00:00",
-      "published_ts": 1787053283,
-      "summary": "Russia accuses the UK of escalating the Ukraine war by supplying British-made drones as the prime minister vows to support Kyiv in its \"hour of need\".",
-      "categories": [
-        "war",
-        "geopolitical"
       ],
       "score": 5,
       "impact": "medium"
@@ -430,8 +430,8 @@
       "title": "30-year Treasury yield tops 5.33%, new 19-year high on inflation, spending concerns",
       "url": "https://www.cnbc.com/2026/08/18/treasury-yields-.html",
       "source": "CNBC World",
-      "published": "2026-08-18T12:29:59+00:00",
-      "published_ts": 1787056199,
+      "published": "2026-08-18T12:39:04+00:00",
+      "published_ts": 1787056744,
       "summary": "Tuesday saw yields on U.S. 30-year Treasury yields add over 1 basis point to trade at around 5.322%, hovering just below its highest level since 2002.",
       "categories": [
         "macro_data",
