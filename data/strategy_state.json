@@ -13,20 +13,20 @@
       "smc": "none"
     },
     "reason": "no confluence",
-    "atr_ok": true,
-    "bar_time": "2026-09-28T11:50:00+00:00",
+    "atr_ok": false,
+    "bar_time": "2026-10-09T09:55:00+00:00",
     "new_bar": true
   },
   "M15": {
-    "direction": "short",
+    "direction": "none",
     "votes": {
       "ema": "none",
-      "smc": "short"
+      "smc": "none"
     },
-    "reason": "SMC short (bos_bearish/ob_bullish_retest)",
-    "atr_ok": true,
-    "bar_time": "2026-09-28T11:30:00+00:00",
+    "reason": "no confluence",
+    "atr_ok": false,
+    "bar_time": "2026-10-09T09:45:00+00:00",
     "new_bar": true
   },
-  "updated_at": "2026-09-28T11:59:12.831342+00:00"
+  "updated_at": "2026-09-28T12:00:46.495303+00:00"
 }
